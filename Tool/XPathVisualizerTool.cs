@@ -551,7 +551,7 @@ namespace XPathTester
         }
 
         private Microsoft.Win32.RegistryKey _appCuKey;
-        private static string _AppRegyPath = "Software\\Dino Chiesa\\XPathTester";
+        private static string _AppRegyPath = "Software\\Dino Chiesa\\XPathVisualizer";
         private string _rvn_XmlDoc = "XML File";
         private string _rvn_XPathExpression = "XPathExpression";
         private string _rvn_Prefix = "Prefix";
