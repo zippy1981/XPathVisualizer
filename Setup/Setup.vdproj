@@ -15,6 +15,12 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_0F2924169F8741199DF032FC944FF203"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_25B93C9E678F494685B8A2D8C5DF28F2"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -73,7 +79,7 @@
         "DisplayName" = "8:Release"
         "IsDebugOnly" = "11:FALSE"
         "IsReleaseOnly" = "11:TRUE"
-        "OutputFilename" = "8:Release\\Setup.msi"
+        "OutputFilename" = "8:Release\\XPathVisualizer-v1.1.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -126,6 +132,26 @@
         }
         "File"
         {
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_0F2924169F8741199DF032FC944FF203"
+            {
+            "SourcePath" = "8:..\\License.txt"
+            "TargetName" = "8:License.txt"
+            "Tag" = "8:"
+            "Folder" = "8:_C6DE19FE9A604C5382BFE0A0D0082690"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_25B93C9E678F494685B8A2D8C5DF28F2"
             {
             "SourcePath" = "8:ModifyMsiToEnableLaunchApplication.js"
@@ -274,7 +300,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Ionic's XPath Visualizer v1.1"
         "ProductCode" = "8:{B92F543E-A687-47E1-9349-8AF57B97AA8C}"
-        "PackageCode" = "8:{901F03BE-C0AD-4292-88B5-F231C6B90603}"
+        "PackageCode" = "8:{06FA265C-025E-4301-9F67-65CAA44F33AC}"
         "UpgradeCode" = "8:{F6792511-D075-4D05-A5ED-5CCE545BC9D2}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
@@ -883,7 +909,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_A14D9EE2E9324760859FFD1F60263CCC"
             {
-            "SourcePath" = "8:..\\Tool\\obj\\Debug\\XPathVisualizer.exe"
+            "SourcePath" = "8:..\\Tool\\obj\\Release\\XPathVisualizer.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_C6DE19FE9A604C5382BFE0A0D0082690"
