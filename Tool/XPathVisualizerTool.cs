@@ -10,27 +10,23 @@
 // ------------------------------------------------------------------
 //
 // This code is licensed under the Microsoft Public License. 
-// See the file License.rtffor the license details.
-// More info on: http://dotnetzip.codeplex.com
+// See the file License.rtf or License.txt for the license details.
+// More info on: http://XPathVisualizer.codeplex.com
 //
 // ------------------------------------------------------------------
 //
-//
+
 
 using System;
 using System.IO;
 using System.Xml;
 using System.Xml.XPath;
-using System.Runtime.InteropServices;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.Linq;                    // for the Contains extension
 using System.Windows.Forms;
 
-namespace XPathTester
+namespace XPathVisualizer
 {
     public partial class XPathVisualizerTool : Form
     {
@@ -40,6 +36,7 @@ namespace XPathTester
             FixupTitle();
             RememberSizes();
             AdjustSplitterSize();
+            SetupAutocompletes();
         }
 
         private void RememberSizes()
@@ -48,6 +45,22 @@ namespace XPathTester
             originalPanel1MinSize = this.splitContainer3.Panel1MinSize;
         }
 
+
+        private void SetupAutocompletes()
+        {
+            // setup the autocomplete for the xpath expressions
+            FillFormFromRegistry();
+            this.tbXpath.AutoCompleteMode = AutoCompleteMode.Suggest;
+            this.tbXpath.AutoCompleteSource = AutoCompleteSource.CustomSource;
+            this.tbXpath.AutoCompleteCustomSource = _xpathExpressionMruList;
+
+            // insert the most recent expression into the box?  
+            //this.tbXpath.Text = _xpathExpressionMruList[0];
+
+            // setup the autocomplete for the file
+            this.tbXmlDoc.AutoCompleteMode = AutoCompleteMode.Suggest;
+            this.tbXmlDoc.AutoCompleteSource = AutoCompleteSource.FileSystem;
+        }
 
         private void FixupTitle()
         {
@@ -64,20 +77,25 @@ namespace XPathTester
 
         private void btnLoadXml_Click(object sender, EventArgs e)
         {
+            IntPtr mask = IntPtr.Zero;
             try
             {
-                IntPtr mask = this.richTextBox1.BeginUpdate();
+                mask = this.richTextBox1.BeginUpdate();
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 this.richTextBox1.Text = File.ReadAllText(this.tbXmlDoc.Text);
                 this.richTextBox1.ColorizeXml();
-                this.Cursor = System.Windows.Forms.Cursors.Default;
-                this.richTextBox1.EndUpdate(mask);
 
                 PreloadXmlns();
             }
             catch (Exception exc1)
             {
-                this.richTextBox1.Text = "file read error:  " + exc1.ToString();
+                this.richTextBox1.Text = "file read error:  " + exc1.Message;
+                this.toolStripStatusLabel1.Text = "Cannot read that file.";
+            }
+            finally
+            {
+                this.Cursor = System.Windows.Forms.Cursors.Default;
+                this.richTextBox1.EndUpdate(mask);
             }
         }
 
@@ -168,6 +186,7 @@ namespace XPathTester
                     this.richTextBox1.SelectAll();
                     //this.richTextBox1.SelectionColor = Color.Black;
                     this.richTextBox1.SelectionBackColor = Color.White;
+                    
                     if (selection == null || selection.Count == 0)
                     {
                         this.toolStripStatusLabel1.Text = String.Format("{0}: Zero nodes selected", xpathExpression);
@@ -178,6 +197,15 @@ namespace XPathTester
                                                                         xpathExpression,
                                                                         selection.Count, (selection.Count == 1) ? "node" : "nodes");
                         HighlightSelection(selection, xmlns);
+                    }
+
+
+                    // remember the successful xpath queries
+                    if (!_xpathExpressionMruList.Contains(xpathExpression))
+                    {
+                        if (_xpathExpressionMruList.Count >= _MaxMruListSize)
+                            _xpathExpressionMruList.RemoveAt(0); 
+                        _xpathExpressionMruList.Add(xpathExpression);
                     }
                 }
                 catch (Exception exc1)
@@ -495,182 +523,5 @@ namespace XPathTester
 
 
 
-
-
-    public static class Extensions
-    {
-        public static string XmlEscapeQuotes(this String s)
-        {
-            while (s.Contains("\""))
-            {
-                s = s.Replace("\"", "&quot;");
-            }
-            return s;
-        }
-
-
-        public static void ColorizeXml(this System.Windows.Forms.RichTextBox rtb)
-        {
-            var sr = new StringReader(rtb.Text);
-            XmlReader reader = XmlReader.Create(sr);
-
-            if ((reader as IXmlLineInfo) != null)
-            {
-                IXmlLineInfo rinfo = (IXmlLineInfo)reader;
-                if (rinfo.HasLineInfo())
-                {
-                    int ix = 0;
-                    while (reader.Read())
-                    {
-                        switch (reader.NodeType)
-                        {
-                            case XmlNodeType.Element: // The node is an element.
-                                ix = rtb.MyGetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                    +rinfo.LinePosition - 1;
-                                rtb.Select(ix - 1, 1);
-                                rtb.SelectionColor = Color.Blue;
-                                rtb.Select(ix, reader.Name.Length);
-                                rtb.SelectionColor = Color.DarkRed;
-
-                                if (reader.HasAttributes)
-                                {
-                                    reader.MoveToFirstAttribute();
-                                    do
-                                    {
-                                        //string s = reader.Value;
-                                        ix = rtb.MyGetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                            +rinfo.LinePosition - 1;
-                                        rtb.Select(ix, reader.Name.Length);
-                                        rtb.SelectionColor = Color.Red;
-
-                                        ix += reader.Name.Length;
-                                        while (rtb.Text.Substring(ix, 1) != "=")
-                                            ix++;
-
-                                        // make the equals sign blue
-                                        rtb.Select(ix + reader.Name.Length, 1);
-                                        rtb.SelectionColor = Color.Blue;
-
-                                        // skip over the quote char (it remains black)
-                                        while (rtb.Text.Substring(ix, 1)[0] != reader.QuoteChar)
-                                            ix++;
-                                        ix++;
-
-                                        // highlight the value of the attribute as blue
-                                        if (rtb.Text.Substring(ix).StartsWith(reader.Value))
-                                        {
-                                            rtb.Select(ix, reader.Value.Length);
-                                        }
-                                        else
-                                        {
-                                            // Difference in escaping.  The InnerXml may include
-                                            // \" where &quot; is in the doc.
-                                            string s = reader.Value.XmlEscapeQuotes();
-                                            int delta = s.Length - reader.Value.Length;
-                                            rtb.Select(ix, reader.Value.Length + delta);
-                                        }
-                                        rtb.SelectionColor = Color.Blue;
-
-                                    }
-                                    while (reader.MoveToNextAttribute());
-
-                                    while (rtb.Text.Substring(ix, 1)[0] != '>')
-                                        ix++;
-
-                                    // the close-angle-bracket
-                                    rtb.Select(ix, 1);
-                                    rtb.SelectionColor = Color.Blue;
-
-                                }
-                                break;
-
-                            case XmlNodeType.Text: // Display the text in each element.
-                                //ix = rtb.MyGetCharIndexFromLine(rinfo.LineNumber-1) +
-                                //    + rinfo.LinePosition-1;
-                                //rtb.Select(ix, reader.Value.Length);
-                                //rtb.SelectionColor = Color.Black;
-                                break;
-
-                            case XmlNodeType.EndElement: // Display the end of the element.
-                                ix = rtb.MyGetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                    +rinfo.LinePosition - 1;
-                                rtb.Select(ix - 2, 2);
-                                rtb.SelectionColor = Color.Blue;
-                                rtb.Select(ix, reader.Name.Length);
-                                rtb.SelectionColor = Color.DarkRed;
-                                rtb.Select(ix + reader.Name.Length, 1);
-                                rtb.SelectionColor = Color.Blue;
-                                break;
-
-                            case XmlNodeType.Attribute:
-                                ix = rtb.MyGetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                    +rinfo.LinePosition - 1;
-                                rtb.Select(ix, reader.Name.Length);
-                                rtb.SelectionColor = Color.Green;
-                                break;
-
-                            case XmlNodeType.Comment:
-                                ix = rtb.MyGetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                    +rinfo.LinePosition - 1;
-                                string comment = reader.Value;
-                                rtb.Select(ix, comment.Length);
-                                rtb.SelectionColor = Color.Green;
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-
-        private const int WM_SETREDRAW = 0x000B;
-        private const int WM_USER = 0x400;
-        private const int EM_GETEVENTMASK = (WM_USER + 59);
-        private const int EM_SETEVENTMASK = (WM_USER + 69);
-
-        [DllImport("user32", CharSet = CharSet.Auto)]
-        private extern static IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, IntPtr lParam);
-
-        public static IntPtr BeginUpdate(this System.Windows.Forms.RichTextBox rtb)
-        {
-            // Stop redrawing:
-            SendMessage(rtb.Handle, WM_SETREDRAW, 0, IntPtr.Zero);
-            // Stop sending of events:
-            IntPtr eventMask = SendMessage(rtb.Handle, EM_GETEVENTMASK, 0, IntPtr.Zero);
-
-            return eventMask;
-        }
-
-        public static void EndUpdate(this System.Windows.Forms.RichTextBox rtb, IntPtr eventMask)
-        {
-            // turn on events
-            SendMessage(rtb.Handle, EM_SETEVENTMASK, 0, eventMask);
-            // turn on redrawing
-            SendMessage(rtb.Handle, WM_SETREDRAW, 1, IntPtr.Zero);
-            rtb.Invalidate();
-        }
-
-
-        public static int MyGetCharIndexFromLine(this System.Windows.Forms.RichTextBox rtb, int line)
-        {
-            // The built-in GetFirstCharIndexFromLine does not work for me. 
-            // Not sure why.
-
-            line++;
-            if (line <= 1) return 0;
-            int ix = 0;
-            int xline = 0;
-            do
-            {
-                int delta = rtb.Text.Substring(ix).IndexOf('\n');
-                if (delta < 0) return -1;
-                ix += delta + 1;
-                xline++;
-            }
-            while (xline + 1 < line);
-
-            return ix;
-        }
-
-    }
 
 }
