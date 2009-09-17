@@ -1,4 +1,4 @@
-﻿namespace XPathTester
+﻿namespace XPathVisualizer
 {
     partial class XPathVisualizerTool
     {
@@ -37,7 +37,7 @@
             this.btnAddNsPrefix = new System.Windows.Forms.Button();
             this.btnEvalXpath = new System.Windows.Forms.Button();
             this.btnLoadXml = new System.Windows.Forms.Button();
-            this.tbXpath = new System.Windows.Forms.TextBox();
+            this.tbXpath =  new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.btnBrowse = new System.Windows.Forms.Button();
             this.tbXmlDoc = new System.Windows.Forms.TextBox();
@@ -158,7 +158,7 @@
             this.btnLoadXml.Click += new System.EventHandler(this.btnLoadXml_Click);
             // 
             // tbXpath
-            // 
+            //
             this.tbXpath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.tbXpath.Location = new System.Drawing.Point(108, 42);

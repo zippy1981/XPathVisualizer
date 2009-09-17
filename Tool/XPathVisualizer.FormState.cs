@@ -10,11 +10,10 @@
 // ------------------------------------------------------------------
 //
 // This code is licensed under the Microsoft Public License. 
-// See the file License.rtffor the license details.
-// More info on: http://dotnetzip.codeplex.com
+// See the file License.rtf or License.txt for the license details.
+// More info on: http://XPathVisualizer.codeplex.com
 //
 // ------------------------------------------------------------------
-//
 //
 
 using System;
@@ -30,7 +29,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace XPathTester
+namespace XPathVisualizer
 {
     public partial class XPathVisualizerTool 
     {
@@ -41,6 +40,7 @@ namespace XPathTester
             {
                 if (!String.IsNullOrEmpty(this.tbXmlDoc.Text))
                     AppCuKey.SetValue(_rvn_XmlDoc, this.tbXmlDoc.Text);
+                
                 if (!String.IsNullOrEmpty(this.tbXpath.Text))
                     AppCuKey.SetValue(_rvn_XPathExpression, this.tbXpath.Text);
 
@@ -76,51 +76,80 @@ namespace XPathTester
             // store the position of splitter
             AppCuKey.SetValue(_rvn_Splitter, this.splitContainer3.SplitterDistance.ToString());
 
+            // the Xpath expression MRU list
+            var converted = _xpathExpressionMruList.ToList().ConvertAll(x => x.XmlEscapeIexcl());
+            string history = String.Join("¡", converted.ToArray());
+            AppCuKey.SetValue(_rvn_History, history);
         }
 
 
         private void FillFormFromRegistry()
         {
-            if (AppCuKey != null)
+            if (!stateLoaded)
             {
-                var s = (string)AppCuKey.GetValue(_rvn_XmlDoc);
-                if (s != null) this.tbXmlDoc.Text = s;
-
-                s = (string)AppCuKey.GetValue(_rvn_XPathExpression);
-                if (s != null) this.tbXpath.Text = s;
-
-                s = (string)AppCuKey.GetValue(_rvn_Prefix);
-                if (s != null) this.tbPrefix.Text = s;
-
-                s = (string)AppCuKey.GetValue(_rvn_Xmlns);
-                if (s != null) this.tbXmlns.Text = s;
-
-                // set the geometry of the form
-                s = (string)AppCuKey.GetValue(_rvn_Geometry);
-                if (!String.IsNullOrEmpty(s))
+                if (AppCuKey != null)
                 {
-                    int[] p = Array.ConvertAll<string, int>(s.Split(','),
-                                                            new Converter<string, int>((t) => { return Int32.Parse(t); }));
-                    if (p != null && p.Length == 5)
+                    // fill the various textboxes
+                    var s = (string)AppCuKey.GetValue(_rvn_XmlDoc);
+                    if (s != null) this.tbXmlDoc.Text = s;
+
+                    s = (string)AppCuKey.GetValue(_rvn_XPathExpression);
+                    if (s != null) this.tbXpath.Text = s;
+
+                    s = (string)AppCuKey.GetValue(_rvn_Prefix);
+                    if (s != null) this.tbPrefix.Text = s;
+
+                    s = (string)AppCuKey.GetValue(_rvn_Xmlns);
+                    if (s != null) this.tbXmlns.Text = s;
+
+
+                    // get the MRU list of XPath expressions
+                    _xpathExpressionMruList = new System.Windows.Forms.AutoCompleteStringCollection();
+                    string historyString = (string)AppCuKey.GetValue(_rvn_History, "");
+                    if (!String.IsNullOrEmpty(historyString))
                     {
-                        this.Bounds = ConstrainToScreen(new System.Drawing.Rectangle(p[0], p[1], p[2], p[3]));
+                        string[] items = historyString.Split('¡');
+                        if (items != null && items.Length > 0)
+                        {
+                            //_xpathExpressionMruList.AddRange(items);
+                            foreach (string item in items)
+                                _xpathExpressionMruList.Add(item.XmlUnescapeIexcl());
+                        }
                     }
-                }
 
-
-                // set the splitter
-                s = (string)AppCuKey.GetValue(_rvn_Splitter);
-                if (!String.IsNullOrEmpty(s))
-                {
-                    try
+                
+                    // set the geometry of the form
+                    s = (string)AppCuKey.GetValue(_rvn_Geometry);
+                    if (!String.IsNullOrEmpty(s))
                     {
-                        int x = Int32.Parse(s);
-                        this.splitContainer3.SplitterDistance = x;
+                        int[] p = Array.ConvertAll<string, int>(s.Split(','),
+                                                                new Converter<string, int>((t) => { return Int32.Parse(t); }));
+                        if (p != null && p.Length == 5)
+                        {
+                            this.Bounds = ConstrainToScreen(new System.Drawing.Rectangle(p[0], p[1], p[2], p[3]));
+                        }
                     }
-                    catch { }
-                }
 
+
+                    // set the splitter
+                    s = (string)AppCuKey.GetValue(_rvn_Splitter);
+                    if (!String.IsNullOrEmpty(s))
+                    {
+                        try
+                        {
+                            int x = Int32.Parse(s);
+                            this.splitContainer3.SplitterDistance = x;
+                        }
+                        catch { }
+                    }
+
+                
+                    stateLoaded = true;
+
+                }
+                                
             }
+
         }
 
 
@@ -161,6 +190,10 @@ namespace XPathTester
         private string _rvn_Xmlns = "Xmlns";
         private string _rvn_Geometry = "Geometry";
         private string _rvn_Splitter = "Splitter";
-
+        private string _rvn_History = "History";
+        private readonly int _MaxMruListSize = 14;
+        //private Ionic.Utils.MruList<String> _xpathExpressionMruList;
+        private System.Windows.Forms.AutoCompleteStringCollection _xpathExpressionMruList;
+        private bool stateLoaded;
     }
 }
