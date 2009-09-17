@@ -21,6 +21,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_896BE65C11EC45C2BCB49EED46056247"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_A14D9EE2E9324760859FFD1F60263CCC"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -140,6 +146,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_896BE65C11EC45C2BCB49EED46056247"
+            {
+            "SourcePath" = "8:Uninstall.cmd"
+            "TargetName" = "8:Uninstall.cmd"
+            "Tag" = "8:"
+            "Folder" = "8:_C6DE19FE9A604C5382BFE0A0D0082690"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_AE35A08DC4974B28A04563CC110D2FA5"
             {
             "SourcePath" = "8:CreateUninstaller.js"
@@ -195,6 +221,17 @@
             "Property" = "8:ProgramMenuFolder"
                 "Folders"
                 {
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_E1D3A8285517465987D82248CCAAD385"
+                    {
+                    "Name" = "8:Dino Chiesa"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_2EDB6237CD3449CDA3ED73F96536CA5E"
+                        "Folders"
+                        {
+                        }
+                    }
                 }
             }
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_C6DE19FE9A604C5382BFE0A0D0082690"
@@ -237,7 +274,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Ionic's XPath Visualizer v1.1"
         "ProductCode" = "8:{B92F543E-A687-47E1-9349-8AF57B97AA8C}"
-        "PackageCode" = "8:{2CABC92C-60DB-44BB-9C49-FD6775773B30}"
+        "PackageCode" = "8:{901F03BE-C0AD-4292-88B5-F231C6B90603}"
         "UpgradeCode" = "8:{F6792511-D075-4D05-A5ED-5CCE545BC9D2}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
@@ -370,6 +407,34 @@
         }
         "Shortcut"
         {
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_5CBC1EEFF0EB4E60BCA5C2D9D37F2ACD"
+            {
+            "Name" = "8:Uninstall XPathVisualizer"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_896BE65C11EC45C2BCB49EED46056247"
+            "Folder" = "8:_E1D3A8285517465987D82248CCAAD385"
+            "WorkingFolder" = "8:_C6DE19FE9A604C5382BFE0A0D0082690"
+            "Icon" = "8:"
+            "Feature" = "8:"
+            }
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_EBC8B1BC70724D0FAF3434F4F0D48D53"
+            {
+            "Name" = "8:XPathVisualizer"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_A14D9EE2E9324760859FFD1F60263CCC"
+            "Folder" = "8:_E1D3A8285517465987D82248CCAAD385"
+            "WorkingFolder" = "8:_C6DE19FE9A604C5382BFE0A0D0082690"
+            "Icon" = "8:"
+            "Feature" = "8:"
+            }
         }
         "UserInterface"
         {
