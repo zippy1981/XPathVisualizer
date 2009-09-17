@@ -45,6 +45,7 @@
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
@@ -69,12 +70,14 @@
             this.splitContainer3.Panel1.Controls.Add(this.btnBrowse);
             this.splitContainer3.Panel1.Controls.Add(this.tbXmlDoc);
             this.splitContainer3.Panel1.Controls.Add(this.label1);
+            this.splitContainer3.Panel1MinSize = 140;
             // 
             // splitContainer3.Panel2
             // 
             this.splitContainer3.Panel2.Controls.Add(this.richTextBox1);
             this.splitContainer3.Size = new System.Drawing.Size(530, 300);
-            this.splitContainer3.SplitterDistance = 147;
+            this.splitContainer3.SplitterDistance = 175;
+            this.splitContainer3.SplitterWidth = 6;
             this.splitContainer3.TabIndex = 0;
             // 
             // groupBox1
@@ -87,8 +90,9 @@
             this.groupBox1.Controls.Add(this.tbPrefix);
             this.groupBox1.Controls.Add(this.btnAddNsPrefix);
             this.groupBox1.Location = new System.Drawing.Point(12, 67);
+            this.groupBox1.MinimumSize = new System.Drawing.Size(0, 70);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(506, 77);
+            this.groupBox1.Size = new System.Drawing.Size(506, 104);
             this.groupBox1.TabIndex = 48;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "namespaces and prefixes";
@@ -100,23 +104,23 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlPrefixList.Location = new System.Drawing.Point(2, 42);
             this.pnlPrefixList.Name = "pnlPrefixList";
-            this.pnlPrefixList.Size = new System.Drawing.Size(502, 35);
+            this.pnlPrefixList.Size = new System.Drawing.Size(502, 56);
             this.pnlPrefixList.TabIndex = 51;
             // 
             // tbXmlns
             // 
             this.tbXmlns.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbXmlns.Location = new System.Drawing.Point(108, 19);
+            this.tbXmlns.Location = new System.Drawing.Point(96, 16);
             this.tbXmlns.Name = "tbXmlns";
-            this.tbXmlns.Size = new System.Drawing.Size(352, 20);
+            this.tbXmlns.Size = new System.Drawing.Size(364, 20);
             this.tbXmlns.TabIndex = 55;
             // 
             // tbPrefix
             // 
-            this.tbPrefix.Location = new System.Drawing.Point(6, 19);
+            this.tbPrefix.Location = new System.Drawing.Point(6, 16);
             this.tbPrefix.Name = "tbPrefix";
-            this.tbPrefix.Size = new System.Drawing.Size(84, 20);
+            this.tbPrefix.Size = new System.Drawing.Size(74, 20);
             this.tbPrefix.TabIndex = 50;
             this.tbPrefix.TextChanged += new System.EventHandler(this.tbPrefix_TextChanged);
             // 
@@ -125,7 +129,7 @@
             this.btnAddNsPrefix.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAddNsPrefix.Location = new System.Drawing.Point(466, 16);
             this.btnAddNsPrefix.Name = "btnAddNsPrefix";
-            this.btnAddNsPrefix.Size = new System.Drawing.Size(28, 23);
+            this.btnAddNsPrefix.Size = new System.Drawing.Size(28, 20);
             this.btnAddNsPrefix.TabIndex = 60;
             this.btnAddNsPrefix.Text = "+";
             this.btnAddNsPrefix.UseVisualStyleBackColor = true;
@@ -180,6 +184,7 @@
             this.btnBrowse.TabIndex = 20;
             this.btnBrowse.Text = "...";
             this.btnBrowse.UseVisualStyleBackColor = true;
+            this.btnBrowse.Click += new System.EventHandler(this.btnBrowse_Click);
             // 
             // tbXmlDoc
             // 
@@ -202,9 +207,10 @@
             // richTextBox1
             // 
             this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richTextBox1.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.richTextBox1.Location = new System.Drawing.Point(0, 0);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(530, 149);
+            this.richTextBox1.Size = new System.Drawing.Size(530, 119);
             this.richTextBox1.TabIndex = 80;
             this.richTextBox1.Text = "";
             this.richTextBox1.TextChanged += new System.EventHandler(this.richTextBox1_TextChanged);
@@ -224,18 +230,33 @@
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
             // 
+            // linkLabel1
+            // 
+            this.linkLabel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.Location = new System.Drawing.Point(337, 305);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(180, 13);
+            this.linkLabel1.TabIndex = 1;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "http://XPathVisualizer.codeplex.com";
+            this.linkLabel1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // XPathVisualizerTool
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(530, 322);
+            this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.splitContainer3);
             this.Controls.Add(this.statusStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MinimumSize = new System.Drawing.Size(440, 320);
             this.Name = "XPathVisualizerTool";
             this.Text = "XPathVisualizer";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+            this.Resize += new System.EventHandler(this.XPathVisualizerTool_Resize);
             this.splitContainer3.Panel1.ResumeLayout(false);
             this.splitContainer3.Panel1.PerformLayout();
             this.splitContainer3.Panel2.ResumeLayout(false);
@@ -267,6 +288,7 @@
         private System.Windows.Forms.TextBox tbXmlns;
         private System.Windows.Forms.TextBox tbPrefix;
         private System.Windows.Forms.Panel pnlPrefixList;
+        private System.Windows.Forms.LinkLabel linkLabel1;
     }
 }
 
