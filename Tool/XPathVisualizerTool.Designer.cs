@@ -37,7 +37,7 @@
             this.btnAddNsPrefix = new System.Windows.Forms.Button();
             this.btnEvalXpath = new System.Windows.Forms.Button();
             this.btnLoadXml = new System.Windows.Forms.Button();
-            this.tbXpath =  new System.Windows.Forms.TextBox();
+            this.tbXpath = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.btnBrowse = new System.Windows.Forms.Button();
             this.tbXmlDoc = new System.Windows.Forms.TextBox();
@@ -158,7 +158,7 @@
             this.btnLoadXml.Click += new System.EventHandler(this.btnLoadXml_Click);
             // 
             // tbXpath
-            //
+            // 
             this.tbXpath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.tbXpath.Location = new System.Drawing.Point(108, 42);
@@ -206,10 +206,12 @@
             // 
             // richTextBox1
             // 
+            this.richTextBox1.BackColor = System.Drawing.SystemColors.Window;
             this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.richTextBox1.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.richTextBox1.Location = new System.Drawing.Point(0, 0);
             this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.ReadOnly = true;
             this.richTextBox1.Size = new System.Drawing.Size(530, 119);
             this.richTextBox1.TabIndex = 80;
             this.richTextBox1.Text = "";
