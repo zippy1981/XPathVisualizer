@@ -89,6 +89,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="DotNetZipLib-v1.9.hhc.xml" />
     <Content Include="icon1.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
