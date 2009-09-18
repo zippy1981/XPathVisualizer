@@ -80,16 +80,32 @@ namespace XPathVisualizer
             IntPtr mask = IntPtr.Zero;
             try
             {
+                var stopWatch = new System.Diagnostics.Stopwatch();
+                stopWatch.Start();
+                this.toolStripStatusLabel1.Text = "Reading...";
+
+                this.richTextBox1.Text = "";
+                this.richTextBox1.Update();
                 mask = this.richTextBox1.BeginUpdate();
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 this.richTextBox1.Text = File.ReadAllText(this.tbXmlDoc.Text);
                 this.richTextBox1.ColorizeXml();
 
                 PreloadXmlns();
+
+                stopWatch.Stop();
+
+                TimeSpan ts = stopWatch.Elapsed;
+                
+                this.toolStripStatusLabel1.Text = 
+                    String.Format("File read and highlighted, {0:00}.{1:00}s",
+                                  ts.Minutes * 60 + ts.Seconds,
+                                  ts.Milliseconds / 10);                
             }
             catch (Exception exc1)
             {
-                this.richTextBox1.Text = "file read error:  " + exc1.Message;
+                //this.richTextBox1.Text = "file read error:  " + exc1.Message;
+                this.richTextBox1.Text = "file read error:  " + exc1.ToString();
                 this.toolStripStatusLabel1.Text = "Cannot read that file.";
             }
             finally
@@ -161,98 +177,113 @@ namespace XPathVisualizer
             if (String.IsNullOrEmpty(this.tbXpath.Text))
             {
                 this.toolStripStatusLabel1.Text = "Cannot evaluate: There is no XPath expression.";
+                return;
             }
-            else if (String.IsNullOrEmpty(this.richTextBox1.Text))
+            if (String.IsNullOrEmpty(this.richTextBox1.Text))
             {
                 this.toolStripStatusLabel1.Text = "Cannot evaluate: There is no XML document.";
+                return;
             }
-            else
+
+
+ 
+            IntPtr mask = IntPtr.Zero;
+            try
             {
-                try
+                // reset highlighting 
+                this.richTextBox1.SelectAll();
+                //this.richTextBox1.SelectionColor = Color.Black;
+                this.richTextBox1.SelectionBackColor = Color.White;
+                this.richTextBox1.Update();
+                
+                mask = this.richTextBox1.BeginUpdate();
+                this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
+                this.tbXpath.BackColor = this.tbXmlns.BackColor; // just in case
+                string xpathExpression = this.tbXpath.Text;
+                //load the Xml doc
+                if (xpathDoc == null) xpathDoc = new XPathDocument(new StringReader(this.richTextBox1.Text));
+                if (nav == null) nav = xpathDoc.CreateNavigator();
+                XmlNamespaceManager xmlns = new XmlNamespaceManager(nav.NameTable);
+                foreach (string k in xmlnsPrefixes.Keys)
                 {
-                    this.tbXpath.BackColor = this.tbXmlns.BackColor; // just in case
-                    string xpathExpression = this.tbXpath.Text;
-                    //load the Xml doc
-                    if (xpathDoc == null) xpathDoc = new XPathDocument(new StringReader(this.richTextBox1.Text));
-                    if (nav == null) nav = xpathDoc.CreateNavigator();
-                    XmlNamespaceManager xmlns = new XmlNamespaceManager(nav.NameTable);
-                    foreach (string k in xmlnsPrefixes.Keys)
-                    {
-                        xmlns.AddNamespace(k, xmlnsPrefixes[k]);
-                    }
-                    XPathNodeIterator selection = nav.Select(xpathExpression, xmlns);
-
-                    // reset highlighting 
-                    this.richTextBox1.SelectAll();
-                    //this.richTextBox1.SelectionColor = Color.Black;
-                    this.richTextBox1.SelectionBackColor = Color.White;
-                    
-                    if (selection == null || selection.Count == 0)
-                    {
-                        this.toolStripStatusLabel1.Text = String.Format("{0}: Zero nodes selected", xpathExpression);
-                    }
-                    else
-                    {
-                        this.toolStripStatusLabel1.Text = String.Format("{0}: {1} {2} selected",
-                                                                        xpathExpression,
-                                                                        selection.Count, (selection.Count == 1) ? "node" : "nodes");
-                        HighlightSelection(selection, xmlns);
-                    }
-
-
-                    // remember the successful xpath queries
-                    if (!_xpathExpressionMruList.Contains(xpathExpression))
-                    {
-                        if (_xpathExpressionMruList.Count >= _MaxMruListSize)
-                            _xpathExpressionMruList.RemoveAt(0); 
-                        _xpathExpressionMruList.Add(xpathExpression);
-                    }
+                    xmlns.AddNamespace(k, xmlnsPrefixes[k]);
                 }
-                catch (Exception exc1)
+                XPathNodeIterator selection = nav.Select(xpathExpression, xmlns);
+
+                if (selection == null || selection.Count == 0)
                 {
-                    string brokenPrefix = IsUnkownNamespacePrefix(exc1);
-                    if (brokenPrefix != null)
-                    {
-                        int ix = this.tbXpath.Text.IndexOf(brokenPrefix);
-                        this.tbXpath.Select(ix, brokenPrefix.Length);
-                        this.tbXpath.BackColor = Color.FromArgb((Color.Red.A << 24) | 0xFFDEAD);
-                        this.tbXpath.Focus();
-                        this.toolStripStatusLabel1.Text = "Exception: " + exc1.Message;
-                    }
-                    else if (BadExpression(exc1))
-                    {
-                        this.tbXpath.SelectAll();
-                        this.tbXpath.BackColor = Color.FromArgb((Color.Red.A << 24) | 0xFFDEAD);
-                        this.tbXpath.Focus();
-                        this.toolStripStatusLabel1.Text = "Exception: " + exc1.Message;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Exception: " + exc1.ToString(),
-                            "Exception while evaluating XPath",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Exclamation);
-                    }
+                    this.toolStripStatusLabel1.Text = String.Format("{0}: Zero nodes selected", xpathExpression);
+                }
+                else
+                {
+                    this.toolStripStatusLabel1.Text = String.Format("{0}: {1} {2} selected",
+                                                                    xpathExpression,
+                                                                    selection.Count, (selection.Count == 1) ? "node" : "nodes");
+                    HighlightSelection(selection, xmlns);
+                }
+
+
+                // remember the successful xpath queries
+                if (!_xpathExpressionMruList.Contains(xpathExpression))
+                {
+                    if (_xpathExpressionMruList.Count >= _MaxMruListSize)
+                        _xpathExpressionMruList.RemoveAt(0); 
+                    _xpathExpressionMruList.Add(xpathExpression);
                 }
             }
+            catch (Exception exc1)
+            {
+                string brokenPrefix = IsUnkownNamespacePrefix(exc1);
+                if (brokenPrefix != null)
+                {
+                    int ix = this.tbXpath.Text.IndexOf(brokenPrefix);
+                    this.tbXpath.Select(ix, brokenPrefix.Length);
+                    this.tbXpath.BackColor = Color.FromArgb((Color.Red.A << 24) | 0xFFDEAD);
+                    this.tbXpath.Focus();
+                    this.toolStripStatusLabel1.Text = "Exception: " + exc1.Message;
+                }
+                else if (BadExpression(exc1))
+                {
+                    this.tbXpath.SelectAll();
+                    this.tbXpath.BackColor = Color.FromArgb((Color.Red.A << 24) | 0xFFDEAD);
+                    this.tbXpath.Focus();
+                    this.toolStripStatusLabel1.Text = "Exception: " + exc1.Message;
+                }
+                else
+                {
+                    MessageBox.Show("Exception: " + exc1.ToString(),
+                                    "Exception while evaluating XPath",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                }
+            }
+
+            finally
+            {
+                this.Cursor = System.Windows.Forms.Cursors.Default;
+                this.richTextBox1.EndUpdate(mask);
+            }
+
         }
 
+        
 
         private void HighlightSelection(XPathNodeIterator selection, XmlNamespaceManager xmlns)
         {
             bool scrolled = false;
+            var lc = new LineCalculator(this.richTextBox1);
+            string txt = this.richTextBox1.Text;
             foreach (XPathNavigator node in selection)
             {
                 IXmlLineInfo lineInfo = node as IXmlLineInfo;
                 if (lineInfo == null || !lineInfo.HasLineInfo()) continue;
 
-                int ix = this.richTextBox1.MyGetCharIndexFromLine(lineInfo.LineNumber - 1) + lineInfo.LinePosition - 1 - 1;
+                int ix = lc.GetCharIndexFromLine(lineInfo.LineNumber - 1) + lineInfo.LinePosition - 1 - 1;
 
                 if (ix >= 0)
                 {
                     int ix2 = 0;
 
-                    //string sub = this.richTextBox1.Text.Substring(ix);
                     if (node.NodeType == XPathNodeType.Comment)
                     {
                         ix2 = ix + node.Value.Length;
@@ -276,13 +307,13 @@ namespace XPathVisualizer
                         {
                             // The navigator moved to the succeeding element. Now backup 
                             // through the text to find the ending square bracket for *this* element.
-                            ix2 = this.richTextBox1.MyGetCharIndexFromLine(lineInfo.LineNumber - 1) +
+                            ix2 = lc.GetCharIndexFromLine(lineInfo.LineNumber - 1) +
                                 lineInfo.LinePosition - 1;
-                            string subs1 = this.richTextBox1.Text.Substring(ix2, 1);
+                            string subs1 = txt.Substring(ix2, 1);
                             while (subs1 != ">" && ix2 > ix)
                             {
                                 ix2--;
-                                subs1 = this.richTextBox1.Text.Substring(ix2, 1);
+                                subs1 = txt.Substring(ix2, 1);
                             }
                         }
                         else
@@ -293,28 +324,23 @@ namespace XPathVisualizer
                             // an empty element), then look for the </NodeName> string.  
 
                             ix2 = ix + node.Name.Length + 1;
-                            string subs1 = this.richTextBox1.Text.Substring(ix2, 1);
-                            if (subs1 == "/")
+                            //string subs1 = txt.Substring(ix2, 1);
+                            if (txt[ix2] == '/')
                             {
                                 // we're at the end-element
                                 ix2++;
                             }
                             else
                             {
-                                subs1 = String.Format("</{0}>", node.Name);
-                                int ix3 = this.richTextBox1.Text.IndexOf(subs1);
+                                string subs1 = String.Format("</{0}>", node.Name);
+                                int ix3 = txt.IndexOf(subs1, ix2);
                                 if (ix3 > 0)
                                 {
                                     ix2 = ix3 + subs1.Length;
                                 }
                                 else
                                 {
-                                    subs1 = this.richTextBox1.Text.Substring(ix2, 1);
-                                    while (subs1 != ">")
-                                    {
-                                        ix2++;
-                                        subs1 = this.richTextBox1.Text.Substring(ix2, 1);
-                                    }
+                                    ix2 = txt.IndexOf('>', ix2);
                                 }
                             }
                         }

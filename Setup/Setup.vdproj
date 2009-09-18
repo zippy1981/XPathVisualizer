@@ -80,6 +80,19 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Net.Framework.3.5.SP1"
+                    {
+                    "Name" = "8:.NET Framework 3.5 SP1"
+                    "ProductCode" = "8:Microsoft.Net.Framework.3.5.SP1"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Windows.Installer.3.1"
+                    {
+                    "Name" = "8:Windows Installer 3.1"
+                    "ProductCode" = "8:Microsoft.Windows.Installer.3.1"
+                    }
+                }
             }
         }
         "Release"
@@ -104,6 +117,19 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Net.Framework.3.5.SP1"
+                    {
+                    "Name" = "8:.NET Framework 3.5 SP1"
+                    "ProductCode" = "8:Microsoft.Net.Framework.3.5.SP1"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Windows.Installer.3.1"
+                    {
+                    "Name" = "8:Windows Installer 3.1"
+                    "ProductCode" = "8:Microsoft.Windows.Installer.3.1"
+                    }
+                }
             }
         }
     }
@@ -315,14 +341,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Ionic's XPath Visualizer v1.1"
-        "ProductCode" = "8:{C92BE308-A97F-4922-B7FE-C61A9D4FF0B4}"
-        "PackageCode" = "8:{F67A6809-7902-4F4E-9B13-5B86F9F1F3BE}"
+        "ProductCode" = "8:{28D03A20-AC30-45A9-93A4-D31EB3FDEDBC}"
+        "PackageCode" = "8:{9964CC6D-69E0-4960-A0DA-540D48A534BF}"
         "UpgradeCode" = "8:{F6792511-D075-4D05-A5ED-5CCE545BC9D2}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.0002"
+        "ProductVersion" = "8:1.1.0003"
         "Manufacturer" = "8:Dino Chiesa"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -925,7 +951,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_A14D9EE2E9324760859FFD1F60263CCC"
             {
-            "SourcePath" = "8:..\\Tool\\obj\\Release\\XPathVisualizer.exe"
+            "SourcePath" = "8:..\\Tool\\obj\\Debug\\XPathVisualizer.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_C6DE19FE9A604C5382BFE0A0D0082690"
