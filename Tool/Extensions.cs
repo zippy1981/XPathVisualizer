@@ -43,6 +43,29 @@ namespace XPathVisualizer
         {
             txt = rtb.Text;
         }
+
+        public LineCalculator(String text)
+        {
+            txt = text;
+        }
+
+        public int CountLines()
+        {
+            int lineCount= 0;
+            int c = 0, c2=-1;
+            do
+            {
+                c = c2+1;
+                c2 = txt.IndexOf('\n', c);
+                
+                if (c2 >= 0)
+                    lineCount++;
+
+            }
+            while (c2 >= 0);
+            return lineCount;
+        }
+
         
         public int GetCharIndexFromLine(int line)
         {
@@ -112,119 +135,6 @@ namespace XPathVisualizer
         }
 
 
-        public static void ColorizeXml(this System.Windows.Forms.RichTextBox rtb)
-        {
-            string txt = rtb.Text;
-            var lc = new LineCalculator(rtb);
-            var sr = new StringReader(txt);
-            XmlReader reader = XmlReader.Create(sr);
-
-            if ((reader as IXmlLineInfo) != null)
-            {
-                IXmlLineInfo rinfo = (IXmlLineInfo)reader;
-                if (rinfo.HasLineInfo())
-                {
-                    int ix = 0;
-                    while (reader.Read())
-                    {
-                        switch (reader.NodeType)
-                        {
-                            case XmlNodeType.Element: // The node is an element.
-                                ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                    + rinfo.LinePosition - 1;
-                                rtb.Select(ix - 1, 1);
-                                rtb.SelectionColor = Color.Blue;
-                                rtb.Select(ix, reader.Name.Length);
-                                rtb.SelectionColor = Color.DarkRed;
-
-                                if (reader.HasAttributes)
-                                {
-                                    reader.MoveToFirstAttribute();
-                                    do
-                                    {
-                                        //string s = reader.Value;
-                                        ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                            + rinfo.LinePosition - 1;
-                                        rtb.Select(ix, reader.Name.Length);
-                                        rtb.SelectionColor = Color.Red;
-
-                                        ix += reader.Name.Length;
-
-                                        ix = txt.IndexOf('=', ix);
-
-                                        // make the equals sign blue
-                                        rtb.Select(ix, 1);
-                                        rtb.SelectionColor = Color.Blue;
-
-                                        // skip over the quote char (it remains black)
-                                        ix = txt.IndexOf(reader.QuoteChar, ix);
-                                        ix++;
-                                        // highlight the value of the attribute as blue
-                                        if (txt.Substring(ix).StartsWith(reader.Value))
-                                        {
-                                            rtb.Select(ix, reader.Value.Length);
-                                        }
-                                        else
-                                        {
-                                            // Difference in escaping.  The InnerXml may include
-                                            // \" where &quot; is in the doc.
-                                            string s = reader.Value.XmlEscapeQuotes();
-                                            int delta = s.Length - reader.Value.Length;
-                                            rtb.Select(ix, reader.Value.Length + delta);
-                                        }
-                                        rtb.SelectionColor = Color.Blue;
-
-                                    }
-                                    while (reader.MoveToNextAttribute());
-
-                                    ix = txt.IndexOf('>', ix);
-
-                                    // the close-angle-bracket
-                                    if (txt[ix-1]=='/')
-                                        rtb.Select(ix-1, 2);
-                                    else
-                                        rtb.Select(ix, 1);
-                                    rtb.SelectionColor = Color.Blue;
-                                }
-                                break;
-
-                            case XmlNodeType.Text: // Display the text in each element.
-                                //ix = rtb.MyGetCharIndexFromLine(rinfo.LineNumber-1) +
-                                //    + rinfo.LinePosition-1;
-                                //rtb.Select(ix, reader.Value.Length);
-                                //rtb.SelectionColor = Color.Black;
-                                break;
-
-                            case XmlNodeType.EndElement: // Display the end of the element.
-                                ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                    + rinfo.LinePosition - 1;
-                                rtb.Select(ix - 2, 2);
-                                rtb.SelectionColor = Color.Blue;
-                                rtb.Select(ix, reader.Name.Length);
-                                rtb.SelectionColor = Color.DarkRed;
-                                rtb.Select(ix + reader.Name.Length, 1);
-                                rtb.SelectionColor = Color.Blue;
-                                break;
-
-                            case XmlNodeType.Attribute:
-                                // These are handed within XmlNodeType.Element
-                                // ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                //    + rinfo.LinePosition - 1;
-                                //rtb.Select(ix, reader.Name.Length);
-                                //rtb.SelectionColor = Color.Green;
-                                break;
-
-                            case XmlNodeType.Comment:
-                                ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                    + rinfo.LinePosition - 1;                                
-                                rtb.Select(ix, reader.Value.Length);
-                                rtb.SelectionColor = Color.Green;
-                                break;
-                        }
-                    }
-                }
-            }
-        }
 
         private const int WM_SETREDRAW = 0x000B;
         private const int WM_USER = 0x400;

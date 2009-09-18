@@ -44,8 +44,9 @@
             this.label1 = new System.Windows.Forms.Label();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
+            this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.progressBar1 = new System.Windows.Forms.ToolStripProgressBar();
+            this.linkToCodeplex = new System.Windows.Forms.ToolStripStatusLabel();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
@@ -220,36 +221,42 @@
             // statusStrip1
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripStatusLabel1});
+            this.lblStatus,
+            this.progressBar1,
+            this.linkToCodeplex});
             this.statusStrip1.Location = new System.Drawing.Point(0, 300);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(530, 22);
             this.statusStrip1.TabIndex = 0;
             this.statusStrip1.Text = "statusStrip1";
             // 
-            // toolStripStatusLabel1
+            // lblStatus
             // 
-            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(183, 17);
+            this.lblStatus.Spring = true;
+            this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // linkLabel1
+            // progressBar1
             // 
-            this.linkLabel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(337, 305);
-            this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(180, 13);
-            this.linkLabel1.TabIndex = 1;
-            this.linkLabel1.TabStop = true;
-            this.linkLabel1.Text = "http://XPathVisualizer.codeplex.com";
-            this.linkLabel1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(100, 16);
+            this.progressBar1.ToolTipText = "Highlight progress";
+            // 
+            // linkToCodeplex
+            // 
+            this.linkToCodeplex.IsLink = true;
+            this.linkToCodeplex.LinkBehavior = System.Windows.Forms.LinkBehavior.AlwaysUnderline;
+            this.linkToCodeplex.Name = "linkToCodeplex";
+            this.linkToCodeplex.Size = new System.Drawing.Size(199, 17);
+            this.linkToCodeplex.Text = "http://XPathVisualizer.codeplex.com";
+            this.linkToCodeplex.Click += new System.EventHandler(this.linkToCodeplex_Click);
             // 
             // XPathVisualizerTool
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(530, 322);
-            this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.splitContainer3);
             this.Controls.Add(this.statusStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -284,13 +291,14 @@
         private System.Windows.Forms.TextBox tbXpath;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.StatusStrip statusStrip1;
-        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.ToolStripStatusLabel lblStatus;
         private System.Windows.Forms.Button btnAddNsPrefix;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.TextBox tbXmlns;
         private System.Windows.Forms.TextBox tbPrefix;
         private System.Windows.Forms.Panel pnlPrefixList;
-        private System.Windows.Forms.LinkLabel linkLabel1;
+        private System.Windows.Forms.ToolStripProgressBar progressBar1;
+        private System.Windows.Forms.ToolStripStatusLabel linkToCodeplex;
     }
 }
 

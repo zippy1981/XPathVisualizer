@@ -60,6 +60,10 @@
     <Compile Include="XPathVisualizerTool.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="XPathVisualizerTool.Colorize.cs">
+      <DependentUpon>XPathVisualizerTool.cs</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="XPathVisualizerTool.Designer.cs">
       <DependentUpon>XPathVisualizerTool.cs</DependentUpon>
     </Compile>
