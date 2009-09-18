@@ -1,15 +1,68 @@
+// Extensions.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2009 Dino Chiesa.
+// All rights reserved.
+//
+// This file is part of the source code disribution for Ionic's
+// XPath Visualizer Tool.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License. 
+// See the file License.rtf or License.txt for the license details.
+// More info on: http://XPathVisualizer.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Xml;
 using System.Xml.XPath;
-//using System.Windows.Forms;
 using System.Drawing;
 
 
 namespace XPathVisualizer
 {
+
+    // This previously was an extension, but it performs much better as
+    // a separate class. Key reason:  take rtb.Text once, instead of
+    // evevry time through.
+    internal class LineCalculator
+    {
+        private string txt;
+        public LineCalculator(System.Windows.Forms.RichTextBox rtb)
+        {
+            txt = rtb.Text;
+        }
+
+        
+        public int GetCharIndexFromLine(int line)
+        {
+            // The built-in GetFirstCharIndexFromLine does not work for me. 
+            // Not sure why.
+
+            line++;
+            if (line <= 1) return 0;
+            int ix = 0;
+            int xline = 0;
+            do
+            {
+                int delta = txt.IndexOf('\n', ix);
+                if (delta - ix < 0) return -1;
+                ix = delta + 1;
+                xline++;
+            }
+            while (xline + 1 < line);
+
+            return ix;
+        }
+    }
+
+
 
     public static class Extensions
     {
@@ -42,7 +95,9 @@ namespace XPathVisualizer
 
         public static void ColorizeXml(this System.Windows.Forms.RichTextBox rtb)
         {
-            var sr = new StringReader(rtb.Text);
+            string txt = rtb.Text;
+            var lc = new LineCalculator(rtb);
+            var sr = new StringReader(txt);
             XmlReader reader = XmlReader.Create(sr);
 
             if ((reader as IXmlLineInfo) != null)
@@ -56,8 +111,8 @@ namespace XPathVisualizer
                         switch (reader.NodeType)
                         {
                             case XmlNodeType.Element: // The node is an element.
-                                ix = rtb.MyGetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                    +rinfo.LinePosition - 1;
+                                ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
+                                    + rinfo.LinePosition - 1;
                                 rtb.Select(ix - 1, 1);
                                 rtb.SelectionColor = Color.Blue;
                                 rtb.Select(ix, reader.Name.Length);
@@ -69,26 +124,24 @@ namespace XPathVisualizer
                                     do
                                     {
                                         //string s = reader.Value;
-                                        ix = rtb.MyGetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                            +rinfo.LinePosition - 1;
+                                        ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
+                                            + rinfo.LinePosition - 1;
                                         rtb.Select(ix, reader.Name.Length);
                                         rtb.SelectionColor = Color.Red;
 
                                         ix += reader.Name.Length;
-                                        while (rtb.Text.Substring(ix, 1) != "=")
-                                            ix++;
+
+                                        ix = txt.IndexOf('=', ix);
 
                                         // make the equals sign blue
                                         rtb.Select(ix + reader.Name.Length, 1);
                                         rtb.SelectionColor = Color.Blue;
 
                                         // skip over the quote char (it remains black)
-                                        while (rtb.Text.Substring(ix, 1)[0] != reader.QuoteChar)
-                                            ix++;
-                                        ix++;
+                                        ix = txt.IndexOf(reader.QuoteChar, ix);
 
                                         // highlight the value of the attribute as blue
-                                        if (rtb.Text.Substring(ix).StartsWith(reader.Value))
+                                        if (txt.Substring(ix).StartsWith(reader.Value))
                                         {
                                             rtb.Select(ix, reader.Value.Length);
                                         }
@@ -105,8 +158,7 @@ namespace XPathVisualizer
                                     }
                                     while (reader.MoveToNextAttribute());
 
-                                    while (rtb.Text.Substring(ix, 1)[0] != '>')
-                                        ix++;
+                                        ix = txt.IndexOf('>', ix);
 
                                     // the close-angle-bracket
                                     rtb.Select(ix, 1);
@@ -123,8 +175,8 @@ namespace XPathVisualizer
                                 break;
 
                             case XmlNodeType.EndElement: // Display the end of the element.
-                                ix = rtb.MyGetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                    +rinfo.LinePosition - 1;
+                                ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
+                                    + rinfo.LinePosition - 1;
                                 rtb.Select(ix - 2, 2);
                                 rtb.SelectionColor = Color.Blue;
                                 rtb.Select(ix, reader.Name.Length);
@@ -134,17 +186,16 @@ namespace XPathVisualizer
                                 break;
 
                             case XmlNodeType.Attribute:
-                                ix = rtb.MyGetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                    +rinfo.LinePosition - 1;
+                                ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
+                                    + rinfo.LinePosition - 1;
                                 rtb.Select(ix, reader.Name.Length);
                                 rtb.SelectionColor = Color.Green;
                                 break;
 
                             case XmlNodeType.Comment:
-                                ix = rtb.MyGetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                    +rinfo.LinePosition - 1;
-                                string comment = reader.Value;
-                                rtb.Select(ix, comment.Length);
+                                ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
+                                    + rinfo.LinePosition - 1;                                
+                                rtb.Select(ix, reader.Value.Length);
                                 rtb.SelectionColor = Color.Green;
                                 break;
                         }
@@ -181,38 +232,17 @@ namespace XPathVisualizer
         }
 
 
-        public static int MyGetCharIndexFromLine(this System.Windows.Forms.RichTextBox rtb, int line)
-        {
-            // The built-in GetFirstCharIndexFromLine does not work for me. 
-            // Not sure why.
-
-            line++;
-            if (line <= 1) return 0;
-            int ix = 0;
-            int xline = 0;
-            do
-            {
-                int delta = rtb.Text.Substring(ix).IndexOf('\n');
-                if (delta < 0) return -1;
-                ix += delta + 1;
-                xline++;
-            }
-            while (xline + 1 < line);
-
-            return ix;
-        }
-
 
         public static List<String> ToList(this System.Windows.Forms.AutoCompleteStringCollection coll)
         {
             var list = new List<String>();
-            foreach (string  item in coll)
+            foreach (string item in coll)
             {
                 list.Add(item);
             }
             return list;
         }
-        
+
     }
 
 
