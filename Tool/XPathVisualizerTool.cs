@@ -37,6 +37,8 @@ namespace XPathVisualizer
             RememberSizes();
             AdjustSplitterSize();
             SetupAutocompletes();
+            this.progressBar1.Visible = false;
+            this.lblStatus.Text = "Ready";
         }
 
         private void RememberSizes()
@@ -73,40 +75,34 @@ namespace XPathVisualizer
 
         private static System.Text.RegularExpressions.Regex re2 =
             new System.Text.RegularExpressions.Regex("\\sxmlns\\s*=\\s*['\"](.+?)['\"]");
-
+        
 
         private void btnLoadXml_Click(object sender, EventArgs e)
         {
             IntPtr mask = IntPtr.Zero;
             try
             {
-                var stopWatch = new System.Diagnostics.Stopwatch();
+                stopWatch.Reset();
                 stopWatch.Start();
-                this.toolStripStatusLabel1.Text = "Reading...";
+                this.lblStatus.Text = "Reading...";
 
                 this.richTextBox1.Text = "";
                 this.richTextBox1.Update();
                 mask = this.richTextBox1.BeginUpdate();
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 this.richTextBox1.Text = File.ReadAllText(this.tbXmlDoc.Text);
-                this.richTextBox1.ColorizeXml();
+                
+                ColorizeXml(this.richTextBox1);
 
                 PreloadXmlns();
-
-                stopWatch.Stop();
-
-                TimeSpan ts = stopWatch.Elapsed;
+                this.lblStatus.Text = "Highlighting...";
                 
-                this.toolStripStatusLabel1.Text = 
-                    String.Format("File read and highlighted, {0:00}.{1:00}s",
-                                  ts.Minutes * 60 + ts.Seconds,
-                                  ts.Milliseconds / 10);                
             }
             catch (Exception exc1)
             {
                 //this.richTextBox1.Text = "file read error:  " + exc1.Message;
                 this.richTextBox1.Text = "file read error:  " + exc1.ToString();
-                this.toolStripStatusLabel1.Text = "Cannot read that file.";
+                this.lblStatus.Text = "Cannot read that file.";
             }
             finally
             {
@@ -176,12 +172,12 @@ namespace XPathVisualizer
         {
             if (String.IsNullOrEmpty(this.tbXpath.Text))
             {
-                this.toolStripStatusLabel1.Text = "Cannot evaluate: There is no XPath expression.";
+                this.lblStatus.Text = "Cannot evaluate: There is no XPath expression.";
                 return;
             }
             if (String.IsNullOrEmpty(this.richTextBox1.Text))
             {
-                this.toolStripStatusLabel1.Text = "Cannot evaluate: There is no XML document.";
+                this.lblStatus.Text = "Cannot evaluate: There is no XML document.";
                 return;
             }
 
@@ -212,11 +208,11 @@ namespace XPathVisualizer
 
                 if (selection == null || selection.Count == 0)
                 {
-                    this.toolStripStatusLabel1.Text = String.Format("{0}: Zero nodes selected", xpathExpression);
+                    this.lblStatus.Text = String.Format("{0}: Zero nodes selected", xpathExpression);
                 }
                 else
                 {
-                    this.toolStripStatusLabel1.Text = String.Format("{0}: {1} {2} selected",
+                    this.lblStatus.Text = String.Format("{0}: {1} {2} selected",
                                                                     xpathExpression,
                                                                     selection.Count, (selection.Count == 1) ? "node" : "nodes");
                     HighlightSelection(selection, xmlns);
@@ -240,14 +236,14 @@ namespace XPathVisualizer
                     this.tbXpath.Select(ix, brokenPrefix.Length);
                     this.tbXpath.BackColor = Color.FromArgb((Color.Red.A << 24) | 0xFFDEAD);
                     this.tbXpath.Focus();
-                    this.toolStripStatusLabel1.Text = "Exception: " + exc1.Message;
+                    this.lblStatus.Text = "Exception: " + exc1.Message;
                 }
                 else if (BadExpression(exc1))
                 {
                     this.tbXpath.SelectAll();
                     this.tbXpath.BackColor = Color.FromArgb((Color.Red.A << 24) | 0xFFDEAD);
                     this.tbXpath.Focus();
-                    this.toolStripStatusLabel1.Text = "Exception: " + exc1.Message;
+                    this.lblStatus.Text = "Exception: " + exc1.Message;
                 }
                 else
                 {
@@ -361,10 +357,10 @@ namespace XPathVisualizer
             }
         }
 
-        private void linkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private void linkToCodeplex_Click(object sender, EventArgs e)
         {
-            if (sender as LinkLabel != null)
-                System.Diagnostics.Process.Start((sender as LinkLabel).Text);
+            if (sender as ToolStripStatusLabel != null)
+                System.Diagnostics.Process.Start((sender as ToolStripStatusLabel).Text);
         }
 
 
@@ -545,6 +541,8 @@ namespace XPathVisualizer
         private Dictionary<String, String> _xmlnsPrefixes;
         private int originalGroupBoxMinHeight;
         private int originalPanel1MinSize;
+        private System.Diagnostics.Stopwatch stopWatch= new System.Diagnostics.Stopwatch();
+
     }
 
 
