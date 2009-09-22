@@ -68,6 +68,7 @@
       <DependentUpon>XPathVisualizerTool.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
+    <Compile Include="RichTextBoxExtras.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="XPathVisualizerTool.resx">
       <DependentUpon>XPathVisualizerTool.cs</DependentUpon>
@@ -93,7 +94,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="DotNetZipLib-v1.9.hhc.xml" />
     <Content Include="icon1.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

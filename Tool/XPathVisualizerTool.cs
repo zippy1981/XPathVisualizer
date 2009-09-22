@@ -37,6 +37,8 @@ namespace XPathVisualizer
             RememberSizes();
             AdjustSplitterSize();
             SetupAutocompletes();
+            KickoffColorizer();
+
             this.progressBar1.Visible = false;
             this.lblStatus.Text = "Ready";
         }
@@ -79,38 +81,85 @@ namespace XPathVisualizer
 
         private void btnLoadXml_Click(object sender, EventArgs e)
         {
-            IntPtr mask = IntPtr.Zero;
+            //IntPtr mask = IntPtr.Zero;
             try
             {
-                stopWatch.Reset();
-                stopWatch.Start();
-                this.lblStatus.Text = "Reading...";
+                //stopWatch.Reset();
+                //stopWatch.Start();
+                //this.lblStatus.Text = "Reading...";
 
                 this.richTextBox1.Text = "";
                 this.richTextBox1.Update();
-                mask = this.richTextBox1.BeginUpdate();
+                _lastRtbKeyPress = _originDateTime;
+                //mask = this.richTextBox1.BeginUpdate();
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 this.richTextBox1.Text = File.ReadAllText(this.tbXmlDoc.Text);
+                wantFormat.Set();
                 
-                ColorizeXml(this.richTextBox1);
-
                 PreloadXmlns();
-                this.lblStatus.Text = "Highlighting...";
-                
+                //this.lblStatus.Text = "Highlighting...";
+                //priorTextLength = -1;
             }
             catch (Exception exc1)
             {
-                //this.richTextBox1.Text = "file read error:  " + exc1.Message;
                 this.richTextBox1.Text = "file read error:  " + exc1.ToString();
                 this.lblStatus.Text = "Cannot read that file.";
             }
             finally
             {
                 this.Cursor = System.Windows.Forms.Cursors.Default;
-                this.richTextBox1.EndUpdate(mask);
             }
         }
 
+
+        
+        //int priorTextLength = -1; 
+        private void richTextBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            xpathDoc = null;
+            nav = null;
+            _lastRtbKeyPress = System.DateTime.Now;
+            if (this.richTextBox1.Text.Length == 0) return;
+            // assume no length change means format change only
+            //if (priorTextLength == this.richTextBox1.Text.Length) return;
+            wantFormat.Set();
+            //priorTextLength = this.richTextBox1.Text.Length;
+        }
+
+
+
+
+        private void richTextBox1_Leave(object sender, EventArgs e)
+        {
+            IntPtr mask = IntPtr.Zero;
+            try
+            {
+                //stopWatch.Reset();
+                //stopWatch.Start();
+
+                //this.richTextBox1.Update();
+                //mask = this.richTextBox1.BeginUpdate();
+                //this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
+                
+                //ColorizeXml(this.richTextBox1);
+
+                PreloadXmlns();
+                //this.lblStatus.Text = "Highlighting...";
+                
+            }
+            catch (Exception exc1)
+            {
+                this.lblStatus.Text = String.Format("Cannot process that XML. ({0})", exc1.Message);
+            }
+            finally
+            {
+                //this.Cursor = System.Windows.Forms.Cursors.Default;
+                //this.richTextBox1.EndUpdate(mask);
+            }
+        }
+
+
+        
         private void PreloadXmlns()
         {
             xmlnsPrefixes.Clear();
@@ -175,13 +224,12 @@ namespace XPathVisualizer
                 this.lblStatus.Text = "Cannot evaluate: There is no XPath expression.";
                 return;
             }
+
             if (String.IsNullOrEmpty(this.richTextBox1.Text))
             {
                 this.lblStatus.Text = "Cannot evaluate: There is no XML document.";
                 return;
             }
-
-
  
             IntPtr mask = IntPtr.Zero;
             try
@@ -259,7 +307,6 @@ namespace XPathVisualizer
                 this.Cursor = System.Windows.Forms.Cursors.Default;
                 this.richTextBox1.EndUpdate(mask);
             }
-
         }
 
         
@@ -356,6 +403,7 @@ namespace XPathVisualizer
                 }
             }
         }
+        
 
         private void linkToCodeplex_Click(object sender, EventArgs e)
         {
@@ -381,12 +429,6 @@ namespace XPathVisualizer
             return exc1.Message.Contains("Expression must evaluate to a node-set");
         }
 
-
-        private void richTextBox1_TextChanged(object sender, EventArgs e)
-        {
-            xpathDoc = null;
-            nav = null;
-        }
 
 
         private void btnAddNsPrefix_Click(object sender, EventArgs e)
@@ -541,7 +583,11 @@ namespace XPathVisualizer
         private Dictionary<String, String> _xmlnsPrefixes;
         private int originalGroupBoxMinHeight;
         private int originalPanel1MinSize;
-        private System.Diagnostics.Stopwatch stopWatch= new System.Diagnostics.Stopwatch();
+        private System.Threading.ManualResetEvent wantFormat = new System.Threading.ManualResetEvent(false);
+        private DateTime _originDateTime = new System.DateTime(0);
+        private System.DateTime _lastRtbKeyPress;
+
+        //private System.Diagnostics.Stopwatch stopWatch= new System.Diagnostics.Stopwatch();
 
     }
 
