@@ -33,7 +33,6 @@ namespace XPathVisualizer
 {
     public partial class XPathVisualizerTool 
     {
-
         private void SaveFormToRegistry()
         {
             if (AppCuKey != null)
