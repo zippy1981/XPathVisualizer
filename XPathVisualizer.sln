@@ -3,20 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XPathVisualizer", "Tool\XPathVisualizer.csproj", "{E31EEE69-4623-4A50-A15C-4335FB02EA49}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XPathParser", "Parser\XPathParser.csproj", "{A8072758-E8D2-4551-89C2-564BDE162403}"
+EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{1B5BC0A8-839F-41A6-83CE-481A619E35BB}"
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 3
+		SccNumberOfProjects = 2
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs09.codeplex.com/
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = Tool\\XPathVisualizer.csproj
-		SccProjectName1 = Tool
-		SccLocalPath1 = Tool
-		SccProjectUniqueName2 = Setup\\Setup.vdproj
-		SccProjectName2 = Setup
-		SccLocalPath2 = Setup
+		SccProjectUniqueName0 = Tool\\XPathVisualizer.csproj
+		SccProjectName0 = Tool
+		SccAuxPath0 = https://tfs09.codeplex.com
+		SccLocalPath0 = Tool
+		SccProvider0 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName1 = Setup\\Setup.vdproj
+		SccProjectName1 = Setup
+		SccAuxPath1 = https://tfs09.codeplex.com
+		SccLocalPath1 = Setup
+		SccProvider1 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,8 +32,14 @@ Global
 		{E31EEE69-4623-4A50-A15C-4335FB02EA49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E31EEE69-4623-4A50-A15C-4335FB02EA49}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E31EEE69-4623-4A50-A15C-4335FB02EA49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8072758-E8D2-4551-89C2-564BDE162403}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8072758-E8D2-4551-89C2-564BDE162403}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8072758-E8D2-4551-89C2-564BDE162403}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8072758-E8D2-4551-89C2-564BDE162403}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1B5BC0A8-839F-41A6-83CE-481A619E35BB}.Debug|Any CPU.ActiveCfg = Debug
+		{1B5BC0A8-839F-41A6-83CE-481A619E35BB}.Debug|Any CPU.Build.0 = Debug
 		{1B5BC0A8-839F-41A6-83CE-481A619E35BB}.Release|Any CPU.ActiveCfg = Release
+		{1B5BC0A8-839F-41A6-83CE-481A619E35BB}.Release|Any CPU.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

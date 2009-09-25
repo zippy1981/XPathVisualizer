@@ -24,7 +24,9 @@ using System.Xml.XPath;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;                    // for the Contains extension
+using System.Xml.Linq;                // XElement
 using System.Windows.Forms;
+using CodePlex.XPathParser;
 
 namespace XPathVisualizer
 {
@@ -54,9 +56,9 @@ namespace XPathVisualizer
         {
             // setup the autocomplete for the xpath expressions
             FillFormFromRegistry();
-            this.tbXpath.AutoCompleteMode = AutoCompleteMode.Suggest;
-            this.tbXpath.AutoCompleteSource = AutoCompleteSource.CustomSource;
-            this.tbXpath.AutoCompleteCustomSource = _xpathExpressionMruList;
+            //this.tbXpath.AutoCompleteMode = AutoCompleteMode.Suggest;
+            //this.tbXpath.AutoCompleteSource = AutoCompleteSource.CustomSource;
+            //this.tbXpath.AutoCompleteCustomSource = _xpathExpressionMruList;
 
             // insert the most recent expression into the box?  
             //this.tbXpath.Text = _xpathExpressionMruList[0];
@@ -77,28 +79,20 @@ namespace XPathVisualizer
 
         private static System.Text.RegularExpressions.Regex re2 =
             new System.Text.RegularExpressions.Regex("\\sxmlns\\s*=\\s*['\"](.+?)['\"]");
-        
+
 
         private void btnLoadXml_Click(object sender, EventArgs e)
         {
-            //IntPtr mask = IntPtr.Zero;
             try
             {
-                //stopWatch.Reset();
-                //stopWatch.Start();
-                //this.lblStatus.Text = "Reading...";
-
                 this.richTextBox1.Text = "";
                 this.richTextBox1.Update();
                 _lastRtbKeyPress = _originDateTime;
-                //mask = this.richTextBox1.BeginUpdate();
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 this.richTextBox1.Text = File.ReadAllText(this.tbXmlDoc.Text);
                 wantFormat.Set();
-                
+
                 PreloadXmlns();
-                //this.lblStatus.Text = "Highlighting...";
-                //priorTextLength = -1;
             }
             catch (Exception exc1)
             {
@@ -112,7 +106,7 @@ namespace XPathVisualizer
         }
 
 
-        
+
         //int priorTextLength = -1; 
         private void richTextBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -140,12 +134,12 @@ namespace XPathVisualizer
                 //this.richTextBox1.Update();
                 //mask = this.richTextBox1.BeginUpdate();
                 //this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
-                
+
                 //ColorizeXml(this.richTextBox1);
 
                 PreloadXmlns();
                 //this.lblStatus.Text = "Highlighting...";
-                
+
             }
             catch (Exception exc1)
             {
@@ -159,7 +153,7 @@ namespace XPathVisualizer
         }
 
 
-        
+
         private void PreloadXmlns()
         {
             xmlnsPrefixes.Clear();
@@ -217,6 +211,28 @@ namespace XPathVisualizer
 
 
 
+        private void tbXpath_TextChanged(object sender, EventArgs e)
+        {
+            string xpathExpr = this.tbXpath.Text;
+            int ss = this.tbXpath.SelectionStart;
+            int sl = this.tbXpath.SelectionLength;
+            this.tbXpath.SelectAll();
+            this.tbXpath.SelectionColor = Color.Black;
+            this.tbXpath.Select(ss, sl);
+            try
+            {
+                XElement xe = xpathParser.Parse(xpathExpr, new XPathTreeBuilder());
+                this.toolTip1.SetToolTip(this.tbXpath, "XPath expression");
+            }
+            catch (XPathParserException exc1)
+            {
+                this.tbXpath.Select(exc1.ErrorStart, exc1.ErrorEnd - exc1.ErrorStart);
+                this.tbXpath.SelectionColor = Color.Red;
+                this.tbXpath.Select(ss, sl);
+                this.toolTip1.SetToolTip(this.tbXpath, exc1.Message);
+            }
+        }
+
         private void btnEvalXpath_Click(object sender, EventArgs e)
         {
             if (String.IsNullOrEmpty(this.tbXpath.Text))
@@ -230,7 +246,7 @@ namespace XPathVisualizer
                 this.lblStatus.Text = "Cannot evaluate: There is no XML document.";
                 return;
             }
- 
+
             IntPtr mask = IntPtr.Zero;
             try
             {
@@ -239,7 +255,7 @@ namespace XPathVisualizer
                 //this.richTextBox1.SelectionColor = Color.Black;
                 this.richTextBox1.SelectionBackColor = Color.White;
                 this.richTextBox1.Update();
-                
+
                 mask = this.richTextBox1.BeginUpdate();
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 this.tbXpath.BackColor = this.tbXmlns.BackColor; // just in case
@@ -271,7 +287,7 @@ namespace XPathVisualizer
                 if (!_xpathExpressionMruList.Contains(xpathExpression))
                 {
                     if (_xpathExpressionMruList.Count >= _MaxMruListSize)
-                        _xpathExpressionMruList.RemoveAt(0); 
+                        _xpathExpressionMruList.RemoveAt(0);
                     _xpathExpressionMruList.Add(xpathExpression);
                 }
             }
@@ -309,7 +325,7 @@ namespace XPathVisualizer
             }
         }
 
-        
+
 
         private void HighlightSelection(XPathNodeIterator selection, XmlNamespaceManager xmlns)
         {
@@ -321,7 +337,8 @@ namespace XPathVisualizer
                 IXmlLineInfo lineInfo = node as IXmlLineInfo;
                 if (lineInfo == null || !lineInfo.HasLineInfo()) continue;
 
-                int ix = lc.GetCharIndexFromLine(lineInfo.LineNumber - 1) + lineInfo.LinePosition - 1 - 1;
+                int ix = lc.GetCharIndexFromLine(lineInfo.LineNumber - 1) +
+                    lineInfo.LinePosition - 1 - 1;
 
                 if (ix >= 0)
                 {
@@ -342,7 +359,15 @@ namespace XPathVisualizer
                     else if (node.NodeType == XPathNodeType.Attribute)
                     {
                         string s = node.Value.XmlEscapeQuotes();
-                        ix2 = ix + node.Name.Length + s.Length + 1 + 2;
+                        ix++;
+                            ix2 = ix + node.Name.Length + 1;
+                        char c = ' ';
+                        while (txt[ix2]!='\'' &&  txt[ix2]!='"') 
+                            ix2++;
+                        c=txt[ix2];
+                        ix2++;
+                        while (txt[ix2] != c)
+                            ix2++;
                     }
                     else if (node.NodeType == XPathNodeType.Element)
                     {
@@ -403,7 +428,7 @@ namespace XPathVisualizer
                 }
             }
         }
-        
+
 
         private void linkToCodeplex_Click(object sender, EventArgs e)
         {
@@ -586,11 +611,8 @@ namespace XPathVisualizer
         private System.Threading.ManualResetEvent wantFormat = new System.Threading.ManualResetEvent(false);
         private DateTime _originDateTime = new System.DateTime(0);
         private System.DateTime _lastRtbKeyPress;
-
-        //private System.Diagnostics.Stopwatch stopWatch= new System.Diagnostics.Stopwatch();
-
+        private XPathParser<XElement> xpathParser = new XPathParser<XElement>();
     }
-
 
 
 

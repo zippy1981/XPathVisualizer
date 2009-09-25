@@ -40,10 +40,25 @@ namespace XPathVisualizer
                 e.ProgressPercentage <= this.progressBar1.Maximum)
                 this.progressBar1.Value = e.ProgressPercentage;
 
-            this.progressBar1.Visible = (e.ProgressPercentage != 100);
+            if (e.ProgressPercentage != 100)
+            {
+                if (this.progressBar1.Visible != true)
+                {
+                    this.lblStatus.Text = "Formatting...";
+                    this.progressBar1.Visible = true;
+                }
+            }
+            else
+            {
+                this.progressBar1.Visible = false;
+                // only reset the status string if it has not changed in the interim
+                if (this.lblStatus.Text == "Formatting...")
+                    this.lblStatus.Text = "Done formatting.";
+            }
         }
 
 
+        
         
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         public void KickoffColorizer()
@@ -143,7 +158,7 @@ namespace XPathVisualizer
         private void DoBackgroundColorizing(object sender, DoWorkEventArgs e)
         {
             // Design Notes:
-            // ----------------------
+            // -------------------------------------------------------
             //
             // It takes a long time, maybe 10s or more, to colorize the XML syntax
             // in an xml file 100k in size.  Therefore the approach we take is to
@@ -158,8 +173,8 @@ namespace XPathVisualizer
             // to highlight it.  The change is then placed into a list, and then
             // the next segment of XML is read in.
             //
-            // On an interval that is normally every 1/33rd of the lines - if
-            // there are 330 lines, then every 10 lines - this method calls the
+            // On an interval that is normally every 1/48th of the lines - if
+            // there are 960 lines, then every 20 lines - this method calls the
             // progress update for the BG worker, and also applies the queued
             // changes.  Using this approach the progress bar magically appears
             // while highlighting is happening, and disappears when highlighting
@@ -218,8 +233,8 @@ namespace XPathVisualizer
                     var lc = new LineCalculator(txt);
                     float maxLines = (float) lc.CountLines();
 
-                    int reportingInterval = (maxLines > 64)
-                        ? (int)(maxLines / 32)
+                    int reportingInterval = (maxLines > 96)
+                        ? (int)(maxLines / 48)
                         : 1;
                     
                     int lastReport = -1;
@@ -229,15 +244,20 @@ namespace XPathVisualizer
                     IXmlLineInfo rinfo = (IXmlLineInfo)reader;
                     if (!rinfo.HasLineInfo()) continue;
 
+                    int rcount= 0;
                     int ix = 0;
                     while (reader.Read())
                     {
-                        // If another format is pending, that means
-                        // the text has changed and we should stop this
-                        // formatting effort and start again. 
-                        if ( wantFormat.WaitOne(1, false))
-                            break;
-
+                        if ((rcount % 8) == 0)
+                        {
+                            // If another format is pending, that means
+                            // the text has changed and we should stop this
+                            // formatting effort and start again. 
+                            if ( wantFormat.WaitOne(0, false))
+                                break;
+                        }
+                        rcount++;
+                        
                         // report progress
                         if ((rinfo.LineNumber / reportingInterval) > lastReport)
                         {

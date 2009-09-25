@@ -17,16 +17,6 @@
 //
 
 using System;
-using System.IO;
-using System.Xml;
-using System.Xml.XPath;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace XPathVisualizer
@@ -35,42 +25,41 @@ namespace XPathVisualizer
     {
         private void SaveFormToRegistry()
         {
-            if (AppCuKey != null)
-            {
-                if (!String.IsNullOrEmpty(this.tbXmlDoc.Text))
-                    AppCuKey.SetValue(_rvn_XmlDoc, this.tbXmlDoc.Text);
+            if (AppCuKey == null) return;
+
+            if (!String.IsNullOrEmpty(this.tbXmlDoc.Text))
+                AppCuKey.SetValue(_rvn_XmlDoc, this.tbXmlDoc.Text);
                 
-                if (!String.IsNullOrEmpty(this.tbXpath.Text))
-                    AppCuKey.SetValue(_rvn_XPathExpression, this.tbXpath.Text);
+            if (!String.IsNullOrEmpty(this.tbXpath.Text))
+                AppCuKey.SetValue(_rvn_XPathExpression, this.tbXpath.Text);
 
-                if (!String.IsNullOrEmpty(this.tbPrefix.Text))
-                    AppCuKey.SetValue(_rvn_Prefix, this.tbPrefix.Text);
+            if (!String.IsNullOrEmpty(this.tbPrefix.Text))
+                AppCuKey.SetValue(_rvn_Prefix, this.tbPrefix.Text);
 
-                if (!String.IsNullOrEmpty(this.tbXmlns.Text))
-                    AppCuKey.SetValue(_rvn_Xmlns, this.tbXmlns.Text);
+            if (!String.IsNullOrEmpty(this.tbXmlns.Text))
+                AppCuKey.SetValue(_rvn_Xmlns, this.tbXmlns.Text);
 
-                // store the size of the form
-                int w = 0, h = 0, left = 0, top = 0;
-                if (this.Bounds.Width < this.MinimumSize.Width || this.Bounds.Height < this.MinimumSize.Height)
-                {
-                    // RestoreBounds is the size of the window prior to last minimize action.
-                    // But the form may have been resized since then!
-                    w = this.RestoreBounds.Width;
-                    h = this.RestoreBounds.Height;
-                    left = this.RestoreBounds.Location.X;
-                    top = this.RestoreBounds.Location.Y;
-                }
-                else
-                {
-                    w = this.Bounds.Width;
-                    h = this.Bounds.Height;
-                    left = this.Location.X;
-                    top = this.Location.Y;
-                }
-                AppCuKey.SetValue(_rvn_Geometry,
-                                  String.Format("{0},{1},{2},{3},{4}",
-                                                left, top, w, h, (int)this.WindowState));
+            // store the size of the form
+            int w = 0, h = 0, left = 0, top = 0;
+            if (this.Bounds.Width < this.MinimumSize.Width || this.Bounds.Height < this.MinimumSize.Height)
+            {
+                // RestoreBounds is the size of the window prior to last minimize action.
+                // But the form may have been resized since then!
+                w = this.RestoreBounds.Width;
+                h = this.RestoreBounds.Height;
+                left = this.RestoreBounds.Location.X;
+                top = this.RestoreBounds.Location.Y;
             }
+            else
+            {
+                w = this.Bounds.Width;
+                h = this.Bounds.Height;
+                left = this.Location.X;
+                top = this.Location.Y;
+            }
+            AppCuKey.SetValue(_rvn_Geometry,
+                              String.Format("{0},{1},{2},{3},{4}",
+                                            left, top, w, h, (int)this.WindowState));
 
             // store the position of splitter
             AppCuKey.SetValue(_rvn_Splitter, this.splitContainer3.SplitterDistance.ToString());
@@ -79,6 +68,7 @@ namespace XPathVisualizer
             var converted = _xpathExpressionMruList.ToList().ConvertAll(x => x.XmlEscapeIexcl());
             string history = String.Join("¡", converted.ToArray());
             AppCuKey.SetValue(_rvn_History, history);
+
         }
 
 

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(XPathVisualizerTool));
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -37,7 +38,7 @@
             this.btnAddNsPrefix = new System.Windows.Forms.Button();
             this.btnEvalXpath = new System.Windows.Forms.Button();
             this.btnLoadXml = new System.Windows.Forms.Button();
-            this.tbXpath = new System.Windows.Forms.TextBox();
+            this.tbXpath = new System.Windows.Forms.RichTextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.btnBrowse = new System.Windows.Forms.Button();
             this.tbXmlDoc = new System.Windows.Forms.TextBox();
@@ -47,6 +48,7 @@
             this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.progressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.linkToCodeplex = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
@@ -162,10 +164,18 @@
             // 
             this.tbXpath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbXpath.BackColor = System.Drawing.SystemColors.Window;
+            this.tbXpath.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tbXpath.DetectUrls = false;
             this.tbXpath.Location = new System.Drawing.Point(108, 42);
+            this.tbXpath.Multiline = false;
             this.tbXpath.Name = "tbXpath";
+            this.tbXpath.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
             this.tbXpath.Size = new System.Drawing.Size(364, 20);
             this.tbXpath.TabIndex = 40;
+            this.tbXpath.Text = "";
+            this.toolTip1.SetToolTip(this.tbXpath, "XPath expression");
+            this.tbXpath.TextChanged += new System.EventHandler(this.tbXpath_TextChanged);
             // 
             // label2
             // 
@@ -234,7 +244,7 @@
             // lblStatus
             // 
             this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(214, 17);
+            this.lblStatus.Size = new System.Drawing.Size(183, 17);
             this.lblStatus.Spring = true;
             this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -289,7 +299,7 @@
         private System.Windows.Forms.Button btnBrowse;
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.Button btnEvalXpath;
-        private System.Windows.Forms.TextBox tbXpath;
+        private System.Windows.Forms.RichTextBox tbXpath;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel lblStatus;
@@ -300,6 +310,7 @@
         private System.Windows.Forms.Panel pnlPrefixList;
         private System.Windows.Forms.ToolStripProgressBar progressBar1;
         private System.Windows.Forms.ToolStripStatusLabel linkToCodeplex;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
 

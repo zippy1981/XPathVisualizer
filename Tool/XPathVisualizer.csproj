@@ -43,10 +43,6 @@
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
@@ -54,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions.cs" />
+    <Compile Include="XPathTreeBuilder.cs" />
     <Compile Include="XPathVisualizer.FormState.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -95,6 +92,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Parser\XPathParser.csproj">
+      <Project>{A8072758-E8D2-4551-89C2-564BDE162403}</Project>
+      <Name>XPathParser</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
