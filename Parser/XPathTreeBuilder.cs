@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
-using CodePlex.XPathParser;
 
-namespace XPathVisualizer
+namespace CodePlex.XPathParser
 {
-    class XPathTreeBuilder : IXPathBuilder<XElement>
+    public class XPathTreeBuilder : IXPathBuilder<XElement>
     {
-
         public void StartBuild() {}
 
         public XElement EndBuild(XElement result) {

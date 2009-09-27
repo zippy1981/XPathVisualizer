@@ -6,10 +6,10 @@ namespace CodePlex.XPathParser
     using XPathNodeType = System.Xml.XPath.XPathNodeType;
     using System.Globalization;
 
-    public class XPathParser<Node>
+    public class XPathParser<T>
     {
         private XPathScanner        scanner;
-        private IXPathBuilder<Node> builder;
+        private IXPathBuilder<T>    builder;
         private Stack<int>          posInfo = new Stack<int>();
 
         // Six possible causes of exceptions in the builder:
@@ -20,12 +20,12 @@ namespace CodePlex.XPathParser
         // 5. First argument of Predicate is not a node-set.
         // 6. Argument of Axis is not a node-set.
 
-        public Node Parse(string xpathExpr, IXPathBuilder<Node> builder)
+        public T Parse(string xpathExpr, IXPathBuilder<T> builder)
         {
             Debug.Assert(this.scanner == null && this.builder == null);
             Debug.Assert(builder != null);
 
-            Node result     = default(Node);
+            T result        = default(T);
             this.scanner    = new XPathScanner(xpathExpr);
             this.builder    = builder;
             this.posInfo.Clear();
@@ -34,14 +34,15 @@ namespace CodePlex.XPathParser
             {
                 builder.StartBuild();
                 result = ParseExpr();
-                scanner.CheckToken(LexKind.Eof);
+                scanner.CheckToken(Lexeme.Eof);
             }
             catch (XPathParserException e)
             {
                 if (e.queryString == null)
                 {
                     e.queryString = scanner.Source;
-                    PopPosInfo(out e.startChar, out e.endChar);
+                    e.SetPositions(posInfo);
+                    //PopPosInfo(out e.startChar, out e.endChar);
                 }
                 throw;
             }
@@ -62,34 +63,34 @@ namespace CodePlex.XPathParser
         /*  Location paths and node tests                                                                 */
         /**************************************************************************************************/
 
-        private static bool IsStep(LexKind lexKind)
+        private static bool IsStep(Lexeme lexKind)
         {
             return (
-                lexKind == LexKind.Dot    ||
-                lexKind == LexKind.DotDot ||
-                lexKind == LexKind.At     ||
-                lexKind == LexKind.Axis   ||
-                lexKind == LexKind.Star   ||
-                lexKind == LexKind.Name   // NodeTest is also Name
+                lexKind == Lexeme.Dot    ||
+                lexKind == Lexeme.DotDot ||
+                lexKind == Lexeme.At     ||
+                lexKind == Lexeme.Axis   ||
+                lexKind == Lexeme.Star   ||
+                lexKind == Lexeme.Name   // NodeTest is also Name
             );
         }
 
         /*
         *   LocationPath ::= RelativeLocationPath | '/' RelativeLocationPath? | '//' RelativeLocationPath
         */
-        private Node ParseLocationPath()
+        private T ParseLocationPath()
         {
-            if (scanner.Kind == LexKind.Slash)
+            if (scanner.@Lexeme == Lexeme.Slash)
             {
                 scanner.NextLex();
-                Node opnd = builder.Axis(XPathAxis.Root, XPathNodeType.All, null, null);
+                T opnd = builder.Axis(XPathAxis.Root, XPathNodeType.All, null, null);
 
-                if (IsStep(scanner.Kind)) 
+                if (IsStep(scanner.@Lexeme)) 
                     opnd = builder.JoinStep(opnd, ParseRelativeLocationPath());
 
                 return opnd;
             }
-            else if (scanner.Kind == LexKind.SlashSlash)
+            else if (scanner.@Lexeme == Lexeme.SlashSlash)
             {
                 scanner.NextLex();
                 return builder.JoinStep(
@@ -108,15 +109,15 @@ namespace CodePlex.XPathParser
         /*
         *   RelativeLocationPath ::= Step (('/' | '//') Step)*
         */
-        private Node ParseRelativeLocationPath()
+        private T ParseRelativeLocationPath()
         {
-            Node opnd = ParseStep();
-            if (scanner.Kind == LexKind.Slash)
+            T opnd = ParseStep();
+            if (scanner.@Lexeme == Lexeme.Slash)
             {
                 scanner.NextLex();
                 opnd = builder.JoinStep(opnd, ParseRelativeLocationPath());
             }
-            else if (scanner.Kind == LexKind.SlashSlash)
+            else if (scanner.@Lexeme == Lexeme.SlashSlash)
             {
                 scanner.NextLex();
                 opnd = builder.JoinStep(opnd,
@@ -132,51 +133,51 @@ namespace CodePlex.XPathParser
         /*
         *   Step ::= '.' | '..' | (AxisName '::' | '@')? NodeTest Predicate*
         */
-        private Node ParseStep()
+        private T ParseStep()
         {
-            Node opnd;
-            if (LexKind.Dot == scanner.Kind)                   // '.'
+            T opnd;
+            if (Lexeme.Dot == scanner.@Lexeme)                   // '.'
             {
                 scanner.NextLex();
                 opnd = builder.Axis(XPathAxis.Self, XPathNodeType.All, null, null);
-                if (LexKind.LBracket == scanner.Kind) {
+                if (Lexeme.LBracket == scanner.@Lexeme) 
                     throw scanner.PredicateAfterDotException();
-                }
+                
             }
-            else if (LexKind.DotDot == scanner.Kind)            // '..'
+            else if (Lexeme.DotDot == scanner.@Lexeme)            // '..'
             {
                 scanner.NextLex();
                 opnd = builder.Axis(XPathAxis.Parent, XPathNodeType.All, null, null);
-                if (LexKind.LBracket == scanner.Kind) 
+                if (Lexeme.LBracket == scanner.@Lexeme) 
                     throw scanner.PredicateAfterDotDotException();
 
             }
             else
             {                                            // (AxisName '::' | '@')? NodeTest Predicate*
                 XPathAxis axis;
-                switch (scanner.Kind)
+                switch (scanner.@Lexeme)
                 {
-                case LexKind.Axis:                              // AxisName '::'
-                    axis = scanner.Axis;
-                    scanner.NextLex();
-                    scanner.NextLex();
-                    break;
-                case LexKind.At:                                // '@'
-                    axis = XPathAxis.Attribute;
-                    scanner.NextLex();
-                    break;
-                case LexKind.Name:
-                case LexKind.Star:
-                    // NodeTest must start with Name or '*'
-                    axis = XPathAxis.Child;
-                    break;
-                default:
-                    throw scanner.UnexpectedTokenException(scanner.RawValue);
+                    case Lexeme.Axis:                              // AxisName '::'
+                        axis = scanner.Axis;
+                        scanner.NextLex();
+                        scanner.NextLex();
+                        break;
+                    case Lexeme.At:                                // '@'
+                        axis = XPathAxis.Attribute;
+                        scanner.NextLex();
+                        break;
+                    case Lexeme.Name:
+                    case Lexeme.Star:
+                        // NodeTest must start with Name or '*'
+                        axis = XPathAxis.Child;
+                        break;
+                    default:
+                        throw scanner.UnexpectedTokenException();
                 }
 
                 opnd = ParseNodeTest(axis);
 
-                while (LexKind.LBracket == scanner.Kind) {
+                while (Lexeme.LBracket == scanner.@Lexeme) {
                     opnd = builder.Predicate(opnd, ParsePredicate(), IsReverseAxis(axis));
                 }
             }
@@ -195,7 +196,7 @@ namespace CodePlex.XPathParser
         *   NodeTest ::= NameTest | ('comment' | 'text' | 'node') '(' ')' | 'processing-instruction' '('  Literal? ')'
         *   NameTest ::= '*' | NCName ':' '*' | QName
         */
-        private Node ParseNodeTest(XPathAxis axis)
+        private T ParseNodeTest(XPathAxis axis)
         {
             XPathNodeType nodeType;
             string        nodePrefix, nodeName;
@@ -203,7 +204,7 @@ namespace CodePlex.XPathParser
             int startChar = scanner.LexStart;
             InternalParseNodeTest(scanner, axis, out nodeType, out nodePrefix, out nodeName);
             PushPosInfo(startChar, scanner.PrevLexEnd);
-            Node result = builder.Axis(axis, nodeType, nodePrefix, nodeName);
+            T result = builder.Axis(axis, nodeType, nodePrefix, nodeName);
             PopPosInfo();
             return result;
         }
@@ -231,9 +232,9 @@ namespace CodePlex.XPathParser
                                                   out string nodePrefix,
                                                   out string nodeName)
         {
-            switch (scanner.Kind)
+            switch (scanner.@Lexeme)
             {
-            case LexKind.Name :
+            case Lexeme.Name :
                 if (scanner.CanBeFunction && IsNodeType(scanner))
                 {
                     nodePrefix = null;
@@ -250,11 +251,11 @@ namespace CodePlex.XPathParser
                     }
 
                     scanner.NextLex();
-                    scanner.PassToken(LexKind.LParens);
+                    scanner.PassToken(Lexeme.LParens);
 
                     if (nodeType == XPathNodeType.ProcessingInstruction) {
-                        if (scanner.Kind != LexKind.RParens) {  // 'processing-instruction' '(' Literal ')'
-                            scanner.CheckToken(LexKind.String);
+                        if (scanner.@Lexeme != Lexeme.RParens) {  // 'processing-instruction' '(' Literal ')'
+                            scanner.CheckToken(Lexeme.String);
                             // It is not needed to set nodePrefix here, but for our current implementation
                             // comparing whole QNames is faster than comparing just local names
                             nodePrefix = string.Empty;
@@ -263,7 +264,7 @@ namespace CodePlex.XPathParser
                         }
                     }
 
-                    scanner.PassToken(LexKind.RParens);
+                    scanner.PassToken(Lexeme.RParens);
                 }
                 else
                 {
@@ -276,25 +277,25 @@ namespace CodePlex.XPathParser
                     }
                 }
                 break;
-            case LexKind.Star :
+            case Lexeme.Star :
                 nodePrefix = null;
                 nodeName   = null;
                 nodeType   = PrincipalNodeType(axis);
                 scanner.NextLex();
                 break;
             default :
-                throw scanner.NodeTestExpectedException(scanner.RawValue);
+                throw scanner.NodeTestExpectedException();
             }
         }
 
         /*
         *   Predicate ::= '[' Expr ']'
         */
-        private Node ParsePredicate()
+        private T ParsePredicate()
         {
-            scanner.PassToken(LexKind.LBracket);
-            Node opnd = ParseExpr();
-            scanner.PassToken(LexKind.RBracket);
+            scanner.PassToken(Lexeme.LBracket);
+            T opnd = ParseExpr();
+            scanner.PassToken(Lexeme.RBracket);
             return opnd;
         }
         #endregion
@@ -314,23 +315,23 @@ namespace CodePlex.XPathParser
         *   MultiplicativeExpr ::= UnaryExpr (('*' | 'div' | 'mod') UnaryExpr)*
         *   UnaryExpr ::= ('-')* UnionExpr
         */
-        private Node ParseExpr()
+        private T ParseExpr()
         {
             return ParseSubExpr(/*callerPrec:*/0);
         }
 
-        private Node ParseSubExpr(int callerPrec)
+        private T ParseSubExpr(int callerPrec)
         {
             XPathOperator op;
-            Node opnd;
+            T opnd;
 
             // Check for unary operators
-            if (scanner.Kind == LexKind.Minus)
+            if (scanner.@Lexeme == Lexeme.Minus)
             {
                 op = XPathOperator.UnaryMinus;
                 int opPrec = XPathOperatorPrecedence[(int)op];
                 scanner.NextLex();
-                opnd = builder.Operator(op, ParseSubExpr(opPrec), default(Node));
+                opnd = builder.Operator(op, ParseSubExpr(opPrec), default(T));
             }
             else
             {
@@ -340,7 +341,7 @@ namespace CodePlex.XPathParser
             // Process binary operators
             while (true)
             {
-                op = (scanner.Kind <= LexKind.LastOperator) ? (XPathOperator)scanner.Kind : XPathOperator.Unknown;
+                op = (scanner.@Lexeme <= Lexeme.LastOperator) ? (XPathOperator)scanner.@Lexeme : XPathOperator.Unknown;
                 int opPrec = XPathOperatorPrecedence[(int)op];
                 if (opPrec <= callerPrec)
                     return opnd;
@@ -373,19 +374,19 @@ namespace CodePlex.XPathParser
         /*
         *   UnionExpr ::= PathExpr ('|' PathExpr)*
         */
-        private Node ParseUnionExpr() {
+        private T ParseUnionExpr() {
             int startChar = scanner.LexStart;
-            Node opnd1 = ParsePathExpr();
+            T opnd1 = ParsePathExpr();
 
-            if (scanner.Kind == LexKind.Union) {
+            if (scanner.@Lexeme == Lexeme.Union) {
                 PushPosInfo(startChar, scanner.PrevLexEnd);
-                opnd1 = builder.Operator(XPathOperator.Union, default(Node), opnd1);
+                opnd1 = builder.Operator(XPathOperator.Union, default(T), opnd1);
                 PopPosInfo();
 
-                while (scanner.Kind == LexKind.Union) {
+                while (scanner.@Lexeme == Lexeme.Union) {
                     scanner.NextLex();
                     startChar = scanner.LexStart;
-                    Node opnd2 = ParsePathExpr();
+                    T opnd2 = ParsePathExpr();
                     PushPosInfo(startChar, scanner.PrevLexEnd);
                     opnd1 = builder.Operator(XPathOperator.Union, opnd1, opnd2);
                     PopPosInfo();
@@ -397,19 +398,19 @@ namespace CodePlex.XPathParser
         /*
         *   PathExpr ::= LocationPath | FilterExpr (('/' | '//') RelativeLocationPath )?
         */
-        private Node ParsePathExpr() {
+        private T ParsePathExpr() {
             // Here we distinguish FilterExpr from LocationPath - the former starts with PrimaryExpr
             if (IsPrimaryExpr()) {
                 int startChar = scanner.LexStart;
-                Node opnd = ParseFilterExpr();
+                T opnd = ParseFilterExpr();
                 int endChar = scanner.PrevLexEnd;
 
-                if (scanner.Kind == LexKind.Slash) {
+                if (scanner.@Lexeme == Lexeme.Slash) {
                     scanner.NextLex();
                     PushPosInfo(startChar, endChar);
                     opnd = builder.JoinStep(opnd, ParseRelativeLocationPath());
                     PopPosInfo();
-                } else if (scanner.Kind == LexKind.SlashSlash) {
+                } else if (scanner.@Lexeme == Lexeme.SlashSlash) {
                     scanner.NextLex();
                     PushPosInfo(startChar, endChar);
                     opnd = builder.JoinStep(opnd,
@@ -429,12 +430,12 @@ namespace CodePlex.XPathParser
         /*
         *   FilterExpr ::= PrimaryExpr Predicate*
         */
-        private Node ParseFilterExpr() {
+        private T ParseFilterExpr() {
             int startChar = scanner.LexStart;
-            Node opnd = ParsePrimaryExpr();
+            T opnd = ParsePrimaryExpr();
             int endChar = scanner.PrevLexEnd;
 
-            while (scanner.Kind == LexKind.LBracket) {
+            while (scanner.@Lexeme == Lexeme.LBracket) {
                 PushPosInfo(startChar, endChar);
                 opnd = builder.Predicate(opnd, ParsePredicate(), /*reverseStep:*/false);
                 PopPosInfo();
@@ -444,46 +445,46 @@ namespace CodePlex.XPathParser
 
         private bool IsPrimaryExpr() {
             return (
-                scanner.Kind == LexKind.String  ||
-                scanner.Kind == LexKind.Number  ||
-                scanner.Kind == LexKind.Dollar  ||
-                scanner.Kind == LexKind.LParens ||
-                scanner.Kind == LexKind.Name && scanner.CanBeFunction && !IsNodeType(scanner)
+                scanner.@Lexeme == Lexeme.String  ||
+                scanner.@Lexeme == Lexeme.Number  ||
+                scanner.@Lexeme == Lexeme.Dollar  ||
+                scanner.@Lexeme == Lexeme.LParens ||
+                scanner.@Lexeme == Lexeme.Name && scanner.CanBeFunction && !IsNodeType(scanner)
             );
         }
 
         /*
         *   PrimaryExpr ::= Literal | Number | VariableReference | '(' Expr ')' | FunctionCall
         */
-        private Node ParsePrimaryExpr() {
+        private T ParsePrimaryExpr() {
             Debug.Assert(IsPrimaryExpr());
-            Node opnd;
-            switch (scanner.Kind) {
-            case LexKind.String:
+            T opnd;
+            switch (scanner.@Lexeme) {
+            case Lexeme.String:
                 opnd = builder.String(scanner.StringValue);
                 scanner.NextLex();
                 break;
-            case LexKind.Number:
+            case Lexeme.Number:
                 opnd = builder.Number(scanner.RawValue);
                 scanner.NextLex();
                 break;
-            case LexKind.Dollar:
+            case Lexeme.Dollar:
                 int startChar = scanner.LexStart;
                 scanner.NextLex();
-                scanner.CheckToken(LexKind.Name);
+                scanner.CheckToken(Lexeme.Name);
                 PushPosInfo(startChar, scanner.LexStart + scanner.LexSize);
                 opnd = builder.Variable(scanner.Prefix, scanner.Name);
                 PopPosInfo();
                 scanner.NextLex();
                 break;
-            case LexKind.LParens:
+            case Lexeme.LParens:
                 scanner.NextLex();
                 opnd = ParseExpr();
-                scanner.PassToken(LexKind.RParens);
+                scanner.PassToken(Lexeme.RParens);
                 break;
             default:
                 Debug.Assert(
-                    scanner.Kind == LexKind.Name && scanner.CanBeFunction && !IsNodeType(scanner),
+                    scanner.@Lexeme == Lexeme.Name && scanner.CanBeFunction && !IsNodeType(scanner),
                     "IsPrimaryExpr() returned true, but the lexeme is not recognized"
                 );
                 opnd = ParseFunctionCall();
@@ -495,25 +496,25 @@ namespace CodePlex.XPathParser
         /*
         *   FunctionCall ::= FunctionName '(' (Expr (',' Expr)* )? ')'
         */
-        private Node ParseFunctionCall()
+        private T ParseFunctionCall()
         {
-            List<Node> argList = new List<Node>();
+            List<T> argList = new List<T>();
             string name   = scanner.Name;
             string prefix = scanner.Prefix;
             int startChar = scanner.LexStart;
 
             scanner.CheckFunction();
             
-            scanner.PassToken(LexKind.Name);
-            scanner.PassToken(LexKind.LParens);
+            scanner.PassToken(Lexeme.Name);
+            scanner.PassToken(Lexeme.LParens);
 
-            if (scanner.Kind != LexKind.RParens)
+            if (scanner.@Lexeme != Lexeme.RParens)
             {
                 while (true)
                 {
                     argList.Add(ParseExpr());
-                    if (scanner.Kind != LexKind.Comma) {
-                        scanner.CheckToken(LexKind.RParens);
+                    if (scanner.@Lexeme != Lexeme.Comma) {
+                        scanner.CheckToken(Lexeme.RParens);
                         break;
                     }
                     scanner.NextLex();  // move off the ','
@@ -522,7 +523,7 @@ namespace CodePlex.XPathParser
 
             scanner.NextLex();          // move off the ')'
             PushPosInfo(startChar, scanner.PrevLexEnd);
-            Node result = builder.Function(prefix, name, argList);
+            T result = builder.Function(prefix, name, argList);
             PopPosInfo();
             return result;
         }
@@ -544,10 +545,6 @@ namespace CodePlex.XPathParser
             posInfo.Pop();
         }
 
-        private void PopPosInfo(out int startChar, out int endChar) {
-            endChar   = posInfo.Pop();
-            startChar = posInfo.Pop();
-        }
 
         private static double ToDouble(string str) {
             double d;

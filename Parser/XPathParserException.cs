@@ -8,8 +8,15 @@ namespace CodePlex.XPathParser
     public class XPathParserException : System.Exception
     {
         public string queryString;
-        public int    startChar;
-        public int    endChar;
+        public int startChar;
+        public int endChar;
+        public Lexeme PriorToken;
+        //public System.Collections.ObjectModel.ReadOnlyCollection<Lexeme> NextAllowed
+        public System.Collections.Generic.List<Lexeme> NextAllowed
+        {
+            internal set;
+            get;
+        }
 
         public XPathParserException(string queryString, int startChar, int endChar, string message)
             : base(message)
@@ -18,7 +25,6 @@ namespace CodePlex.XPathParser
             this.startChar = startChar;
             this.endChar = endChar;
         }
-
         private enum TrimType
         {
             Left,
@@ -29,35 +35,35 @@ namespace CodePlex.XPathParser
         // This function is used to prevent long quotations in error messages
         private static void AppendTrimmed(StringBuilder sb, string value, int startIndex, int count, TrimType trimType)
         {
-            const int    TrimSize   = 32;
+            const int TrimSize = 32;
             const string TrimMarker = "...";
 
-            if (count <= TrimSize) 
+            if (count <= TrimSize)
                 sb.Append(value, startIndex, count);
             else
             {
                 switch (trimType)
                 {
-                case TrimType.Left:
-                    sb.Append(TrimMarker);
-                    sb.Append(value, startIndex + count - TrimSize, TrimSize);
-                    break;
-                case TrimType.Right:
-                    sb.Append(value, startIndex, TrimSize);
-                    sb.Append(TrimMarker);
-                    break;
-                case TrimType.Middle:
-                    sb.Append(value, startIndex, TrimSize / 2);
-                    sb.Append(TrimMarker);
-                    sb.Append(value, startIndex + count - TrimSize / 2, TrimSize / 2);
-                    break;
+                    case TrimType.Left:
+                        sb.Append(TrimMarker);
+                        sb.Append(value, startIndex + count - TrimSize, TrimSize);
+                        break;
+                    case TrimType.Right:
+                        sb.Append(value, startIndex, TrimSize);
+                        sb.Append(TrimMarker);
+                        break;
+                    case TrimType.Middle:
+                        sb.Append(value, startIndex, TrimSize / 2);
+                        sb.Append(TrimMarker);
+                        sb.Append(value, startIndex + count - TrimSize / 2, TrimSize / 2);
+                        break;
                 }
             }
         }
 
         internal string MarkOutError()
         {
-            if (queryString == null || queryString.Trim(' ').Length == 0) 
+            if (queryString == null || queryString.Trim(' ').Length == 0)
                 return null;
 
             int len = endChar - startChar;
@@ -76,6 +82,13 @@ namespace CodePlex.XPathParser
 
             return sb.ToString();
         }
+
+        internal void SetPositions(System.Collections.Generic.Stack<int> stack)
+        {
+            this.endChar = stack.Pop();
+            this.startChar = stack.Pop();
+        }
+
 
         public string ErrorIndicated
         {
@@ -106,7 +119,7 @@ namespace CodePlex.XPathParser
 
             if (error != null && error.Length > 0)
             {
-                if (message.Length > 0) 
+                if (message.Length > 0)
                     message += Environment.NewLine;
                 message += error;
             }

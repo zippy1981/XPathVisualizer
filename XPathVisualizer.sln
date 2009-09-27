@@ -9,19 +9,19 @@ Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 2
+		SccNumberOfProjects = 4
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs09.codeplex.com/
 		SccProjectUniqueName0 = Tool\\XPathVisualizer.csproj
 		SccProjectName0 = Tool
-		SccAuxPath0 = https://tfs09.codeplex.com
 		SccLocalPath0 = Tool
-		SccProvider0 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccProjectUniqueName1 = Setup\\Setup.vdproj
 		SccProjectName1 = Setup
-		SccAuxPath1 = https://tfs09.codeplex.com
 		SccLocalPath1 = Setup
-		SccProvider1 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName2 = Parser\\XPathParser.csproj
+		SccProjectName2 = Parser
+		SccLocalPath2 = Parser
+		SccLocalPath3 = .
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
