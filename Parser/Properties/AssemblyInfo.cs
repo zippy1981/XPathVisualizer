@@ -5,8 +5,8 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("XPathVisualizer")]
-[assembly: AssemblyDescription("XPath Visualizer Tool")]
+[assembly: AssemblyTitle("XPathParser")]
+[assembly: AssemblyDescription("Parses XPath expressions - see http://xpathparser.codeplex.com")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Dino Chiesa")]
 [assembly: AssemblyProduct("XPathVisualizer")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("ec626396-435f-48d1-a37c-75ba97701c81")]
+[assembly: Guid("048c406b-1a54-46e4-8e1e-4e98494aba98")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -29,8 +29,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.1.0.10")]
 [assembly: AssemblyFileVersion("1.1.0.10")]
