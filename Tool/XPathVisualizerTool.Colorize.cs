@@ -133,16 +133,23 @@ namespace XPathVisualizer
 
 
         
-        private void ResetBackground()
+        private void ResetXmlTextBox()
         {
             if (this.richTextBox1.InvokeRequired)
             {
-                this.richTextBox1.Invoke(new Action(this.ResetBackground));
+                this.richTextBox1.Invoke(new Action(this.ResetXmlTextBox));
             }
             else
             {
                 rtbe.BeginUpdateAndSaveState();
                 
+                // get the text.
+                string txt = this.richTextBox1.Text;
+                // put it back.
+                // why? because it's possible to paste in RTF, which won't
+                // show up correctly in that one-line RichTextBox. 
+                this.richTextBox1.Text = txt;
+
                 this.richTextBox1.SelectAll();
                 this.richTextBox1.SelectionBackColor = Color.White;
 
@@ -150,6 +157,7 @@ namespace XPathVisualizer
             }
         }
 
+        
         private const int DELAY_IN_MILLISECONDS = 650;
         private int progressCount = 0;
 
@@ -228,7 +236,7 @@ namespace XPathVisualizer
                         ? (string)this.richTextBox1.Invoke((System.Func<string>)(() => this.richTextBox1.Text))
                         : this.richTextBox1.Text;
 
-                    ResetBackground();
+                    ResetXmlTextBox();
 
                     var lc = new LineCalculator(txt);
                     float maxLines = (float) lc.CountLines();

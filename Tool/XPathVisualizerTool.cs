@@ -213,11 +213,17 @@ namespace XPathVisualizer
 
         private void tbXpath_TextChanged(object sender, EventArgs e)
         {
-            string xpathExpr = this.tbXpath.Text;
             int ss = this.tbXpath.SelectionStart;
             int sl = this.tbXpath.SelectionLength;
+            // get the text.
+            string xpathExpr = this.tbXpath.Text;
+            // put it back.
+            // why? because it's possible to paste in RTF, which won't
+            // show up correctly in that one-line RichTextBox. 
+            this.tbXpath.Text = xpathExpr;
             this.tbXpath.SelectAll();
             this.tbXpath.SelectionColor = Color.Black;
+            this.tbXpath.SelectionFont = this.Font;
             this.tbXpath.Select(ss, sl);
             try
             {
@@ -282,7 +288,6 @@ namespace XPathVisualizer
                     HighlightSelection(selection, xmlns);
                 }
 
-
                 // remember the successful xpath queries
                 if (!_xpathExpressionMruList.Contains(xpathExpression))
                 {
@@ -327,6 +332,15 @@ namespace XPathVisualizer
 
 
 
+
+        /// <summary>
+        /// Highlights the selected nodes in the XML RichTextBox, given the XPathNodeIterator. 
+        /// </summary>
+        /// <remarks>
+        /// This finishes pretty quickly, no need to do it asynchronously. 
+        /// </remarks>
+        /// <param name="selection">the node-set selection</param>
+        /// <param name="xmlns">you know</param>
         private void HighlightSelection(XPathNodeIterator selection, XmlNamespaceManager xmlns)
         {
             bool scrolled = false;
@@ -360,11 +374,11 @@ namespace XPathVisualizer
                     {
                         string s = node.Value.XmlEscapeQuotes();
                         ix++;
-                            ix2 = ix + node.Name.Length + 1;
+                        ix2 = ix + node.Name.Length + 1;
                         char c = ' ';
-                        while (txt[ix2]!='\'' &&  txt[ix2]!='"') 
+                        while (txt[ix2] != '\'' && txt[ix2] != '"')
                             ix2++;
-                        c=txt[ix2];
+                        c = txt[ix2];
                         ix2++;
                         while (txt[ix2] != c)
                             ix2++;
@@ -386,8 +400,8 @@ namespace XPathVisualizer
                         }
                         else
                         {
-                            // Manual Labor. Since there is no XPathNavigator.MoveToEndElement(), we 
-                            // look for the EndElement in the text.  First, advance past the 
+                            // Manual Labor. Since there is no XPathNavigator.MoveToEndOfElement(),
+                            // we look for the EndElement in the text.  First, advance past the 
                             // original node name.  If the succeeding char is not / (meaning 
                             // an empty element), then look for the </NodeName> string.  
 
@@ -428,6 +442,37 @@ namespace XPathVisualizer
                 }
             }
         }
+
+
+
+
+        /// <summary>
+        /// Re-formats (Indents) the text in the XML RichTextBox
+        /// </summary>
+        /// <remarks>
+        /// This finishes pretty quickly, no need to do it asynchronously. 
+        /// </remarks>
+        private void IndentXml()
+        {
+            try
+            {
+                System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
+                doc.LoadXml(this.richTextBox1.Text);
+                var builder = new System.Text.StringBuilder();
+                var settings = new System.Xml.XmlWriterSettings { OmitXmlDeclaration = true, Indent = true };
+                using (var writer = System.Xml.XmlWriter.Create(builder, settings))
+                {
+                    doc.Save(writer);
+                }
+                this.richTextBox1.Text = builder.ToString();
+                wantFormat.Set();
+            }
+            catch (System.Exception)
+            {
+                // maybe invalid XML, so... just do nothing
+            }
+        }
+
 
 
         private void linkToCodeplex_Click(object sender, EventArgs e)
@@ -612,6 +657,34 @@ namespace XPathVisualizer
         private DateTime _originDateTime = new System.DateTime(0);
         private System.DateTime _lastRtbKeyPress;
         private XPathParser<XElement> xpathParser = new XPathParser<XElement>();
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            IndentXml();
+        }
+
+        private void copyAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string txt = this.richTextBox1.Text;
+            Clipboard.SetDataObject(txt, true);
+        }
+
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string txt = this.richTextBox1.SelectedText;
+            Clipboard.SetDataObject(txt, true);
+        }
+
+        
+        private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string o = Clipboard.GetData(DataFormats.Text) as String;
+            if (o != null)
+            {
+                this.richTextBox1.SelectedText = o;
+                wantFormat.Set();
+            }
+        }
     }
 
 
