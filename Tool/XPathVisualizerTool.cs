@@ -56,12 +56,10 @@ namespace XPathVisualizer
         {
             // setup the autocomplete for the xpath expressions
             FillFormFromRegistry();
+            // CANNOT DO AutoComplete for RichTextBoxn
             //this.tbXpath.AutoCompleteMode = AutoCompleteMode.Suggest;
             //this.tbXpath.AutoCompleteSource = AutoCompleteSource.CustomSource;
             //this.tbXpath.AutoCompleteCustomSource = _xpathExpressionMruList;
-
-            // insert the most recent expression into the box?  
-            //this.tbXpath.Text = _xpathExpressionMruList[0];
 
             // setup the autocomplete for the file
             this.tbXmlDoc.AutoCompleteMode = AutoCompleteMode.Suggest;
@@ -77,8 +75,12 @@ namespace XPathVisualizer
             this.Text = desc.Description + " v" + a.GetName().Version.ToString();
         }
 
-        private static System.Text.RegularExpressions.Regex re2 =
+        private static System.Text.RegularExpressions.Regex unnamedXmlnsRegex =
             new System.Text.RegularExpressions.Regex("\\sxmlns\\s*=\\s*['\"](.+?)['\"]");
+
+        private static System.Text.RegularExpressions.Regex namedXmlnsRegex =
+            new System.Text.RegularExpressions.Regex("\\sxmlns:([^\\s]+)\\s*=\\s*['\"](.+?)['\"]");
+
 
 
         private void btnLoadXml_Click(object sender, EventArgs e)
@@ -157,22 +159,45 @@ namespace XPathVisualizer
         private void PreloadXmlns()
         {
             xmlnsPrefixes.Clear();
-            // check for xmlnamespaces in the loaded document
-            var matches = re2.Matches(this.richTextBox1.Text);
+            int c = 1;
+            var regexi = new System.Text.RegularExpressions.Regex[] { namedXmlnsRegex, unnamedXmlnsRegex };
 
-            if (matches != null && matches.Count != 0)
+            for (int i = 0; i < regexi.Length; i++)
             {
-                xmlnsPrefixes.Clear();
-                int x = 1;
-                foreach (System.Text.RegularExpressions.Match m in matches)
+                // check for xmlnamespaces in the loaded document
+                var matches = regexi[i].Matches(this.richTextBox1.Text);
+
+                if (matches != null && matches.Count != 0)
                 {
-                    xmlnsPrefixes.Add(String.Format("ns{0}", x),
-                                      m.Groups[1].Value.ToString());
-                    x++;
+                    foreach (System.Text.RegularExpressions.Match m in matches)
+                    {
+                        string ns = m.Groups[2 - i].Value.ToString();
+                        if (!xmlnsPrefixes.Values.Contains(ns))
+                        {
+                            // get the prefix - it's either explicit or contrived
+                            string origPrefix = (i == 1)
+                                ? String.Format("ns{0}", c++)    // contrived
+                                : m.Groups[1].Value.ToString();  // explicit
+
+                            // make sure the prefix is unique
+                            int dupes = 0;
+                            string actualPrefix = origPrefix;
+                            while (xmlnsPrefixes.Keys.Contains(actualPrefix))
+                            {
+                                actualPrefix = (i == 1)
+                                    ? String.Format("ns{0}", c++)
+                                    : String.Format("{0}-{1}", origPrefix, dupes++);
+                            }
+
+                            xmlnsPrefixes.Add(actualPrefix, ns);
+                        }
+                    }
                 }
-                DisplayXmlPrefixList();
             }
+            DisplayXmlPrefixList();
         }
+
+
 
         private void AdjustSplitterSize()
         {
@@ -289,12 +314,7 @@ namespace XPathVisualizer
                 }
 
                 // remember the successful xpath queries
-                if (!_xpathExpressionMruList.Contains(xpathExpression))
-                {
-                    if (_xpathExpressionMruList.Count >= _MaxMruListSize)
-                        _xpathExpressionMruList.RemoveAt(0);
-                    _xpathExpressionMruList.Add(xpathExpression);
-                }
+                RememberInMruList(_xpathExpressionMruList, xpathExpression);
             }
             catch (Exception exc1)
             {
@@ -330,6 +350,19 @@ namespace XPathVisualizer
             }
         }
 
+
+        private void RememberInMruList(System.Windows.Forms.AutoCompleteStringCollection list, string value)
+        {
+            if (list.Contains(value))
+            {
+                list.Remove(value);
+            }
+            else if (list.Count >= _MaxMruListSize)
+            {
+                list.RemoveAt(0);
+            }
+            list.Add(value);
+        }
 
 
 
@@ -675,7 +708,7 @@ namespace XPathVisualizer
             Clipboard.SetDataObject(txt, true);
         }
 
-        
+
         private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string o = Clipboard.GetData(DataFormats.Text) as String;

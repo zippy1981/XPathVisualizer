@@ -230,7 +230,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:XPathParser, Version=1.1.0.9, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:XPathParser, Version=1.1.0.10, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_2C8E355F9D03CFF483C0B3C894DE9C86"
@@ -384,14 +384,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Ionic's XPath Visualizer v1.1"
-        "ProductCode" = "8:{4E2A4BF1-6E49-4C50-A7EA-C3F00EC55C2F}"
-        "PackageCode" = "8:{553F8799-E072-40B1-8822-B7BD1602E4F7}"
+        "ProductCode" = "8:{EEFD2C20-542F-4E56-A2A6-F24F1AFD5475}"
+        "PackageCode" = "8:{D56604CE-EAFC-440E-B8B3-150BC42C8495}"
         "UpgradeCode" = "8:{F6792511-D075-4D05-A5ED-5CCE545BC9D2}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.1.0010"
+        "ProductVersion" = "8:1.1.0011"
         "Manufacturer" = "8:Dino Chiesa"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
