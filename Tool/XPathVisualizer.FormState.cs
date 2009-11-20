@@ -103,6 +103,9 @@ namespace XPathVisualizer
                             //_xpathExpressionMruList.AddRange(items);
                             foreach (string item in items)
                                 _xpathExpressionMruList.Add(item.XmlUnescapeIexcl());
+                            
+                            // insert the most recent expression into the box?  
+                            this.tbXpath.Text = _xpathExpressionMruList[_xpathExpressionMruList.Count-1];
                         }
                     }
 
