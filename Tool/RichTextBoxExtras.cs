@@ -60,14 +60,24 @@ namespace XPathVisualizer
         [DllImport("User32.dll", EntryPoint="SendMessage", CharSet=CharSet.Auto)]
         private static extern int SendMessageRef(IntPtr hwnd, int wMsg, out int wparam, out int lparam);
 
+        // [DllImport("User32.dll", EntryPoint="SendMessage", CharSet=CharSet.Auto)]
+        // private static extern int SendMessage(IntPtr hwnd, int wMsg, int ignored, out RECT lpRect);
+
+        //[DllImport("User32.dll", EntryPoint="SendMessage", CharSet=CharSet.Auto)]
+        //private static extern int SendMessage(IntPtr hwnd, int wMsg, int ignored, POINT lpPoint);
+
         [DllImport("User32.dll", EntryPoint="SendMessage", CharSet=CharSet.Auto)]
         private static extern int SendMessage(IntPtr hwnd, int wMsg, int wparam, IntPtr lparam);
 
         // from WinUser.h and RichEdit.h
-        private const int EM_GETFIRSTVISIBLELINE = 0x00CE;
         private const int EM_GETSEL              = 0x00B0;
         private const int EM_SETSEL              = 0x00B1;
+        private const int EM_GETRECT             = 0x00B2;
         private const int EM_LINESCROLL          = 0x00B6;
+        private const int EM_GETLINECOUNT        = 0x00BA;
+        private const int EM_LINEFROMCHAR        = 0x00C9;
+        private const int EM_GETFIRSTVISIBLELINE = 0x00CE;
+        private const int EM_CHARFROMPOS         = 0x00D7;
         private const int EM_GETCHARFORMAT       = 0x0400 + 58;
         private const int EM_SETCHARFORMAT       = 0x0400 + 68;
         private const int SCF_SELECTION          = 0x0001;
@@ -88,6 +98,7 @@ namespace XPathVisualizer
             public char[] szFaceName; 
         }
 
+        
         private System.Windows.Forms.RichTextBox _rtb;
         private IntPtr hWnd;
         private CHARFORMAT charFormat;
@@ -200,6 +211,103 @@ namespace XPathVisualizer
             SendMessage(hWnd,EM_LINESCROLL,0,delta);
         }
 
+
+        #if HARDWORK
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT
+        {
+            public int Left;    
+            public int Top;    
+            public int Right;    
+            public int Bottom;
+        }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct POINT
+    {
+        public int X;
+        public int Y;
+
+        public POINT(int x, int y)
+        {
+            this.X = x;
+            this.Y = y;
+        }
+
+        public static implicit operator System.Drawing.Point(POINT p)
+        {
+            return new System.Drawing.Point(p.X, p.Y);
+        }
+
+        public static implicit operator POINT(System.Drawing.Point p)
+        {
+            return new POINT(p.X, p.Y);
+        }
+    }
+        
+        private RECT GetRect()
+        {
+            int rawSize = Marshal.SizeOf( typeof(RECT) );
+            IntPtr buffer = Marshal.AllocHGlobal( rawSize );
+            int ignored = 0;
+            SendMessage(hWnd, EM_GETRECT, ignored, buffer);
+            RECT rect = (RECT) Marshal.PtrToStructure( buffer, typeof(RECT) );
+            Marshal.FreeHGlobal( buffer );
+            return rect;
+        }
+
+        private int GetCharFromPoint(int x, int y)
+        {
+            POINT point = new POINT(x, y);
+            int rawSize = Marshal.SizeOf( typeof(POINT) );
+            IntPtr buffer = Marshal.AllocHGlobal( rawSize );
+            Marshal.StructureToPtr( point, buffer, false );
+            int cix = SendMessage(hWnd, EM_CHARFROMPOS, 0, buffer);
+            Marshal.FreeHGlobal( buffer );
+            return cix;
+        }
+
+        
+        public int NumberOfVisibleLines
+        {
+            get
+            {
+
+                int topIndex = RichTextBox1.GetCharIndexFromPosition(New Point(1, 1))
+      Dim bottomIndex As Integer = RichTextBox1.GetCharIndexFromPosition(New Point(1, RichTextBox1.Height - 1))
+    
+      Dim topLine As Integer = RichTextBox1.GetLineFromCharIndex(topIndex)
+      Dim bottomLine As Integer = RichTextBox1.GetLineFromCharIndex(bottomIndex)
+    
+      Dim numLinesDisplayed As Integer = bottomLine - topLine
+
+
+                int firstVisibleLine = SendMessage(hWnd, EM_GETFIRSTVISIBLELINE, 0, 0);
+                RECT rect = GetRect();
+                int cix = GetCharFromPoint(rect.Left, rect.Bottom);
+                int lastVisibleLine = SendMessage(hWnd, EM_LINEFROMCHAR, cix, 0);
+                int n = lastVisibleLine - firstVisibleLine+1 ;
+                return n;
+            }
+        }
+        
+#else
+        public int NumberOfVisibleLines
+        {
+            get
+            {
+                int topIndex = _rtb.GetCharIndexFromPosition(new System.Drawing.Point(1, 1));
+                int bottomIndex = _rtb.GetCharIndexFromPosition(new System.Drawing.Point(1, _rtb.Height - 1)); 
+                int topLine = _rtb.GetLineFromCharIndex(topIndex);
+                int bottomLine = _rtb.GetLineFromCharIndex(bottomIndex);
+                int n = bottomLine - topLine + 1;
+                return n;
+            }
+        }
+                
+#endif
+        
     }
 }
 
