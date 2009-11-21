@@ -28,18 +28,24 @@
         "Entry"
         {
         "MsmKey" = "8:_2C8E355F9D03CFF483C0B3C894DE9C86"
-        "OwnerKey" = "8:_A14D9EE2E9324760859FFD1F60263CCC"
+        "OwnerKey" = "8:_683FBD3D81D4C2554220EA03D87CBB65"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_2C8E355F9D03CFF483C0B3C894DE9C86"
+        "OwnerKey" = "8:_CC19FE8FD52F4CA2995A2967BDCB251D"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_683FBD3D81D4C2554220EA03D87CBB65"
+        "OwnerKey" = "8:_CC19FE8FD52F4CA2995A2967BDCB251D"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_896BE65C11EC45C2BCB49EED46056247"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_A14D9EE2E9324760859FFD1F60263CCC"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -57,8 +63,20 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_CC19FE8FD52F4CA2995A2967BDCB251D"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_A14D9EE2E9324760859FFD1F60263CCC"
+        "OwnerKey" = "8:_CC19FE8FD52F4CA2995A2967BDCB251D"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_683FBD3D81D4C2554220EA03D87CBB65"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -257,6 +275,37 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_683FBD3D81D4C2554220EA03D87CBB65"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:Ionic.XPathVisualizer, Version=1.1.0.12, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_683FBD3D81D4C2554220EA03D87CBB65"
+                    {
+                    "Name" = "8:Ionic.XPathVisualizer.exe"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:Ionic.XPathVisualizer.exe"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_C6DE19FE9A604C5382BFE0A0D0082690"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_896BE65C11EC45C2BCB49EED46056247"
             {
             "SourcePath" = "8:Uninstall.cmd"
@@ -384,14 +433,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Ionic's XPath Visualizer v1.1"
-        "ProductCode" = "8:{BF7E3BC9-A146-4B48-B36A-450EB1B2E5C7}"
-        "PackageCode" = "8:{1F9C0907-74AD-486C-8FC7-A17943AC8277}"
+        "ProductCode" = "8:{D469D697-B94E-4C49-BBE7-1E34A09A2649}"
+        "PackageCode" = "8:{4C1BC8CE-6904-46CE-BED9-CBD795078603}"
         "UpgradeCode" = "8:{F6792511-D075-4D05-A5ED-5CCE545BC9D2}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.1.0012"
+        "ProductVersion" = "8:1.1.0013"
         "Manufacturer" = "8:Dino Chiesa"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -540,7 +589,7 @@
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_A14D9EE2E9324760859FFD1F60263CCC"
+            "Target" = "8:"
             "Folder" = "8:_E1D3A8285517465987D82248CCAAD385"
             "WorkingFolder" = "8:_C6DE19FE9A604C5382BFE0A0D0082690"
             "Icon" = "8:"
@@ -992,9 +1041,9 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_A14D9EE2E9324760859FFD1F60263CCC"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_CC19FE8FD52F4CA2995A2967BDCB251D"
             {
-            "SourcePath" = "8:..\\Tool\\obj\\Debug\\XPathVisualizer.exe"
+            "SourcePath" = "8:..\\MergedTool\\obj\\Debug\\XPathVisualizer.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_C6DE19FE9A604C5382BFE0A0D0082690"
@@ -1014,7 +1063,7 @@
             "ProjectOutputGroupRegister" = "3:1"
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{E31EEE69-4623-4A50-A15C-4335FB02EA49}"
+            "OutputProjectGuid" = "8:{A58A7386-755C-4DF9-A27B-FA2832530BDB}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {

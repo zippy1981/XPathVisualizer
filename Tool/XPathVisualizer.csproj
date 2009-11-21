@@ -8,8 +8,8 @@
     <ProjectGuid>{E31EEE69-4623-4A50-A15C-4335FB02EA49}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>XPathVisualizer</RootNamespace>
-    <AssemblyName>XPathVisualizer</AssemblyName>
+    <RootNamespace>Ionic.XPathVisualizer</RootNamespace>
+    <AssemblyName>Ionic.XPathVisualizer</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ApplicationIcon>icon1.ico</ApplicationIcon>
@@ -95,6 +95,7 @@
     <ProjectReference Include="..\Parser\XPathParser.csproj">
       <Project>{A8072758-E8D2-4551-89C2-564BDE162403}</Project>
       <Name>XPathParser</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
