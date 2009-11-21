@@ -61,8 +61,9 @@ namespace XPathVisualizer
                               String.Format("{0},{1},{2},{3},{4}",
                                             left, top, w, h, (int)this.WindowState));
 
+            // workitem 3392
             // store the position of splitter
-            AppCuKey.SetValue(_rvn_Splitter, this.splitContainer3.SplitterDistance.ToString());
+            // AppCuKey.SetValue(_rvn_Splitter, this.splitContainer3.SplitterDistance.ToString());
 
             // the Xpath expression MRU list
             var converted = _xpathExpressionMruList.ToList().ConvertAll(x => x.XmlEscapeIexcl());
@@ -123,19 +124,19 @@ namespace XPathVisualizer
                     }
 
 
+                    // workitem 3392 - don't need this
                     // set the splitter
-                    s = (string)AppCuKey.GetValue(_rvn_Splitter);
-                    if (!String.IsNullOrEmpty(s))
-                    {
-                        try
-                        {
-                            int x = Int32.Parse(s);
-                            this.splitContainer3.SplitterDistance = x;
-                        }
-                        catch { }
-                    }
+                    // s = (string)AppCuKey.GetValue(_rvn_Splitter);
+                    // if (!String.IsNullOrEmpty(s))
+                    //   {
+                    //     try
+                    //     {
+                    //         int x = Int32.Parse(s);
+                    //         this.splitContainer3.SplitterDistance = x;
+                    //     }
+                    //     catch { }
+                    // }
 
-                
                     stateLoaded = true;
 
                 }
@@ -181,7 +182,7 @@ namespace XPathVisualizer
         private string _rvn_Prefix = "Prefix";
         private string _rvn_Xmlns = "Xmlns";
         private string _rvn_Geometry = "Geometry";
-        private string _rvn_Splitter = "Splitter";
+        //private string _rvn_Splitter = "Splitter";
         private string _rvn_History = "History";
         private readonly int _MaxMruListSize = 14;
         //private Ionic.Utils.MruList<String> _xpathExpressionMruList;
