@@ -147,7 +147,7 @@ namespace XPathVisualizer
                 string txt = this.richTextBox1.Text;
                 // put it back.
                 // why? because it's possible to paste in RTF, which won't
-                // show up correctly in that one-line RichTextBox. 
+                // show up correctly.
                 this.richTextBox1.Text = txt;
 
                 this.richTextBox1.SelectAll();
@@ -166,44 +166,48 @@ namespace XPathVisualizer
         private void DoBackgroundColorizing(object sender, DoWorkEventArgs e)
         {
             // Design Notes:
-            // -------------------------------------------------------
+            // -------------------------------------------------------------------
             //
             // It takes a long time, maybe 10s or more, to colorize the XML syntax
             // in an xml file 100k in size.  Therefore the approach we take is to
             // perform the syntax highlighting asynchronously.
             //
             // This method runs endlessly.  The first thing it does is wait for a
-            // signal on the wantFormat event.  This event is set when an XMl file
-            // is loaded, or when the rtb text is changed.
+            // signal on the wantFormat event.  This event is set when an XML file
+            // is loaded, or when the text in the richtextbox changes.
             //
             // When the signal is received, execution continues, and the
-            // highlighting begins. It reads a segment of the XML, and decides how
-            // to highlight it.  The change is then placed into a list, and then
-            // the next segment of XML is read in.
+            // highlighting begins. The approach is this: read a segment of the
+            // XML, decide how to highlight it, then place a description of that
+            // formatting change into a list.  Then, continue by reading the next
+            // segment of XML, until the entire XML document has been processed.
             //
             // On an interval that is normally every 1/48th of the lines - if
-            // there are 960 lines, then every 20 lines - this method calls the
-            // progress update for the BG worker, and also applies the queued
-            // changes.  Using this approach the progress bar magically appears
-            // while highlighting is happening, and disappears when highlighting
-            // finishes.
+            // there are 960 lines, then every 20 lines - this method does two
+            // things: call the progress update for the BG worker, and also apply
+            // the queued changes.  Using this approach the progress bar magically
+            // appears while highlighting is happening, and disappears when
+            // highlighting finishes.
             //
-            // After calling the progress update method, we call the ApplyChanges
-            // method. It saves the scroll and selection state, applies all
-            // formatting changes to the rtb text, restores the scroll and
-            // selection state, and then calls Refresh() on the RTB.  After that
-            // method returns, this method clears the list and continues reading
-            // the XML.
-            //
-            // If at any time, a change is detected in the RTB Text, the
-            // wantFormat event is signalled once more.  During reading of the XML
-            // this is interpreted as a "cancel-and-restart" message.  When
-            // receiving that signal, this method starts reading and highlighting
-            // at the beginning again.
-            //
-            // The reason I batch up changes is that the control.Invoke() method
+            // The reason for the batch approach: the control.Invoke() method
             // can be costly. So I'd like to amortize the cost of it across a
             // batch of format changes.
+            //
+            // These ApplyChanges method applies the batch of changes.  It first
+            // does a richtextbox.Invoke() to get on the proper thread.  Once
+            // there, it saves the scroll and selection state, applies each
+            // formatting change in the list to the rtb text, restores the scroll
+            // and selection state, and then calls Refresh() on the RTB.  After
+            // that method returns, this method clears the list of format changes
+            // and continues reading the next segment XML.
+            //
+            // If at any time, the user changes the RTB text, either through a new
+            // load of an XML file, or through direct editing in the richtextbox,
+            // the main UI signals the wantFormat event again.  This method treats
+            // the raising of that signal as a "cancel-and-restart" message.  Upon
+            // detecting that signal, this method stops working (if it was
+            // working), and then starts reading and highlighting at the beginning
+            // again. (modulo the delay, waiting for the user to stop typing.)
             //
             // When it finishes highlighting, this method waits for the wantFormat
             // signal again.
@@ -217,10 +221,9 @@ namespace XPathVisualizer
                     wantFormat.Reset();
                     progressCount = 0; 
     
-                    //StoreCaretPosition();
                     var list = new List<FormatChange>();
 
-                    // we want a re-format, but let's wait til
+                    // We want a re-format, but let's wait til
                     // the user stops typing...
                     if (_lastRtbKeyPress != _originDateTime)
                     {
@@ -230,8 +233,9 @@ namespace XPathVisualizer
                         if (_delta < new System.TimeSpan(0, 0, 0, 0, DELAY_IN_MILLISECONDS))
                             continue;
                     }
-                    
-                    //string txt = (string)e.Argument;
+
+                    // Get the text ONCE.  In a RichTextBox, this is expensive, so we do it once,
+                    // until a change is detected in the richtextbox.
                     string txt = (this.richTextBox1.InvokeRequired)
                         ? (string)this.richTextBox1.Invoke((System.Func<string>)(() => this.richTextBox1.Text))
                         : this.richTextBox1.Text;
@@ -243,7 +247,7 @@ namespace XPathVisualizer
 
                     int reportingInterval = (maxLines > 96)
                         ? (int)(maxLines / 48)
-                        : 1;
+                        : 4;
                     
                     int lastReport = -1;
                     var sr = new StringReader(txt);

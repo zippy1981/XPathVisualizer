@@ -75,13 +75,6 @@ namespace XPathVisualizer
             this.Text = desc.Description + " v" + a.GetName().Version.ToString();
         }
 
-        private static System.Text.RegularExpressions.Regex unnamedXmlnsRegex =
-            new System.Text.RegularExpressions.Regex("\\sxmlns\\s*=\\s*['\"](.+?)['\"]");
-
-        private static System.Text.RegularExpressions.Regex namedXmlnsRegex =
-            new System.Text.RegularExpressions.Regex("\\sxmlns:([^\\s]+)\\s*=\\s*['\"](.+?)['\"]");
-
-
 
         private void btnLoadXml_Click(object sender, EventArgs e)
         {
@@ -93,7 +86,7 @@ namespace XPathVisualizer
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 this.richTextBox1.Text = File.ReadAllText(this.tbXmlDoc.Text);
                 wantFormat.Set();
-
+                xpathDoc = null; // invalidate the cached doc 
                 PreloadXmlns();
             }
             catch (Exception exc1)
@@ -112,7 +105,7 @@ namespace XPathVisualizer
         //int priorTextLength = -1; 
         private void richTextBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            xpathDoc = null;
+            xpathDoc = null; // invalidate the cached doc 
             nav = null;
             _lastRtbKeyPress = System.DateTime.Now;
             if (this.richTextBox1.Text.Length == 0) return;
@@ -130,35 +123,26 @@ namespace XPathVisualizer
             IntPtr mask = IntPtr.Zero;
             try
             {
-                //stopWatch.Reset();
-                //stopWatch.Start();
-
-                //this.richTextBox1.Update();
-                //mask = this.richTextBox1.BeginUpdate();
-                //this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
-
-                //ColorizeXml(this.richTextBox1);
-
                 PreloadXmlns();
-                //this.lblStatus.Text = "Highlighting...";
-
             }
             catch (Exception exc1)
             {
                 this.lblStatus.Text = String.Format("Cannot process that XML. ({0})", exc1.Message);
             }
-            finally
-            {
-                //this.Cursor = System.Windows.Forms.Cursors.Default;
-                //this.richTextBox1.EndUpdate(mask);
-            }
         }
 
 
 
+        private static System.Text.RegularExpressions.Regex unnamedXmlnsRegex =
+            new System.Text.RegularExpressions.Regex("\\sxmlns\\s*=\\s*['\"](.+?)['\"]");
+
+        private static System.Text.RegularExpressions.Regex namedXmlnsRegex =
+            new System.Text.RegularExpressions.Regex("\\sxmlns:([^\\s]+)\\s*=\\s*['\"](.+?)['\"]");
+
+
         private void PreloadXmlns()
         {
-            xmlnsPrefixes.Clear();
+            xmlNamespaces.Clear();
             int c = 1;
             var regexi = new System.Text.RegularExpressions.Regex[] { namedXmlnsRegex, unnamedXmlnsRegex };
 
@@ -172,7 +156,7 @@ namespace XPathVisualizer
                     foreach (System.Text.RegularExpressions.Match m in matches)
                     {
                         string ns = m.Groups[2 - i].Value.ToString();
-                        if (!xmlnsPrefixes.Values.Contains(ns))
+                        if (!xmlNamespaces.Values.Contains(ns))
                         {
                             // get the prefix - it's either explicit or contrived
                             string origPrefix = (i == 1)
@@ -182,14 +166,14 @@ namespace XPathVisualizer
                             // make sure the prefix is unique
                             int dupes = 0;
                             string actualPrefix = origPrefix;
-                            while (xmlnsPrefixes.Keys.Contains(actualPrefix))
+                            while (xmlNamespaces.Keys.Contains(actualPrefix))
                             {
                                 actualPrefix = (i == 1)
                                     ? String.Format("ns{0}", c++)
                                     : String.Format("{0}-{1}", origPrefix, dupes++);
                             }
 
-                            xmlnsPrefixes.Add(actualPrefix, ns);
+                            xmlNamespaces.Add(actualPrefix, ns);
                         }
                     }
                 }
@@ -266,13 +250,15 @@ namespace XPathVisualizer
 
         private void btnEvalXpath_Click(object sender, EventArgs e)
         {
-            if (String.IsNullOrEmpty(this.tbXpath.Text))
+            string xpathExpression = this.tbXpath.Text;
+            if (String.IsNullOrEmpty(xpathExpression))
             {
                 this.lblStatus.Text = "Cannot evaluate: There is no XPath expression.";
                 return;
             }
 
-            if (String.IsNullOrEmpty(this.richTextBox1.Text))
+            string rtbText = this.richTextBox1.Text;
+            if (String.IsNullOrEmpty(rtbText))
             {
                 this.lblStatus.Text = "Cannot evaluate: There is no XML document.";
                 return;
@@ -290,15 +276,17 @@ namespace XPathVisualizer
                 mask = this.richTextBox1.BeginUpdate();
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 this.tbXpath.BackColor = this.tbXmlns.BackColor; // just in case
-                string xpathExpression = this.tbXpath.Text;
-                //load the Xml doc
-                if (xpathDoc == null) xpathDoc = new XPathDocument(new StringReader(this.richTextBox1.Text));
-                if (nav == null) nav = xpathDoc.CreateNavigator();
-                XmlNamespaceManager xmlns = new XmlNamespaceManager(nav.NameTable);
-                foreach (string k in xmlnsPrefixes.Keys)
+
+                // load the Xml doc
+                if (xpathDoc == null)
                 {
-                    xmlns.AddNamespace(k, xmlnsPrefixes[k]);
+                    xpathDoc = new XPathDocument(new StringReader(rtbText));
+                    nav = xpathDoc.CreateNavigator();
                 }
+                XmlNamespaceManager xmlns = new XmlNamespaceManager(nav.NameTable);
+                foreach (string prefix in xmlNamespaces.Keys)
+                    xmlns.AddNamespace(prefix, xmlNamespaces[prefix]);
+
                 XPathNodeIterator selection = nav.Select(xpathExpression, xmlns);
 
                 if (selection == null || selection.Count == 0)
@@ -318,7 +306,7 @@ namespace XPathVisualizer
             }
             catch (Exception exc1)
             {
-                string brokenPrefix = IsUnkownNamespacePrefix(exc1);
+                string brokenPrefix = IsUnknownNamespacePrefix(exc1);
                 if (brokenPrefix != null)
                 {
                     int ix = this.tbXpath.Text.IndexOf(brokenPrefix);
@@ -378,7 +366,9 @@ namespace XPathVisualizer
         {
             bool scrolled = false;
             var lc = new LineCalculator(this.richTextBox1);
-            string txt = this.richTextBox1.Text;
+
+            // get Text once (it's expensive)
+            string rtbText = this.richTextBox1.Text;
             foreach (XPathNavigator node in selection)
             {
                 IXmlLineInfo lineInfo = node as IXmlLineInfo;
@@ -409,11 +399,11 @@ namespace XPathVisualizer
                         ix++;
                         ix2 = ix + node.Name.Length + 1;
                         char c = ' ';
-                        while (txt[ix2] != '\'' && txt[ix2] != '"')
+                        while (rtbText[ix2] != '\'' && rtbText[ix2] != '"')
                             ix2++;
-                        c = txt[ix2];
+                        c = rtbText[ix2];
                         ix2++;
-                        while (txt[ix2] != c)
+                        while (rtbText[ix2] != c)
                             ix2++;
                     }
                     else if (node.NodeType == XPathNodeType.Element)
@@ -424,11 +414,11 @@ namespace XPathVisualizer
                             // through the text to find the ending square bracket for *this* element.
                             ix2 = lc.GetCharIndexFromLine(lineInfo.LineNumber - 1) +
                                 lineInfo.LinePosition - 1;
-                            string subs1 = txt.Substring(ix2, 1);
+                            string subs1 = rtbText.Substring(ix2, 1);
                             while (subs1 != ">" && ix2 > ix)
                             {
                                 ix2--;
-                                subs1 = txt.Substring(ix2, 1);
+                                subs1 = rtbText.Substring(ix2, 1);
                             }
                         }
                         else
@@ -439,8 +429,8 @@ namespace XPathVisualizer
                             // an empty element), then look for the </NodeName> string.  
 
                             ix2 = ix + node.Name.Length + 1;
-                            //string subs1 = txt.Substring(ix2, 1);
-                            if (txt[ix2] == '/')
+                            //string subs1 = rtbText.Substring(ix2, 1);
+                            if (rtbText[ix2] == '/')
                             {
                                 // we're at the end-element
                                 ix2++;
@@ -448,36 +438,54 @@ namespace XPathVisualizer
                             else
                             {
                                 string subs1 = String.Format("</{0}>", node.Name);
-                                int ix3 = txt.IndexOf(subs1, ix2);
+                                int ix3 = rtbText.IndexOf(subs1, ix2);
                                 if (ix3 > 0)
                                 {
                                     ix2 = ix3 + subs1.Length;
                                 }
                                 else
                                 {
-                                    ix2 = txt.IndexOf('>', ix2);
+                                    ix2 = rtbText.IndexOf('>', ix2);
                                 }
                             }
                         }
                     }
 
+                    // do we need to highlight?
                     if (ix2 > ix)
                     {
+                        // do it. 
                         this.richTextBox1.Select(ix, ix2 - ix + 1);
                         this.richTextBox1.SelectionBackColor =
                             Color.FromArgb(Color.Red.A, 0x98, 0xFb, 0x98);
+
+                        // If this is the first match, scroll to it.
                         if (!scrolled)
                         {
+                            int startLine = this.richTextBox1.GetLineFromCharIndex(ix);
+                            int numVisibleLines = this.rtbe.NumberOfVisibleLines;
+
+                            // if the start line is in the middle of the doc... 
+                            if (startLine > numVisibleLines)
+                            {
+                                // scroll so that the first line is 1/3 the way from the top
+                                int cix =  this.richTextBox1.GetFirstCharIndexFromLine(startLine - numVisibleLines/3 +1);
+                                this.richTextBox1.Select(cix, cix+1);
+                            }
+                            else
+                            {
+                                this.richTextBox1.Select(0, 1);
+                            }
                             this.richTextBox1.ScrollToCaret();
+                            
+                            // restore selection:
+                            this.richTextBox1.Select(ix, ix2 - ix + 1);
                             scrolled = true;
                         }
                     }
                 }
             }
         }
-
-
-
 
         /// <summary>
         /// Re-formats (Indents) the text in the XML RichTextBox
@@ -515,10 +523,10 @@ namespace XPathVisualizer
         }
 
 
-
         private static System.Text.RegularExpressions.Regex re1 =
             new System.Text.RegularExpressions.Regex("Namespace prefix '(.+)' is not defined");
-        private string IsUnkownNamespacePrefix(Exception exc1)
+        
+        private string IsUnknownNamespacePrefix(Exception exc1)
         {
             var match = re1.Match(exc1.ToString());
             if (match != null && match.Captures != null && match.Captures.Count != 0)
@@ -538,7 +546,7 @@ namespace XPathVisualizer
         {
             if (!String.IsNullOrEmpty(this.tbPrefix.Text) && !String.IsNullOrEmpty(this.tbXmlns.Text))
             {
-                if (xmlnsPrefixes.Keys.Contains(tbPrefix.Text))
+                if (xmlNamespaces.Keys.Contains(tbPrefix.Text))
                 {
                     // Bzzt!
                     this.tbPrefix.SelectAll();
@@ -548,7 +556,7 @@ namespace XPathVisualizer
                 else
                 {
                     // add it to the list of prefixes, and display the list
-                    xmlnsPrefixes.Add(tbPrefix.Text, tbXmlns.Text);
+                    xmlNamespaces.Add(tbPrefix.Text, tbXmlns.Text);
                     DisplayXmlPrefixList();
                     this.tbPrefix.Text = "";
                     this.tbXmlns.Text = "";
@@ -560,9 +568,9 @@ namespace XPathVisualizer
 
         private void RemovePrefix(string k)
         {
-            if (xmlnsPrefixes.Keys.Contains(k))
+            if (xmlNamespaces.Keys.Contains(k))
             {
-                xmlnsPrefixes.Remove(k);
+                xmlNamespaces.Remove(k);
                 DisplayXmlPrefixList();
             }
         }
@@ -582,7 +590,7 @@ namespace XPathVisualizer
         }
 
 
-        private Dictionary<String, String> xmlnsPrefixes
+        private Dictionary<String, String> xmlNamespaces
         {
             get
             {
@@ -603,10 +611,10 @@ namespace XPathVisualizer
                 this.pnlPrefixList.Controls.Clear();
 
                 int count = 0;
-                if (xmlnsPrefixes.Keys.Count > 0)
+                if (xmlNamespaces.Keys.Count > 0)
                 {
 
-                    foreach (var k in xmlnsPrefixes.Keys)
+                    foreach (var k in xmlNamespaces.Keys)
                     {
                         // add a set of controls to the panel for each key/value pair in the list
                         var tb1 = new System.Windows.Forms.TextBox
@@ -641,7 +649,7 @@ namespace XPathVisualizer
                                 Location = new System.Drawing.Point(this.tbXmlns.Location.X - offsetX,
                                                                     this.tbXmlns.Location.Y - offsetY + (count * deltaY)),
                                 Size = new System.Drawing.Size(this.tbXmlns.Size.Width, this.tbXmlns.Size.Height),
-                                Text = xmlnsPrefixes[k],
+                                Text = xmlNamespaces[k],
                                 ReadOnly = true,
                                 TabStop = false,
                             };
