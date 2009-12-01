@@ -43,6 +43,8 @@
             this.btnBrowse = new System.Windows.Forms.Button();
             this.tbXmlDoc = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.btn_PrevMatch = new System.Windows.Forms.Button();
+            this.btn_NextMatch = new System.Windows.Forms.Button();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -54,12 +56,15 @@
             this.progressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.linkToCodeplex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.matchPanel = new System.Windows.Forms.FlowLayoutPanel();
+            this.lblMatch = new System.Windows.Forms.Label();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
+            this.matchPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitContainer3
@@ -83,6 +88,7 @@
             // 
             // splitContainer3.Panel2
             // 
+            this.splitContainer3.Panel2.Controls.Add(this.matchPanel);
             this.splitContainer3.Panel2.Controls.Add(this.richTextBox1);
             this.splitContainer3.Size = new System.Drawing.Size(530, 300);
             this.splitContainer3.SplitterDistance = 175;
@@ -221,6 +227,31 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "XML Doc";
             // 
+            // btn_PrevMatch
+            // 
+            this.btn_PrevMatch.AccessibleName = "s";
+            this.btn_PrevMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_PrevMatch.Location = new System.Drawing.Point(3, 3);
+            this.btn_PrevMatch.Name = "btn_PrevMatch";
+            this.btn_PrevMatch.Size = new System.Drawing.Size(28, 23);
+            this.btn_PrevMatch.TabIndex = 82;
+            this.btn_PrevMatch.Text = "<<";
+            this.toolTip1.SetToolTip(this.btn_PrevMatch, "previous match");
+            this.btn_PrevMatch.UseVisualStyleBackColor = true;
+            this.btn_PrevMatch.Click += new System.EventHandler(this.btn_PrevMatch_Click);
+            // 
+            // btn_NextMatch
+            // 
+            this.btn_NextMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_NextMatch.Location = new System.Drawing.Point(67, 3);
+            this.btn_NextMatch.Name = "btn_NextMatch";
+            this.btn_NextMatch.Size = new System.Drawing.Size(28, 23);
+            this.btn_NextMatch.TabIndex = 81;
+            this.btn_NextMatch.Text = ">>";
+            this.toolTip1.SetToolTip(this.btn_NextMatch, "next match");
+            this.btn_NextMatch.UseVisualStyleBackColor = true;
+            this.btn_NextMatch.Click += new System.EventHandler(this.btn_NextMatch_Click);
+            // 
             // richTextBox1
             // 
             this.richTextBox1.BackColor = System.Drawing.SystemColors.Window;
@@ -244,33 +275,33 @@
             this.copyAllToolStripMenuItem,
             this.pasteToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(153, 114);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(124, 92);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(123, 22);
             this.toolStripMenuItem1.Text = "Reformat";
             this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
             // 
             // copyToolStripMenuItem
             // 
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
             this.copyToolStripMenuItem.Text = "Copy";
             this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
             // 
             // copyAllToolStripMenuItem
             // 
             this.copyAllToolStripMenuItem.Name = "copyAllToolStripMenuItem";
-            this.copyAllToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.copyAllToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
             this.copyAllToolStripMenuItem.Text = "Copy All";
             this.copyAllToolStripMenuItem.Click += new System.EventHandler(this.copyAllToolStripMenuItem_Click);
             // 
             // pasteToolStripMenuItem
             // 
             this.pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
-            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
             this.pasteToolStripMenuItem.Text = "Paste";
             this.pasteToolStripMenuItem.Click += new System.EventHandler(this.pasteToolStripMenuItem_Click);
             // 
@@ -308,6 +339,37 @@
             this.linkToCodeplex.Text = "http://XPathVisualizer.codeplex.com";
             this.linkToCodeplex.Click += new System.EventHandler(this.linkToCodeplex_Click);
             // 
+            // matchPanel
+            // 
+            this.matchPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.matchPanel.AutoSize = true;
+            this.matchPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.matchPanel.BackColor = System.Drawing.SystemColors.Window;
+            this.matchPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.matchPanel.Controls.Add(this.btn_NextMatch);
+            this.matchPanel.Controls.Add(this.lblMatch);
+            this.matchPanel.Controls.Add(this.btn_PrevMatch);
+            this.matchPanel.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
+            this.matchPanel.Location = new System.Drawing.Point(410, 3);
+            this.matchPanel.Name = "matchPanel";
+            this.matchPanel.Size = new System.Drawing.Size(100, 31);
+            this.matchPanel.TabIndex = 84;
+            this.matchPanel.WrapContents = false;
+            // 
+            // lblMatch
+            // 
+            this.lblMatch.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.lblMatch.AutoSize = true;
+            this.lblMatch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblMatch.Location = new System.Drawing.Point(35, 6);
+            this.lblMatch.Margin = new System.Windows.Forms.Padding(1, 0, 1, 0);
+            this.lblMatch.Name = "lblMatch";
+            this.lblMatch.Padding = new System.Windows.Forms.Padding(1);
+            this.lblMatch.Size = new System.Drawing.Size(28, 17);
+            this.lblMatch.TabIndex = 83;
+            this.lblMatch.Text = "0/0";
+            this.lblMatch.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // XPathVisualizerTool
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -325,12 +387,15 @@
             this.splitContainer3.Panel1.ResumeLayout(false);
             this.splitContainer3.Panel1.PerformLayout();
             this.splitContainer3.Panel2.ResumeLayout(false);
+            this.splitContainer3.Panel2.PerformLayout();
             this.splitContainer3.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.contextMenuStrip1.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            this.matchPanel.ResumeLayout(false);
+            this.matchPanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -362,6 +427,10 @@
         private System.Windows.Forms.ToolStripMenuItem copyAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pasteToolStripMenuItem;
+        private System.Windows.Forms.Button btn_PrevMatch;
+        private System.Windows.Forms.Button btn_NextMatch;
+        private System.Windows.Forms.FlowLayoutPanel matchPanel;
+        private System.Windows.Forms.Label lblMatch;
     }
 }
 

@@ -1,4 +1,6 @@
-﻿// XPathVisualizerTool.cs
+//﻿#define Trace
+
+// XPathVisualizerTool.cs
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2009 Dino Chiesa.
@@ -32,14 +34,31 @@ namespace XPathVisualizer
 {
     public partial class XPathVisualizerTool : Form
     {
+
+        private XPathDocument xpathDoc;
+        private XPathNavigator nav;
+        private Dictionary<String, String> _xmlnsPrefixes;
+        private int originalGroupBoxMinHeight;
+        private int originalPanel1MinSize;
+        private System.Threading.ManualResetEvent wantFormat = new System.Threading.ManualResetEvent(false);
+        private DateTime _originDateTime = new System.DateTime(0);
+        private System.DateTime _lastRtbKeyPress;
+        private XPathParser<XElement> xpathParser = new XPathParser<XElement>();
+        private List<int> matchPositions;
+        private int currentMatch;
+        private int numVisibleLines;
+        private int totalLinesInDoc;
+        
         public XPathVisualizerTool()
         {
+            SetupDebugConsole(); // for debugging purposes
             InitializeComponent();
             FixupTitle();
             RememberSizes();
             AdjustSplitterSize();
             SetupAutocompletes();
             KickoffColorizer();
+            DisableMatchButtons();
 
             this.progressBar1.Visible = false;
             this.lblStatus.Text = "Ready";
@@ -87,6 +106,8 @@ namespace XPathVisualizer
                 this.richTextBox1.Text = File.ReadAllText(this.tbXmlDoc.Text);
                 wantFormat.Set();
                 xpathDoc = null; // invalidate the cached doc 
+                matchPositions = null;
+                DisableMatchButtons();
                 PreloadXmlns();
             }
             catch (Exception exc1)
@@ -248,8 +269,10 @@ namespace XPathVisualizer
             }
         }
 
+        
         private void btnEvalXpath_Click(object sender, EventArgs e)
         {
+            DisableMatchButtons();
             string xpathExpression = this.tbXpath.Text;
             if (String.IsNullOrEmpty(xpathExpression))
             {
@@ -324,7 +347,7 @@ namespace XPathVisualizer
                 }
                 else
                 {
-                    MessageBox.Show("Exception: " + exc1.ToString(),
+                    MessageBox.Show("Exception: " + exc1.Message,
                                     "Exception while evaluating XPath",
                                     MessageBoxButtons.OK,
                                     MessageBoxIcon.Exclamation);
@@ -364,9 +387,9 @@ namespace XPathVisualizer
         /// <param name="xmlns">you know</param>
         private void HighlightSelection(XPathNodeIterator selection, XmlNamespaceManager xmlns)
         {
-            bool scrolled = false;
             var lc = new LineCalculator(this.richTextBox1);
-
+            matchPositions = new List<int>();
+            
             // get Text once (it's expensive)
             string rtbText = this.richTextBox1.Text;
             foreach (XPathNavigator node in selection)
@@ -459,34 +482,22 @@ namespace XPathVisualizer
                         this.richTextBox1.SelectionBackColor =
                             Color.FromArgb(Color.Red.A, 0x98, 0xFb, 0x98);
 
-                        // If this is the first match, scroll to it.
-                        if (!scrolled)
-                        {
-                            int startLine = this.richTextBox1.GetLineFromCharIndex(ix);
-                            int numVisibleLines = this.rtbe.NumberOfVisibleLines;
-
-                            // if the start line is in the middle of the doc... 
-                            if (startLine > numVisibleLines)
-                            {
-                                // scroll so that the first line is 1/3 the way from the top
-                                int cix =  this.richTextBox1.GetFirstCharIndexFromLine(startLine - numVisibleLines/3 +1);
-                                this.richTextBox1.Select(cix, cix+1);
-                            }
-                            else
-                            {
-                                this.richTextBox1.Select(0, 1);
-                            }
-                            this.richTextBox1.ScrollToCaret();
-                            
-                            // restore selection:
-                            this.richTextBox1.Select(ix, ix2 - ix + 1);
-                            scrolled = true;
-                        }
+                        // To allow scrolling later, remember the locations
+                        // of matches within the doc.
+                        matchPositions.Add(ix);
                     }
                 }
             }
+
+            currentMatch = 0;
+            scrollToCurrentMatch();
+            EnableMatchButtons();
         }
 
+
+
+    
+        
         /// <summary>
         /// Re-formats (Indents) the text in the XML RichTextBox
         /// </summary>
@@ -689,16 +700,6 @@ namespace XPathVisualizer
             }
         }
 
-        private XPathDocument xpathDoc;
-        private XPathNavigator nav;
-        private Dictionary<String, String> _xmlnsPrefixes;
-        private int originalGroupBoxMinHeight;
-        private int originalPanel1MinSize;
-        private System.Threading.ManualResetEvent wantFormat = new System.Threading.ManualResetEvent(false);
-        private DateTime _originDateTime = new System.DateTime(0);
-        private System.DateTime _lastRtbKeyPress;
-        private XPathParser<XElement> xpathParser = new XPathParser<XElement>();
-
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
             IndentXml();
@@ -725,6 +726,81 @@ namespace XPathVisualizer
                 this.richTextBox1.SelectedText = o;
                 wantFormat.Set();
             }
+        }
+
+        
+        private void DisableMatchButtons()
+        {
+            this.matchPanel.Visible = false;
+            matchPositions= null;
+            this.lblMatch.Text = "";
+            this.btn_NextMatch.Enabled = false;
+            this.btn_PrevMatch.Enabled = false;
+        }
+        
+        private void EnableMatchButtons()
+        {
+            if (matchPositions != null && matchPositions.Count > 0)
+            {
+                this.btn_NextMatch.Enabled = true;
+                this.btn_PrevMatch.Enabled = true;
+                currentMatch = 0;
+                numVisibleLines = this.rtbe.NumberOfVisibleLines;
+                totalLinesInDoc = this.richTextBox1.Lines.Count();
+                this.matchPanel.Visible = true;
+            }
+        }
+
+        private void scrollToCurrentMatch()
+        {
+            int position = matchPositions[currentMatch];
+
+            Trace("scrollToPosition(match({0}) position({1}))",
+                  currentMatch, position);
+            int startLine = this.richTextBox1.GetLineFromCharIndex(position);
+            Trace("scrollToPosition::startLine({0}) numVisibleLines({0})",
+                  startLine, numVisibleLines);
+
+            this.lblMatch.Text = String.Format("{0}/{1}",
+                                              currentMatch+1, matchPositions.Count);
+                                              
+            // If the start line is in the middle of the doc... 
+                //if (startLine > totalLinesInDoc)
+            if (startLine > numVisibleLines-2)
+            {
+                // scroll so that the first line is 1/3 the way from the top
+                int cix =  this.richTextBox1.GetFirstCharIndexFromLine(startLine - numVisibleLines/3 +1);
+                this.richTextBox1.Select(cix, cix+1);
+            }
+            else
+            {
+                // set the selection at the very beginning
+                this.richTextBox1.Select(0, 1);
+            }
+            this.richTextBox1.ScrollToCaret();
+                            
+            // restore selection:
+            this.richTextBox1.Select(position, 0);
+        }
+
+        
+        private void btn_NextMatch_Click(object sender, EventArgs e)        
+        {
+            if (matchPositions == null) return;
+            currentMatch++;
+            if (currentMatch == matchPositions.Count)
+                currentMatch = 0;
+            scrollToCurrentMatch();
+        }
+
+        private void btn_PrevMatch_Click(object sender, EventArgs e)
+        {
+            if (matchPositions == null) return;
+            currentMatch--;
+            if (currentMatch < 0)
+                currentMatch = matchPositions.Count-1;
+            Trace("currentMatch = {0}", currentMatch);
+            scrollToCurrentMatch();
         }
     }
 
