@@ -1,4 +1,4 @@
-// EnableLaunchApplication.js <msi-file>
+// ModifyMsiToEnableLaunchApplication.js <msi-file>
 //
 // Performs a post-build fixup of an msi to launch a specific file when
 // the install has completed. 
@@ -19,11 +19,23 @@ var filename     = "XPathVisualizer.exe";   // The name of the executable to lau
 // Constant values from Windows Installer
 var msiOpenDatabaseModeTransact = 1;
 
-var msiViewModifyInsert         = 1;
-var msiViewModifyUpdate         = 2;
-var msiViewModifyAssign         = 3;
-var msiViewModifyReplace        = 4;
-var msiViewModifyDelete         = 6;
+
+// http://msdn.microsoft.com/en-us/library/aa372516(VS.85).aspx
+var MsiViewModify = 
+    {
+        Refresh          : 0,
+        Insert           : 1,
+        Update           : 2,
+        Assign           : 3,
+        Replace          : 4,
+        Merge            : 5,
+        Delete           : 6,
+        InsertTemporary  : 7,   // during install, cannot permanently modify the MSI tables
+        Validate         : 8,
+        ValidateNew      : 9,
+        ValidateField    : 10,
+        ValidateDelete   : 11
+    };
 
 
 
@@ -56,7 +68,7 @@ try
     view.Execute();
     record = view.Fetch();
     record.StringData(11) = "CheckboxLaunch";
-    view.Modify(msiViewModifyReplace, record);
+    view.Modify(MsiViewModify.Replace, record);
     view.Close();
 
 
@@ -66,7 +78,7 @@ try
     view.Execute();
     record = view.Fetch();
     record.IntegerData(7) = 33;
-    view.Modify(msiViewModifyReplace, record);
+    view.Modify(MsiViewModify.Replace, record);
     view.Close();
 
     sql = "SELECT `Dialog_`, `Control`, `Type`, `X`, `Y`, `Width`, `Height`, `Attributes`, `Property`, `Text`, `Control_Next`, `Help` FROM `Control` WHERE `Dialog_`='FinishedForm' AND `Control`='BodyText'";
@@ -74,7 +86,7 @@ try
     view.Execute();
     record = view.Fetch();
     record.IntegerData(7) = 33;
-    view.Modify(msiViewModifyReplace, record);
+    view.Modify(MsiViewModify.Replace, record);
     view.Close();
 
     // Insert the new CheckBox control
@@ -92,7 +104,7 @@ try
     view.Execute();
     record = view.Fetch();
     record.IntegerData(6) = 1;
-    view.Modify(msiViewModifyReplace, record);
+    view.Modify(MsiViewModify.Replace, record);
     view.Close();
 
     // Insert the Event to launch the application

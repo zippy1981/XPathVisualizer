@@ -19,13 +19,6 @@ function UpdateText(formName, text, textName)
 // Constant values from Windows Installer
 var msiOpenDatabaseModeTransact = 1;
 
-var msiViewModifyInsert         = 1;
-var msiViewModifyUpdate         = 2;
-var msiViewModifyAssign         = 3;
-var msiViewModifyReplace        = 4;
-var msiViewModifyDelete         = 6;
-
-
 if (WScript.Arguments.Length != 1)
 {
     WScript.StdErr.WriteLine(WScript.ScriptName + ": Updates an MSI to move the custom action in sequence");
