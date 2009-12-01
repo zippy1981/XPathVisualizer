@@ -43,8 +43,10 @@
             this.btnBrowse = new System.Windows.Forms.Button();
             this.tbXmlDoc = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.btn_PrevMatch = new System.Windows.Forms.Button();
+            this.matchPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.btn_NextMatch = new System.Windows.Forms.Button();
+            this.lblMatch = new System.Windows.Forms.Label();
+            this.btn_PrevMatch = new System.Windows.Forms.Button();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -56,15 +58,13 @@
             this.progressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.linkToCodeplex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.matchPanel = new System.Windows.Forms.FlowLayoutPanel();
-            this.lblMatch = new System.Windows.Forms.Label();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.matchPanel.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
-            this.matchPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitContainer3
@@ -187,6 +187,7 @@
             this.tbXpath.TabIndex = 40;
             this.tbXpath.Text = "";
             this.toolTip1.SetToolTip(this.tbXpath, "XPath expression");
+            this.tbXpath.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbXpath_KeyDown);
             this.tbXpath.TextChanged += new System.EventHandler(this.tbXpath_TextChanged);
             // 
             // label2
@@ -227,18 +228,22 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "XML Doc";
             // 
-            // btn_PrevMatch
+            // matchPanel
             // 
-            this.btn_PrevMatch.AccessibleName = "s";
-            this.btn_PrevMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_PrevMatch.Location = new System.Drawing.Point(3, 3);
-            this.btn_PrevMatch.Name = "btn_PrevMatch";
-            this.btn_PrevMatch.Size = new System.Drawing.Size(28, 23);
-            this.btn_PrevMatch.TabIndex = 82;
-            this.btn_PrevMatch.Text = "<<";
-            this.toolTip1.SetToolTip(this.btn_PrevMatch, "previous match");
-            this.btn_PrevMatch.UseVisualStyleBackColor = true;
-            this.btn_PrevMatch.Click += new System.EventHandler(this.btn_PrevMatch_Click);
+            this.matchPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.matchPanel.AutoSize = true;
+            this.matchPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.matchPanel.BackColor = System.Drawing.SystemColors.Window;
+            this.matchPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.matchPanel.Controls.Add(this.btn_NextMatch);
+            this.matchPanel.Controls.Add(this.lblMatch);
+            this.matchPanel.Controls.Add(this.btn_PrevMatch);
+            this.matchPanel.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
+            this.matchPanel.Location = new System.Drawing.Point(410, 3);
+            this.matchPanel.Name = "matchPanel";
+            this.matchPanel.Size = new System.Drawing.Size(100, 31);
+            this.matchPanel.TabIndex = 84;
+            this.matchPanel.WrapContents = false;
             // 
             // btn_NextMatch
             // 
@@ -251,6 +256,33 @@
             this.toolTip1.SetToolTip(this.btn_NextMatch, "next match");
             this.btn_NextMatch.UseVisualStyleBackColor = true;
             this.btn_NextMatch.Click += new System.EventHandler(this.btn_NextMatch_Click);
+            // 
+            // lblMatch
+            // 
+            this.lblMatch.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.lblMatch.AutoSize = true;
+            this.lblMatch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblMatch.Location = new System.Drawing.Point(35, 6);
+            this.lblMatch.Margin = new System.Windows.Forms.Padding(1, 0, 1, 0);
+            this.lblMatch.Name = "lblMatch";
+            this.lblMatch.Padding = new System.Windows.Forms.Padding(1);
+            this.lblMatch.Size = new System.Drawing.Size(28, 17);
+            this.lblMatch.TabIndex = 83;
+            this.lblMatch.Text = "0/0";
+            this.lblMatch.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // btn_PrevMatch
+            // 
+            this.btn_PrevMatch.AccessibleName = "s";
+            this.btn_PrevMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_PrevMatch.Location = new System.Drawing.Point(3, 3);
+            this.btn_PrevMatch.Name = "btn_PrevMatch";
+            this.btn_PrevMatch.Size = new System.Drawing.Size(28, 23);
+            this.btn_PrevMatch.TabIndex = 82;
+            this.btn_PrevMatch.Text = "<<";
+            this.toolTip1.SetToolTip(this.btn_PrevMatch, "previous match");
+            this.btn_PrevMatch.UseVisualStyleBackColor = true;
+            this.btn_PrevMatch.Click += new System.EventHandler(this.btn_PrevMatch_Click);
             // 
             // richTextBox1
             // 
@@ -339,37 +371,6 @@
             this.linkToCodeplex.Text = "http://XPathVisualizer.codeplex.com";
             this.linkToCodeplex.Click += new System.EventHandler(this.linkToCodeplex_Click);
             // 
-            // matchPanel
-            // 
-            this.matchPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.matchPanel.AutoSize = true;
-            this.matchPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.matchPanel.BackColor = System.Drawing.SystemColors.Window;
-            this.matchPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.matchPanel.Controls.Add(this.btn_NextMatch);
-            this.matchPanel.Controls.Add(this.lblMatch);
-            this.matchPanel.Controls.Add(this.btn_PrevMatch);
-            this.matchPanel.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
-            this.matchPanel.Location = new System.Drawing.Point(410, 3);
-            this.matchPanel.Name = "matchPanel";
-            this.matchPanel.Size = new System.Drawing.Size(100, 31);
-            this.matchPanel.TabIndex = 84;
-            this.matchPanel.WrapContents = false;
-            // 
-            // lblMatch
-            // 
-            this.lblMatch.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.lblMatch.AutoSize = true;
-            this.lblMatch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblMatch.Location = new System.Drawing.Point(35, 6);
-            this.lblMatch.Margin = new System.Windows.Forms.Padding(1, 0, 1, 0);
-            this.lblMatch.Name = "lblMatch";
-            this.lblMatch.Padding = new System.Windows.Forms.Padding(1);
-            this.lblMatch.Size = new System.Drawing.Size(28, 17);
-            this.lblMatch.TabIndex = 83;
-            this.lblMatch.Text = "0/0";
-            this.lblMatch.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // XPathVisualizerTool
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -378,12 +379,14 @@
             this.Controls.Add(this.splitContainer3);
             this.Controls.Add(this.statusStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.MinimumSize = new System.Drawing.Size(440, 320);
             this.Name = "XPathVisualizerTool";
             this.Text = "XPathVisualizer";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Resize += new System.EventHandler(this.XPathVisualizerTool_Resize);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.form_KeyDown);
             this.splitContainer3.Panel1.ResumeLayout(false);
             this.splitContainer3.Panel1.PerformLayout();
             this.splitContainer3.Panel2.ResumeLayout(false);
@@ -391,11 +394,11 @@
             this.splitContainer3.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.matchPanel.ResumeLayout(false);
+            this.matchPanel.PerformLayout();
             this.contextMenuStrip1.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
-            this.matchPanel.ResumeLayout(false);
-            this.matchPanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -1,4 +1,4 @@
-//﻿#define Trace
+﻿//﻿#define Trace
 
 // XPathVisualizerTool.cs
 // ------------------------------------------------------------------
@@ -48,7 +48,7 @@ namespace XPathVisualizer
         private int currentMatch;
         private int numVisibleLines;
         private int totalLinesInDoc;
-        
+
         public XPathVisualizerTool()
         {
             SetupDebugConsole(); // for debugging purposes
@@ -269,7 +269,7 @@ namespace XPathVisualizer
             }
         }
 
-        
+
         private void btnEvalXpath_Click(object sender, EventArgs e)
         {
             DisableMatchButtons();
@@ -389,7 +389,7 @@ namespace XPathVisualizer
         {
             var lc = new LineCalculator(this.richTextBox1);
             matchPositions = new List<int>();
-            
+
             // get Text once (it's expensive)
             string rtbText = this.richTextBox1.Text;
             foreach (XPathNavigator node in selection)
@@ -496,8 +496,8 @@ namespace XPathVisualizer
 
 
 
-    
-        
+
+
         /// <summary>
         /// Re-formats (Indents) the text in the XML RichTextBox
         /// </summary>
@@ -536,7 +536,7 @@ namespace XPathVisualizer
 
         private static System.Text.RegularExpressions.Regex re1 =
             new System.Text.RegularExpressions.Regex("Namespace prefix '(.+)' is not defined");
-        
+
         private string IsUnknownNamespacePrefix(Exception exc1)
         {
             var match = re1.Match(exc1.ToString());
@@ -728,16 +728,16 @@ namespace XPathVisualizer
             }
         }
 
-        
+
         private void DisableMatchButtons()
         {
             this.matchPanel.Visible = false;
-            matchPositions= null;
+            matchPositions = null;
             this.lblMatch.Text = "";
             this.btn_NextMatch.Enabled = false;
             this.btn_PrevMatch.Enabled = false;
         }
-        
+
         private void EnableMatchButtons()
         {
             if (matchPositions != null && matchPositions.Count > 0)
@@ -762,15 +762,15 @@ namespace XPathVisualizer
                   startLine, numVisibleLines);
 
             this.lblMatch.Text = String.Format("{0}/{1}",
-                                              currentMatch+1, matchPositions.Count);
-                                              
+                                              currentMatch + 1, matchPositions.Count);
+
             // If the start line is in the middle of the doc... 
-                //if (startLine > totalLinesInDoc)
-            if (startLine > numVisibleLines-2)
+            //if (startLine > totalLinesInDoc)
+            if (startLine > numVisibleLines - 2)
             {
                 // scroll so that the first line is 1/3 the way from the top
-                int cix =  this.richTextBox1.GetFirstCharIndexFromLine(startLine - numVisibleLines/3 +1);
-                this.richTextBox1.Select(cix, cix+1);
+                int cix = this.richTextBox1.GetFirstCharIndexFromLine(startLine - numVisibleLines / 3 + 1);
+                this.richTextBox1.Select(cix, cix + 1);
             }
             else
             {
@@ -778,13 +778,13 @@ namespace XPathVisualizer
                 this.richTextBox1.Select(0, 1);
             }
             this.richTextBox1.ScrollToCaret();
-                            
+
             // restore selection:
             this.richTextBox1.Select(position, 0);
         }
 
-        
-        private void btn_NextMatch_Click(object sender, EventArgs e)        
+
+        private void btn_NextMatch_Click(object sender, EventArgs e)
         {
             if (matchPositions == null) return;
             currentMatch++;
@@ -798,9 +798,46 @@ namespace XPathVisualizer
             if (matchPositions == null) return;
             currentMatch--;
             if (currentMatch < 0)
-                currentMatch = matchPositions.Count-1;
+                currentMatch = matchPositions.Count - 1;
             Trace("currentMatch = {0}", currentMatch);
             scrollToCurrentMatch();
+        }
+
+
+        private void tbXpath_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                this.btnEvalXpath_Click(sender, null);
+                e.Handled = true;
+            }
+            else if (e.Control && e.KeyCode == Keys.N)
+            {
+                btn_NextMatch_Click(sender, null);
+                e.Handled = true;
+            }
+            else if (e.Control && e.KeyCode == Keys.P)
+            {
+                btn_PrevMatch_Click(sender, null);
+                e.Handled = true;
+            }
+        }
+
+        private void form_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Because Form.KeyPreview is true, this method gets invoked before
+            // the KeyDown event is passed to the control with focus.  This way we 
+            // can handle keydown events on a form-wide basis. 
+            if (e.Control && e.KeyCode == Keys.N)
+            {
+                btn_NextMatch_Click(sender, null);
+                e.Handled = true;
+            }
+            else if (e.Control && e.KeyCode == Keys.P)
+            {
+                btn_PrevMatch_Click(sender, null);
+                e.Handled = true;
+            }
         }
     }
 
