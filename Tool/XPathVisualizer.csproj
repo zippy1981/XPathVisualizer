@@ -67,6 +67,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="RichTextBoxExtras.cs" />
+    <Compile Include="NoNamespaceXmlTextWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="XPathVisualizerTool.resx">
       <DependentUpon>XPathVisualizerTool.cs</DependentUpon>

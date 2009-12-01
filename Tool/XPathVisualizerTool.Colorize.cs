@@ -53,7 +53,7 @@ namespace XPathVisualizer
                 this.progressBar1.Visible = false;
                 // only reset the status string if it has not changed in the interim
                 if (this.lblStatus.Text == "Formatting...")
-                    this.lblStatus.Text = "Done formatting.";
+                    this.lblStatus.Text = String.Format("Done formatting. {0} lines", this.richTextBox1.Lines.Length);
             }
         }
 

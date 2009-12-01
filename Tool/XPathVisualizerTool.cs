@@ -511,13 +511,23 @@ namespace XPathVisualizer
                 System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
                 doc.LoadXml(this.richTextBox1.Text);
                 var builder = new System.Text.StringBuilder();
-                var settings = new System.Xml.XmlWriterSettings { OmitXmlDeclaration = true, Indent = true };
+                var settings = new System.Xml.XmlWriterSettings
+                    {
+                        // OmitXmlDeclaration = true,
+                        Indent = true,
+                        IndentChars= "  "
+                    };
+                
                 using (var writer = System.Xml.XmlWriter.Create(builder, settings))
                 {
                     doc.Save(writer);
                 }
                 this.richTextBox1.Text = builder.ToString();
                 wantFormat.Set();
+                xpathDoc = null; // invalidate the cached doc 
+                matchPositions = null;
+                DisableMatchButtons();
+                PreloadXmlns();
             }
             catch (System.Exception)
             {
@@ -624,7 +634,6 @@ namespace XPathVisualizer
                 int count = 0;
                 if (xmlNamespaces.Keys.Count > 0)
                 {
-
                     foreach (var k in xmlNamespaces.Keys)
                     {
                         // add a set of controls to the panel for each key/value pair in the list
@@ -683,15 +692,14 @@ namespace XPathVisualizer
                         count++;
                     }
                 }
-                else
-                    count = 1;
 
-                // we don't need the groupbox to get any larger.
-                //                 var size = new System.Drawing.Size(0, originalGroupBoxMinHeight + (deltaY * (count-1)) );
-                //                 this.groupBox1.MinimumSize = size;
-                //                 this.groupBox1.MaximumSize = size;
-                this.splitContainer3.Panel1MinSize = originalPanel1MinSize + (deltaY * (count - 1));
+                this.splitContainer3.Panel1MinSize = originalPanel1MinSize + (deltaY * count);
                 this.splitContainer3.SplitterDistance = this.splitContainer3.Panel1MinSize;
+
+                // We don't need to explicitly set the size of the groupbox.  Groupbox1
+                // is docked at the bottom of SplitContainer3.Panel1, so it grows as we
+                // move the splitter.
+                
             }
             catch (Exception exc1)
             {
@@ -705,6 +713,49 @@ namespace XPathVisualizer
             IndentXml();
         }
 
+        private void stripNamespacesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            StripXmlNamespaces();
+        }
+
+        /// <summary>
+        /// Strips namespaces from the XML in the XML RichTextBox
+        /// </summary>
+        /// <remarks>
+        /// This finishes pretty quickly, no need to do it asynchronously. 
+        /// </remarks>
+        private void StripXmlNamespaces()
+        {
+            try
+            {
+                System.Xml.XmlDocument doc= new System.Xml.XmlDocument();
+                doc.LoadXml(this.richTextBox1.Text);
+
+                var builder = new System.Text.StringBuilder();
+                var settings = new System.Xml.XmlWriterSettings
+                    {
+                        //OmitXmlDeclaration = true,
+                        Indent = true,
+                        IndentChars= "  "
+                    };
+                
+                using (var writer = new NoNamespaceXmlTextWriter(builder, settings))
+                {
+                    doc.Save(writer);
+                }
+                this.richTextBox1.Text = builder.ToString();
+                wantFormat.Set();
+                xpathDoc = null; // invalidate the cached doc 
+                matchPositions = null;
+                DisableMatchButtons();
+                PreloadXmlns();
+            }
+            catch (System.Exception)
+            {
+                // illegal xml... do nothing
+            }
+        }
+        
         private void copyAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string txt = this.richTextBox1.Text;
@@ -839,8 +890,7 @@ namespace XPathVisualizer
                 e.Handled = true;
             }
         }
+
     }
-
-
 
 }
