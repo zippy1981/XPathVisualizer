@@ -58,6 +58,7 @@
             this.progressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.linkToCodeplex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.stripNamespacesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
@@ -70,6 +71,7 @@
             // splitContainer3
             // 
             this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer3.IsSplitterFixed = true;
             this.splitContainer3.Location = new System.Drawing.Point(0, 0);
             this.splitContainer3.Name = "splitContainer3";
             this.splitContainer3.Orientation = System.Windows.Forms.Orientation.Horizontal;
@@ -84,14 +86,14 @@
             this.splitContainer3.Panel1.Controls.Add(this.btnBrowse);
             this.splitContainer3.Panel1.Controls.Add(this.tbXmlDoc);
             this.splitContainer3.Panel1.Controls.Add(this.label1);
-            this.splitContainer3.Panel1MinSize = 140;
+            this.splitContainer3.Panel1MinSize = 114;
             // 
             // splitContainer3.Panel2
             // 
             this.splitContainer3.Panel2.Controls.Add(this.matchPanel);
             this.splitContainer3.Panel2.Controls.Add(this.richTextBox1);
             this.splitContainer3.Size = new System.Drawing.Size(530, 300);
-            this.splitContainer3.SplitterDistance = 175;
+            this.splitContainer3.SplitterDistance = 130;
             this.splitContainer3.SplitterWidth = 6;
             this.splitContainer3.TabIndex = 0;
             // 
@@ -100,14 +102,15 @@
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox1.Controls.Add(this.pnlPrefixList);
             this.groupBox1.Controls.Add(this.tbXmlns);
             this.groupBox1.Controls.Add(this.tbPrefix);
             this.groupBox1.Controls.Add(this.btnAddNsPrefix);
             this.groupBox1.Location = new System.Drawing.Point(12, 67);
-            this.groupBox1.MinimumSize = new System.Drawing.Size(0, 70);
+            this.groupBox1.MinimumSize = new System.Drawing.Size(0, 42);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(506, 104);
+            this.groupBox1.Size = new System.Drawing.Size(509, 64);
             this.groupBox1.TabIndex = 48;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "namespaces and prefixes";
@@ -119,7 +122,7 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlPrefixList.Location = new System.Drawing.Point(2, 42);
             this.pnlPrefixList.Name = "pnlPrefixList";
-            this.pnlPrefixList.Size = new System.Drawing.Size(502, 56);
+            this.pnlPrefixList.Size = new System.Drawing.Size(505, 16);
             this.pnlPrefixList.TabIndex = 51;
             // 
             // tbXmlns
@@ -128,7 +131,7 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.tbXmlns.Location = new System.Drawing.Point(96, 16);
             this.tbXmlns.Name = "tbXmlns";
-            this.tbXmlns.Size = new System.Drawing.Size(364, 20);
+            this.tbXmlns.Size = new System.Drawing.Size(367, 20);
             this.tbXmlns.TabIndex = 55;
             // 
             // tbPrefix
@@ -142,7 +145,7 @@
             // btnAddNsPrefix
             // 
             this.btnAddNsPrefix.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnAddNsPrefix.Location = new System.Drawing.Point(466, 16);
+            this.btnAddNsPrefix.Location = new System.Drawing.Point(469, 16);
             this.btnAddNsPrefix.Name = "btnAddNsPrefix";
             this.btnAddNsPrefix.Size = new System.Drawing.Size(28, 20);
             this.btnAddNsPrefix.TabIndex = 60;
@@ -239,16 +242,16 @@
             this.matchPanel.Controls.Add(this.lblMatch);
             this.matchPanel.Controls.Add(this.btn_PrevMatch);
             this.matchPanel.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
-            this.matchPanel.Location = new System.Drawing.Point(410, 3);
+            this.matchPanel.Location = new System.Drawing.Point(406, 3);
             this.matchPanel.Name = "matchPanel";
-            this.matchPanel.Size = new System.Drawing.Size(100, 31);
+            this.matchPanel.Size = new System.Drawing.Size(104, 31);
             this.matchPanel.TabIndex = 84;
             this.matchPanel.WrapContents = false;
             // 
             // btn_NextMatch
             // 
             this.btn_NextMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_NextMatch.Location = new System.Drawing.Point(67, 3);
+            this.btn_NextMatch.Location = new System.Drawing.Point(71, 3);
             this.btn_NextMatch.Name = "btn_NextMatch";
             this.btn_NextMatch.Size = new System.Drawing.Size(28, 23);
             this.btn_NextMatch.TabIndex = 81;
@@ -262,11 +265,11 @@
             this.lblMatch.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblMatch.AutoSize = true;
             this.lblMatch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblMatch.Location = new System.Drawing.Point(35, 6);
+            this.lblMatch.Location = new System.Drawing.Point(35, 4);
             this.lblMatch.Margin = new System.Windows.Forms.Padding(1, 0, 1, 0);
             this.lblMatch.Name = "lblMatch";
-            this.lblMatch.Padding = new System.Windows.Forms.Padding(1);
-            this.lblMatch.Size = new System.Drawing.Size(28, 17);
+            this.lblMatch.Padding = new System.Windows.Forms.Padding(3);
+            this.lblMatch.Size = new System.Drawing.Size(32, 21);
             this.lblMatch.TabIndex = 83;
             this.lblMatch.Text = "0/0";
             this.lblMatch.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -293,7 +296,7 @@
             this.richTextBox1.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.richTextBox1.Location = new System.Drawing.Point(0, 0);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(530, 119);
+            this.richTextBox1.Size = new System.Drawing.Size(530, 164);
             this.richTextBox1.TabIndex = 80;
             this.richTextBox1.Text = "";
             this.richTextBox1.Leave += new System.EventHandler(this.richTextBox1_Leave);
@@ -303,37 +306,38 @@
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem1,
+            this.stripNamespacesToolStripMenuItem,
             this.copyToolStripMenuItem,
             this.copyAllToolStripMenuItem,
             this.pasteToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(124, 92);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(169, 114);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(123, 22);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(168, 22);
             this.toolStripMenuItem1.Text = "Reformat";
             this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
             // 
             // copyToolStripMenuItem
             // 
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.copyToolStripMenuItem.Text = "Copy";
             this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
             // 
             // copyAllToolStripMenuItem
             // 
             this.copyAllToolStripMenuItem.Name = "copyAllToolStripMenuItem";
-            this.copyAllToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            this.copyAllToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.copyAllToolStripMenuItem.Text = "Copy All";
             this.copyAllToolStripMenuItem.Click += new System.EventHandler(this.copyAllToolStripMenuItem_Click);
             // 
             // pasteToolStripMenuItem
             // 
             this.pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
-            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.pasteToolStripMenuItem.Text = "Paste";
             this.pasteToolStripMenuItem.Click += new System.EventHandler(this.pasteToolStripMenuItem_Click);
             // 
@@ -370,6 +374,13 @@
             this.linkToCodeplex.Size = new System.Drawing.Size(199, 17);
             this.linkToCodeplex.Text = "http://XPathVisualizer.codeplex.com";
             this.linkToCodeplex.Click += new System.EventHandler(this.linkToCodeplex_Click);
+            // 
+            // stripNamespacesToolStripMenuItem
+            // 
+            this.stripNamespacesToolStripMenuItem.Name = "stripNamespacesToolStripMenuItem";
+            this.stripNamespacesToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.stripNamespacesToolStripMenuItem.Text = "Strip Namespaces";
+            this.stripNamespacesToolStripMenuItem.Click += new System.EventHandler(this.stripNamespacesToolStripMenuItem_Click);
             // 
             // XPathVisualizerTool
             // 
@@ -434,6 +445,7 @@
         private System.Windows.Forms.Button btn_NextMatch;
         private System.Windows.Forms.FlowLayoutPanel matchPanel;
         private System.Windows.Forms.Label lblMatch;
+        private System.Windows.Forms.ToolStripMenuItem stripNamespacesToolStripMenuItem;
     }
 }
 
