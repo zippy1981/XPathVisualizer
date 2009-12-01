@@ -1,4 +1,4 @@
-﻿//﻿#define Trace
+//﻿#define Trace
 
 // XPathVisualizerTool.cs
 // ------------------------------------------------------------------
@@ -44,7 +44,7 @@ namespace XPathVisualizer
         private DateTime _originDateTime = new System.DateTime(0);
         private System.DateTime _lastRtbKeyPress;
         private XPathParser<XElement> xpathParser = new XPathParser<XElement>();
-        private List<int> matchPositions;
+        private List<Tuple<int, int>> matchPositions;
         private int currentMatch;
         private int numVisibleLines;
         private int totalLinesInDoc;
@@ -272,6 +272,7 @@ namespace XPathVisualizer
 
         private void btnEvalXpath_Click(object sender, EventArgs e)
         {
+            matchPositions = null;
             DisableMatchButtons();
             string xpathExpression = this.tbXpath.Text;
             if (String.IsNullOrEmpty(xpathExpression))
@@ -292,7 +293,6 @@ namespace XPathVisualizer
             {
                 // reset highlighting 
                 this.richTextBox1.SelectAll();
-                //this.richTextBox1.SelectionColor = Color.Black;
                 this.richTextBox1.SelectionBackColor = Color.White;
                 this.richTextBox1.Update();
 
@@ -319,8 +319,8 @@ namespace XPathVisualizer
                 else
                 {
                     this.lblStatus.Text = String.Format("{0}: {1} {2} selected",
-                                                                    xpathExpression,
-                                                                    selection.Count, (selection.Count == 1) ? "node" : "nodes");
+                                                        xpathExpression,
+                                                        selection.Count, (selection.Count == 1) ? "node" : "nodes");
                     HighlightSelection(selection, xmlns);
                 }
 
@@ -359,6 +359,10 @@ namespace XPathVisualizer
                 this.Cursor = System.Windows.Forms.Cursors.Default;
                 this.richTextBox1.EndUpdate(mask);
             }
+
+            EnableMatchButtons();
+            currentMatch = 0;
+            scrollToCurrentMatch();
         }
 
 
@@ -387,8 +391,34 @@ namespace XPathVisualizer
         /// <param name="xmlns">you know</param>
         private void HighlightSelection(XPathNodeIterator selection, XmlNamespaceManager xmlns)
         {
+            ComputePositionsOfSelection(selection, xmlns);
+
+            foreach (var t in matchPositions)
+            {
+                // do the highlight
+                this.richTextBox1.Select(t.V1, t.V2 - t.V1 + 1);
+                this.richTextBox1.SelectionBackColor =
+                    Color.FromArgb(Color.Red.A, 0x98, 0xFb, 0x98);
+            }
+        }
+
+
+
+
+                
+        /// <summary>
+        /// Computes the positions of the selected nodes in the XML RichTextBox,
+        /// given the XPathNodeIterator. 
+        /// </summary>
+        /// <remarks>
+        /// This finishes pretty quickly, no need to do it asynchronously. 
+        /// </remarks>
+        /// <param name="selection">the node-set selection</param>
+        /// <param name="xmlns">you know</param>
+        private void ComputePositionsOfSelection(XPathNodeIterator selection, XmlNamespaceManager xmlns)
+        {
             var lc = new LineCalculator(this.richTextBox1);
-            matchPositions = new List<int>();
+            matchPositions = new List<Tuple<int, int>>();
 
             // get Text once (it's expensive)
             string rtbText = this.richTextBox1.Text;
@@ -474,24 +504,14 @@ namespace XPathVisualizer
                         }
                     }
 
-                    // do we need to highlight?
+                    // do we need to remember this one?
                     if (ix2 > ix)
                     {
-                        // do it. 
-                        this.richTextBox1.Select(ix, ix2 - ix + 1);
-                        this.richTextBox1.SelectionBackColor =
-                            Color.FromArgb(Color.Red.A, 0x98, 0xFb, 0x98);
-
-                        // To allow scrolling later, remember the locations
-                        // of matches within the doc.
-                        matchPositions.Add(ix);
+                        // Record the location of the match within the doc.
+                        matchPositions.Add(Tuple.New(ix, ix2));
                     }
                 }
             }
-
-            currentMatch = 0;
-            scrollToCurrentMatch();
-            EnableMatchButtons();
         }
 
 
@@ -516,7 +536,7 @@ namespace XPathVisualizer
                         // OmitXmlDeclaration = true,
                         Indent = true,
                         IndentChars= "  "
-                    };
+                            };
                 
                 using (var writer = System.Xml.XmlWriter.Create(builder, settings))
                 {
@@ -629,6 +649,10 @@ namespace XPathVisualizer
             int deltaY = 20;
             try
             {
+                //this.BeginUpdate();
+                this.SuspendLayout();
+                this.pnlPrefixList.SuspendLayout();
+                
                 this.pnlPrefixList.Controls.Clear();
 
                 int count = 0;
@@ -648,7 +672,7 @@ namespace XPathVisualizer
                                 Text = k,
                                 ReadOnly = true,
                                 TabStop = false,
-                            };
+                                };
                         this.pnlPrefixList.Controls.Add(tb1);
                         var lbl1 = new System.Windows.Forms.Label
                             {
@@ -657,7 +681,7 @@ namespace XPathVisualizer
                                                                     this.tbXmlns.Location.Y - offsetY + (count * deltaY)),
                                 Size = new System.Drawing.Size(24, 13),
                                 Text = ":=",
-                            };
+                                };
                         this.pnlPrefixList.Controls.Add(lbl1);
 
                         var tb2 = new System.Windows.Forms.TextBox
@@ -672,7 +696,7 @@ namespace XPathVisualizer
                                 Text = xmlNamespaces[k],
                                 ReadOnly = true,
                                 TabStop = false,
-                            };
+                                };
                         this.pnlPrefixList.Controls.Add(tb2);
                         var btn1 = new System.Windows.Forms.Button
                             {
@@ -686,7 +710,7 @@ namespace XPathVisualizer
                                 Text = "X",
                                 UseVisualStyleBackColor = true,
                                 TabStop = false,
-                            };
+                                };
                         btn1.Click += (src, e) => { RemovePrefix(k); };
                         this.pnlPrefixList.Controls.Add(btn1);
                         count++;
@@ -699,7 +723,9 @@ namespace XPathVisualizer
                 // We don't need to explicitly set the size of the groupbox.  Groupbox1
                 // is docked at the bottom of SplitContainer3.Panel1, so it grows as we
                 // move the splitter.
-                
+
+                this.pnlPrefixList.ResumeLayout();
+                this.ResumeLayout();
             }
             catch (Exception exc1)
             {
@@ -737,7 +763,7 @@ namespace XPathVisualizer
                         //OmitXmlDeclaration = true,
                         Indent = true,
                         IndentChars= "  "
-                    };
+                            };
                 
                 using (var writer = new NoNamespaceXmlTextWriter(builder, settings))
                 {
@@ -783,7 +809,7 @@ namespace XPathVisualizer
         private void DisableMatchButtons()
         {
             this.matchPanel.Visible = false;
-            matchPositions = null;
+            //matchPositions = null;
             this.lblMatch.Text = "";
             this.btn_NextMatch.Enabled = false;
             this.btn_PrevMatch.Enabled = false;
@@ -804,16 +830,19 @@ namespace XPathVisualizer
 
         private void scrollToCurrentMatch()
         {
-            int position = matchPositions[currentMatch];
+            if (matchPositions == null) return;
+            Tuple<int,int> position = matchPositions[currentMatch];
 
             Trace("scrollToPosition(match({0}) position({1}))",
-                  currentMatch, position);
-            int startLine = this.richTextBox1.GetLineFromCharIndex(position);
-            Trace("scrollToPosition::startLine({0}) numVisibleLines({0})",
+                  currentMatch, position.V1);
+            
+            int startLine = this.richTextBox1.GetLineFromCharIndex(position.V1);
+            
+            Trace("scrollToPosition::startLine({0}) numVisibleLines({1})",
                   startLine, numVisibleLines);
 
             this.lblMatch.Text = String.Format("{0}/{1}",
-                                              currentMatch + 1, matchPositions.Count);
+                                               currentMatch + 1, matchPositions.Count);
 
             // If the start line is in the middle of the doc... 
             //if (startLine > totalLinesInDoc)
@@ -831,7 +860,7 @@ namespace XPathVisualizer
             this.richTextBox1.ScrollToCaret();
 
             // restore selection:
-            this.richTextBox1.Select(position, 0);
+            this.richTextBox1.Select(position.V1, 0);
         }
 
 
@@ -891,6 +920,99 @@ namespace XPathVisualizer
             }
         }
 
+
+        /// <summary>
+        /// Deletes the selected nodes in the XML RichTextBox, given the XPathNodeIterator. 
+        /// </summary>
+        /// <remarks>
+        /// This finishes pretty quickly, no need to do it asynchronously. 
+        /// </remarks>
+        private void DeleteSelection()
+        {
+            if (matchPositions == null) return;
+            //ComputePositionsOfSelection(selection, xmlns);
+            int totalRemoved = 0; 
+            Trace("DeleteSelection(count({0}))", matchPositions.Count);
+
+            foreach (var t in matchPositions)
+            {
+                // do the deletion
+                Trace("DeleteSelection(match({0},{1}))", t.V1, t.V2);
+            
+                this.richTextBox1.Select(t.V1 - totalRemoved, t.V2 - t.V1 + 1);
+                this.richTextBox1.SelectedText = "";
+                totalRemoved += (t.V2 - t.V1 + 1);
+                
+                Trace("DeleteSelection(total({0})", totalRemoved);
+            }
+
+            currentMatch = 0;
+            matchPositions = null;
+            DisableMatchButtons();
+        }
+
+
+        
+        
+        private void removeSelectedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (matchPositions == null) return;
+            DisableMatchButtons();
+            
+            IntPtr mask = IntPtr.Zero;
+            try 
+            {
+                mask = this.richTextBox1.BeginUpdate();
+                this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
+
+                DeleteSelection();
+
+                // re-format (re-indent) the result
+                IndentXml();
+            }
+
+            finally
+            {
+                this.Cursor = System.Windows.Forms.Cursors.Default;
+                this.richTextBox1.EndUpdate(mask);
+            }
+            
+        }
+ 
+
+        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+         {
+            try 
+            {
+                var dlg1 = new SaveFileDialog
+                    {
+                        FileName = System.IO.Path.GetFileName(this.tbXmlDoc.Text),
+                        InitialDirectory = System.IO.Path.GetDirectoryName(this.tbXmlDoc.Text),
+                        OverwritePrompt = true,
+                        Title = "Where would you like to save the XML?",
+                        Filter = "XML files|*.xml|All files (*.*)|*.*"
+                    };
+
+                var result = dlg1.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    this.tbXmlDoc.Text = dlg1.FileName;
+
+                    File.WriteAllText(this.tbXmlDoc.Text,
+                                      this.richTextBox1.Text);
+                }
+              
+            }
+            catch (System.Exception exc1)
+            {
+                MessageBox.Show("Exception: " + exc1.Message,
+                                "Exception while saving",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Exclamation);
+
+            }            
+        }
+       
     }
 
 }
