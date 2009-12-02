@@ -34,8 +34,6 @@ namespace XPathVisualizer
 {
     public partial class XPathVisualizerTool : Form
     {
-
-        private XPathDocument xpathDoc;
         private XPathNavigator nav;
         private Dictionary<String, String> _xmlnsPrefixes;
         private int originalGroupBoxMinHeight;
@@ -105,7 +103,7 @@ namespace XPathVisualizer
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 this.richTextBox1.Text = File.ReadAllText(this.tbXmlDoc.Text);
                 wantFormat.Set();
-                xpathDoc = null; // invalidate the cached doc 
+                nav = null; // invalidate the cached doc 
                 matchPositions = null;
                 DisableMatchButtons();
                 PreloadXmlns();
@@ -126,8 +124,7 @@ namespace XPathVisualizer
         //int priorTextLength = -1; 
         private void richTextBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            xpathDoc = null; // invalidate the cached doc 
-            nav = null;
+            nav = null;  // invalidate the cached doc 
             _lastRtbKeyPress = System.DateTime.Now;
             if (this.richTextBox1.Text.Length == 0) return;
             // assume no length change means format change only
@@ -301,9 +298,9 @@ namespace XPathVisualizer
                 this.tbXpath.BackColor = this.tbXmlns.BackColor; // just in case
 
                 // load the Xml doc
-                if (xpathDoc == null)
+                if (nav == null)
                 {
-                    xpathDoc = new XPathDocument(new StringReader(rtbText));
+                    var xpathDoc = new XPathDocument(new StringReader(rtbText));
                     nav = xpathDoc.CreateNavigator();
                 }
                 XmlNamespaceManager xmlns = new XmlNamespaceManager(nav.NameTable);
@@ -347,7 +344,7 @@ namespace XPathVisualizer
                 }
                 else
                 {
-                    MessageBox.Show("Exception: " + exc1.Message,
+                    MessageBox.Show(exc1.Message,
                                     "Exception while evaluating XPath",
                                     MessageBoxButtons.OK,
                                     MessageBoxIcon.Exclamation);
@@ -543,8 +540,8 @@ namespace XPathVisualizer
                     doc.Save(writer);
                 }
                 this.richTextBox1.Text = builder.ToString();
+                nav = null; // invalidate the cached doc 
                 wantFormat.Set();
-                xpathDoc = null; // invalidate the cached doc 
                 matchPositions = null;
                 DisableMatchButtons();
                 PreloadXmlns();
@@ -770,8 +767,8 @@ namespace XPathVisualizer
                     doc.Save(writer);
                 }
                 this.richTextBox1.Text = builder.ToString();
+                nav= null; // invalidate the cached doc 
                 wantFormat.Set();
-                xpathDoc = null; // invalidate the cached doc 
                 matchPositions = null;
                 DisableMatchButtons();
                 PreloadXmlns();
@@ -933,19 +930,25 @@ namespace XPathVisualizer
             //ComputePositionsOfSelection(selection, xmlns);
             int totalRemoved = 0; 
             Trace("DeleteSelection(count({0}))", matchPositions.Count);
-
+            int count = 0;
             foreach (var t in matchPositions)
             {
                 // do the deletion
                 Trace("DeleteSelection(match({0},{1}))", t.V1, t.V2);
-            
-                this.richTextBox1.Select(t.V1 - totalRemoved, t.V2 - t.V1 + 1);
+
+                int start = t.V1 - totalRemoved;
+                int length = t.V2 - t.V1 + 1;
+                if (start < 0) continue;
+                this.richTextBox1.Select(start, length);
                 this.richTextBox1.SelectedText = "";
-                totalRemoved += (t.V2 - t.V1 + 1);
+                totalRemoved += length;
                 
                 Trace("DeleteSelection(total({0})", totalRemoved);
+                count++;
             }
-
+            this.lblStatus.Text = String.Format("{0} nodes removed.", count);
+            nav = null;
+            wantFormat.Set();
             currentMatch = 0;
             matchPositions = null;
             DisableMatchButtons();
@@ -1001,15 +1004,13 @@ namespace XPathVisualizer
                     File.WriteAllText(this.tbXmlDoc.Text,
                                       this.richTextBox1.Text);
                 }
-              
             }
             catch (System.Exception exc1)
             {
-                MessageBox.Show("Exception: " + exc1.Message,
+                MessageBox.Show(exc1.Message,
                                 "Exception while saving",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Exclamation);
-
             }            
         }
        
