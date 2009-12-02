@@ -71,7 +71,7 @@ goto :EOF
 
 set binzip=XpathVisualizer-v1.1-bin.zip
 if EXIST  ..\%binzip% del ..\%binzip%
-%zipit%  ..\%binzip%  -s Readme.txt "This is the binary distribution for Ionic's XPathVisualizer v1.1. Packed %stamp%."  -D Tool\bin\Release  XPathVisualizer.exe
+%zipit%  ..\%binzip%  -s Readme.txt "This is the binary distribution for Ionic's XPathVisualizer v1.1. Packed %stamp%."  -D MergedTool\bin\Release  XPathVisualizer.exe
 
 
   goto :EOF
