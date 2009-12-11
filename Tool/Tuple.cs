@@ -1,15 +1,11 @@
 // Tuple.cs
 // ------------------------------------------------------------------
 //
-// Description goes here....
+// simple utility container class.  In lieu of the .NET 4.0 version.
 // 
-// Author: Admin
-// built on host: DINOCH-2
-// Created Tue Dec 01 17:30:44 2009
-//
-// last saved: 
-// Time-stamp: <2009-December-01 17:32:08>
 // ------------------------------------------------------------------
+//
+// Part of XpathVisualizer
 //
 // Copyright (c) 2009 by Dino Chiesa
 // All rights reserved!
