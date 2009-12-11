@@ -31,11 +31,14 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(XPathVisualizerTool));
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
+            this.btnExpandCollapse = new System.Windows.Forms.Button();
+            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.pnlPrefixList = new System.Windows.Forms.Panel();
+            this.pnlInput = new System.Windows.Forms.Panel();
             this.tbXmlns = new System.Windows.Forms.TextBox();
             this.tbPrefix = new System.Windows.Forms.TextBox();
             this.btnAddNsPrefix = new System.Windows.Forms.Button();
+            this.pnlPrefixList = new System.Windows.Forms.Panel();
             this.btnEvalXpath = new System.Windows.Forms.Button();
             this.btnLoadXml = new System.Windows.Forms.Button();
             this.tbXpath = new System.Windows.Forms.RichTextBox();
@@ -51,20 +54,21 @@
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.stripNamespacesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.removeSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pasteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.progressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.linkToCodeplex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.removeSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.pnlInput.SuspendLayout();
             this.matchPanel.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -80,6 +84,7 @@
             // 
             // splitContainer3.Panel1
             // 
+            this.splitContainer3.Panel1.Controls.Add(this.btnExpandCollapse);
             this.splitContainer3.Panel1.Controls.Add(this.groupBox1);
             this.splitContainer3.Panel1.Controls.Add(this.btnEvalXpath);
             this.splitContainer3.Panel1.Controls.Add(this.btnLoadXml);
@@ -94,10 +99,33 @@
             // 
             this.splitContainer3.Panel2.Controls.Add(this.matchPanel);
             this.splitContainer3.Panel2.Controls.Add(this.richTextBox1);
-            this.splitContainer3.Size = new System.Drawing.Size(530, 300);
-            this.splitContainer3.SplitterDistance = 130;
+            this.splitContainer3.Size = new System.Drawing.Size(485, 320);
+            this.splitContainer3.SplitterDistance = 138;
             this.splitContainer3.SplitterWidth = 6;
             this.splitContainer3.TabIndex = 0;
+            // 
+            // btnExpandCollapse
+            // 
+            this.btnExpandCollapse.BackColor = System.Drawing.Color.Transparent;
+            this.btnExpandCollapse.FlatAppearance.BorderSize = 0;
+            this.btnExpandCollapse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnExpandCollapse.ImageIndex = 0;
+            this.btnExpandCollapse.ImageList = this.imageList1;
+            this.btnExpandCollapse.Location = new System.Drawing.Point(148, 68);
+            this.btnExpandCollapse.Name = "btnExpandCollapse";
+            this.btnExpandCollapse.Size = new System.Drawing.Size(12, 12);
+            this.btnExpandCollapse.TabIndex = 61;
+            this.btnExpandCollapse.TabStop = false;
+            this.toolTip1.SetToolTip(this.btnExpandCollapse, "Collapse");
+            this.btnExpandCollapse.UseVisualStyleBackColor = false;
+            this.btnExpandCollapse.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // imageList1
+            // 
+            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
+            this.imageList1.TransparentColor = System.Drawing.Color.Fuchsia;
+            this.imageList1.Images.SetKeyName(0, "Collapse_small.bmp");
+            this.imageList1.Images.SetKeyName(1, "Expand_small.bmp");
             // 
             // groupBox1
             // 
@@ -105,17 +133,55 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.groupBox1.Controls.Add(this.pnlInput);
             this.groupBox1.Controls.Add(this.pnlPrefixList);
-            this.groupBox1.Controls.Add(this.tbXmlns);
-            this.groupBox1.Controls.Add(this.tbPrefix);
-            this.groupBox1.Controls.Add(this.btnAddNsPrefix);
             this.groupBox1.Location = new System.Drawing.Point(12, 67);
-            this.groupBox1.MinimumSize = new System.Drawing.Size(0, 42);
+            this.groupBox1.MinimumSize = new System.Drawing.Size(0, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(509, 64);
+            this.groupBox1.Size = new System.Drawing.Size(464, 72);
             this.groupBox1.TabIndex = 48;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "namespaces and prefixes";
+            // 
+            // pnlInput
+            // 
+            this.pnlInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlInput.Controls.Add(this.tbXmlns);
+            this.pnlInput.Controls.Add(this.tbPrefix);
+            this.pnlInput.Controls.Add(this.btnAddNsPrefix);
+            this.pnlInput.Location = new System.Drawing.Point(2, 14);
+            this.pnlInput.Name = "pnlInput";
+            this.pnlInput.Size = new System.Drawing.Size(460, 24);
+            this.pnlInput.TabIndex = 62;
+            // 
+            // tbXmlns
+            // 
+            this.tbXmlns.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbXmlns.Location = new System.Drawing.Point(92, 2);
+            this.tbXmlns.Name = "tbXmlns";
+            this.tbXmlns.Size = new System.Drawing.Size(320, 20);
+            this.tbXmlns.TabIndex = 55;
+            // 
+            // tbPrefix
+            // 
+            this.tbPrefix.Location = new System.Drawing.Point(2, 2);
+            this.tbPrefix.Name = "tbPrefix";
+            this.tbPrefix.Size = new System.Drawing.Size(78, 20);
+            this.tbPrefix.TabIndex = 50;
+            this.tbPrefix.TextChanged += new System.EventHandler(this.tbPrefix_TextChanged);
+            // 
+            // btnAddNsPrefix
+            // 
+            this.btnAddNsPrefix.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnAddNsPrefix.Location = new System.Drawing.Point(420, 2);
+            this.btnAddNsPrefix.Name = "btnAddNsPrefix";
+            this.btnAddNsPrefix.Size = new System.Drawing.Size(28, 20);
+            this.btnAddNsPrefix.TabIndex = 60;
+            this.btnAddNsPrefix.Text = "+";
+            this.btnAddNsPrefix.UseVisualStyleBackColor = true;
+            this.btnAddNsPrefix.Click += new System.EventHandler(this.btnAddNsPrefix_Click);
             // 
             // pnlPrefixList
             // 
@@ -124,41 +190,13 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlPrefixList.Location = new System.Drawing.Point(2, 42);
             this.pnlPrefixList.Name = "pnlPrefixList";
-            this.pnlPrefixList.Size = new System.Drawing.Size(505, 16);
+            this.pnlPrefixList.Size = new System.Drawing.Size(460, 24);
             this.pnlPrefixList.TabIndex = 51;
-            // 
-            // tbXmlns
-            // 
-            this.tbXmlns.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbXmlns.Location = new System.Drawing.Point(96, 16);
-            this.tbXmlns.Name = "tbXmlns";
-            this.tbXmlns.Size = new System.Drawing.Size(367, 20);
-            this.tbXmlns.TabIndex = 55;
-            // 
-            // tbPrefix
-            // 
-            this.tbPrefix.Location = new System.Drawing.Point(6, 16);
-            this.tbPrefix.Name = "tbPrefix";
-            this.tbPrefix.Size = new System.Drawing.Size(74, 20);
-            this.tbPrefix.TabIndex = 50;
-            this.tbPrefix.TextChanged += new System.EventHandler(this.tbPrefix_TextChanged);
-            // 
-            // btnAddNsPrefix
-            // 
-            this.btnAddNsPrefix.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnAddNsPrefix.Location = new System.Drawing.Point(469, 16);
-            this.btnAddNsPrefix.Name = "btnAddNsPrefix";
-            this.btnAddNsPrefix.Size = new System.Drawing.Size(28, 20);
-            this.btnAddNsPrefix.TabIndex = 60;
-            this.btnAddNsPrefix.Text = "+";
-            this.btnAddNsPrefix.UseVisualStyleBackColor = true;
-            this.btnAddNsPrefix.Click += new System.EventHandler(this.btnAddNsPrefix_Click);
             // 
             // btnEvalXpath
             // 
             this.btnEvalXpath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnEvalXpath.Location = new System.Drawing.Point(478, 41);
+            this.btnEvalXpath.Location = new System.Drawing.Point(433, 41);
             this.btnEvalXpath.Name = "btnEvalXpath";
             this.btnEvalXpath.Size = new System.Drawing.Size(40, 23);
             this.btnEvalXpath.TabIndex = 45;
@@ -169,7 +207,7 @@
             // btnLoadXml
             // 
             this.btnLoadXml.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnLoadXml.Location = new System.Drawing.Point(478, 12);
+            this.btnLoadXml.Location = new System.Drawing.Point(433, 12);
             this.btnLoadXml.Name = "btnLoadXml";
             this.btnLoadXml.Size = new System.Drawing.Size(40, 23);
             this.btnLoadXml.TabIndex = 30;
@@ -188,7 +226,7 @@
             this.tbXpath.Multiline = false;
             this.tbXpath.Name = "tbXpath";
             this.tbXpath.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
-            this.tbXpath.Size = new System.Drawing.Size(364, 20);
+            this.tbXpath.Size = new System.Drawing.Size(319, 20);
             this.tbXpath.TabIndex = 40;
             this.tbXpath.Text = "";
             this.toolTip1.SetToolTip(this.tbXpath, "XPath expression");
@@ -207,7 +245,7 @@
             // btnBrowse
             // 
             this.btnBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowse.Location = new System.Drawing.Point(443, 10);
+            this.btnBrowse.Location = new System.Drawing.Point(398, 10);
             this.btnBrowse.Name = "btnBrowse";
             this.btnBrowse.Size = new System.Drawing.Size(29, 26);
             this.btnBrowse.TabIndex = 20;
@@ -221,7 +259,7 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.tbXmlDoc.Location = new System.Drawing.Point(108, 13);
             this.tbXmlDoc.Name = "tbXmlDoc";
-            this.tbXmlDoc.Size = new System.Drawing.Size(329, 20);
+            this.tbXmlDoc.Size = new System.Drawing.Size(284, 20);
             this.tbXmlDoc.TabIndex = 10;
             // 
             // label1
@@ -244,7 +282,7 @@
             this.matchPanel.Controls.Add(this.lblMatch);
             this.matchPanel.Controls.Add(this.btn_PrevMatch);
             this.matchPanel.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
-            this.matchPanel.Location = new System.Drawing.Point(406, 3);
+            this.matchPanel.Location = new System.Drawing.Point(361, 3);
             this.matchPanel.Name = "matchPanel";
             this.matchPanel.Size = new System.Drawing.Size(104, 31);
             this.matchPanel.TabIndex = 84;
@@ -298,7 +336,7 @@
             this.richTextBox1.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.richTextBox1.Location = new System.Drawing.Point(0, 0);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(530, 164);
+            this.richTextBox1.Size = new System.Drawing.Size(485, 176);
             this.richTextBox1.TabIndex = 80;
             this.richTextBox1.Text = "";
             this.richTextBox1.Leave += new System.EventHandler(this.richTextBox1_Leave);
@@ -315,7 +353,7 @@
             this.pasteToolStripMenuItem,
             this.saveAsToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(182, 180);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(182, 158);
             // 
             // toolStripMenuItem1
             // 
@@ -330,6 +368,13 @@
             this.stripNamespacesToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
             this.stripNamespacesToolStripMenuItem.Text = "Strip Namespaces";
             this.stripNamespacesToolStripMenuItem.Click += new System.EventHandler(this.stripNamespacesToolStripMenuItem_Click);
+            // 
+            // removeSelectedToolStripMenuItem
+            // 
+            this.removeSelectedToolStripMenuItem.Name = "removeSelectedToolStripMenuItem";
+            this.removeSelectedToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.removeSelectedToolStripMenuItem.Text = "Remove highlighted";
+            this.removeSelectedToolStripMenuItem.Click += new System.EventHandler(this.removeSelectedToolStripMenuItem_Click);
             // 
             // copyToolStripMenuItem
             // 
@@ -352,22 +397,29 @@
             this.pasteToolStripMenuItem.Text = "Paste";
             this.pasteToolStripMenuItem.Click += new System.EventHandler(this.pasteToolStripMenuItem_Click);
             // 
+            // saveAsToolStripMenuItem
+            // 
+            this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.saveAsToolStripMenuItem.Text = "Save As...";
+            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
+            // 
             // statusStrip1
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.lblStatus,
             this.progressBar1,
             this.linkToCodeplex});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 300);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 320);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(530, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(485, 22);
             this.statusStrip1.TabIndex = 0;
             this.statusStrip1.Text = "statusStrip1";
             // 
             // lblStatus
             // 
             this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(214, 17);
+            this.lblStatus.Size = new System.Drawing.Size(164, 17);
             this.lblStatus.Spring = true;
             this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -386,25 +438,11 @@
             this.linkToCodeplex.Text = "http://XPathVisualizer.codeplex.com";
             this.linkToCodeplex.Click += new System.EventHandler(this.linkToCodeplex_Click);
             // 
-            // removeSelectedToolStripMenuItem
-            // 
-            this.removeSelectedToolStripMenuItem.Name = "removeSelectedToolStripMenuItem";
-            this.removeSelectedToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
-            this.removeSelectedToolStripMenuItem.Text = "Remove highlighted";
-            this.removeSelectedToolStripMenuItem.Click += new System.EventHandler(this.removeSelectedToolStripMenuItem_Click);
-            // 
-            // saveAsToolStripMenuItem
-            // 
-            this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
-            this.saveAsToolStripMenuItem.Text = "Save As...";
-            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
-            // 
             // XPathVisualizerTool
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(530, 322);
+            this.ClientSize = new System.Drawing.Size(485, 342);
             this.Controls.Add(this.splitContainer3);
             this.Controls.Add(this.statusStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -422,7 +460,8 @@
             this.splitContainer3.Panel2.PerformLayout();
             this.splitContainer3.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
+            this.pnlInput.ResumeLayout(false);
+            this.pnlInput.PerformLayout();
             this.matchPanel.ResumeLayout(false);
             this.matchPanel.PerformLayout();
             this.contextMenuStrip1.ResumeLayout(false);
@@ -466,6 +505,9 @@
         private System.Windows.Forms.ToolStripMenuItem stripNamespacesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem removeSelectedToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
+        private System.Windows.Forms.Button btnExpandCollapse;
+        private System.Windows.Forms.ImageList imageList1;
+        private System.Windows.Forms.Panel pnlInput;
     }
 }
 
