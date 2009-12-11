@@ -639,11 +639,11 @@ namespace XPathVisualizer
         }
 
 
+        private int XmlNsPanelDeltaY = 20;
         private void DisplayXmlPrefixList()
         {
-            int offsetX = 2;   // left
-            int offsetY = 16;  // positive is up
-            int deltaY = 20;
+            int offsetX = 0;   // greater is further left
+            int offsetY = 2;  // greater implies further up
             try
             {
                 //this.BeginUpdate();
@@ -660,11 +660,10 @@ namespace XPathVisualizer
                         // add a set of controls to the panel for each key/value pair in the list
                         var tb1 = new System.Windows.Forms.TextBox
                             {
-                                Anchor = (System.Windows.Forms.AnchorStyles)
-                                    (System.Windows.Forms.AnchorStyles.Top |
+                                Anchor = (System.Windows.Forms.AnchorStyles) (System.Windows.Forms.AnchorStyles.Top |
                                      System.Windows.Forms.AnchorStyles.Left),
                                 Location = new System.Drawing.Point(this.tbPrefix.Location.X - offsetX,
-                                                                    this.tbPrefix.Location.Y - offsetY + (count * deltaY)),
+                                                                    this.tbPrefix.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
                                 Size = new System.Drawing.Size(this.tbPrefix.Size.Width, this.tbPrefix.Size.Height),
                                 Text = k,
                                 ReadOnly = true,
@@ -675,7 +674,7 @@ namespace XPathVisualizer
                             {
                                 AutoSize = true,
                                 Location = new System.Drawing.Point(this.tbXmlns.Location.X - offsetX - 18,
-                                                                    this.tbXmlns.Location.Y - offsetY + (count * deltaY)),
+                                                                    this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
                                 Size = new System.Drawing.Size(24, 13),
                                 Text = ":=",
                                 };
@@ -688,7 +687,7 @@ namespace XPathVisualizer
                                      System.Windows.Forms.AnchorStyles.Left |
                                      System.Windows.Forms.AnchorStyles.Right),
                                 Location = new System.Drawing.Point(this.tbXmlns.Location.X - offsetX,
-                                                                    this.tbXmlns.Location.Y - offsetY + (count * deltaY)),
+                                                                    this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
                                 Size = new System.Drawing.Size(this.tbXmlns.Size.Width, this.tbXmlns.Size.Height),
                                 Text = xmlNamespaces[k],
                                 ReadOnly = true,
@@ -701,7 +700,7 @@ namespace XPathVisualizer
                                     (System.Windows.Forms.AnchorStyles.Top |
                                      System.Windows.Forms.AnchorStyles.Right),
                                 Location = new System.Drawing.Point(this.btnAddNsPrefix.Location.X - offsetX,
-                                                                    this.btnAddNsPrefix.Location.Y - offsetY + (count * deltaY)),
+                                                                    this.btnAddNsPrefix.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
                                 Size = new System.Drawing.Size(this.btnAddNsPrefix.Size.Width,
                                                                this.btnAddNsPrefix.Size.Height),
                                 Text = "X",
@@ -714,13 +713,8 @@ namespace XPathVisualizer
                     }
                 }
 
-                this.splitContainer3.Panel1MinSize = originalPanel1MinSize + (deltaY * count);
-                this.splitContainer3.SplitterDistance = this.splitContainer3.Panel1MinSize;
-
-                // We don't need to explicitly set the size of the groupbox.  Groupbox1
-                // is docked at the bottom of SplitContainer3.Panel1, so it grows as we
-                // move the splitter.
-
+                ExpandXmlPrefixPanel();
+                
                 this.pnlPrefixList.ResumeLayout();
                 this.ResumeLayout();
             }
@@ -731,6 +725,43 @@ namespace XPathVisualizer
             }
         }
 
+
+        private void ExpandXmlPrefixPanel()
+        {
+            int n = this.pnlPrefixList.Controls.Count/4;
+
+            this.pnlPrefixList.Visible = true;
+            this.pnlInput.Visible = true;
+            btnExpandCollapse.ImageIndex = 0;
+            this.toolTip1.SetToolTip(this.btnExpandCollapse, "Collapse");
+            this.splitContainer3.Panel1MinSize = originalPanel1MinSize + (XmlNsPanelDeltaY * n);
+            this.splitContainer3.SplitterDistance = this.splitContainer3.Panel1MinSize;
+
+            // We don't need to explicitly set the size of the groupbox.  Groupbox1
+            // is docked at the bottom of SplitContainer3.Panel1, so it grows as we
+            // move the splitter.
+        }
+
+        private void CollapseXmlPrefixPanel()
+        {
+            this.pnlPrefixList.Visible = false;
+            this.pnlInput.Visible = false;
+            btnExpandCollapse.ImageIndex = 1;
+            this.toolTip1.SetToolTip(this.btnExpandCollapse, "Expand");
+            this.splitContainer3.Panel1MinSize = originalPanel1MinSize - (XmlNsPanelDeltaY);
+            this.splitContainer3.SplitterDistance = this.splitContainer3.Panel1MinSize;
+        }
+
+        
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (this.pnlPrefixList.Visible == true)
+                CollapseXmlPrefixPanel();                
+            else
+                ExpandXmlPrefixPanel();
+        }
+       
+        
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
             IndentXml();
@@ -1013,7 +1044,6 @@ namespace XPathVisualizer
                                 MessageBoxIcon.Exclamation);
             }            
         }
-       
     }
 
 }
