@@ -47,9 +47,7 @@
             this.tbXmlDoc = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.matchPanel = new System.Windows.Forms.FlowLayoutPanel();
-            this.btn_NextMatch = new System.Windows.Forms.Button();
             this.lblMatch = new System.Windows.Forms.Label();
-            this.btn_PrevMatch = new System.Windows.Forms.Button();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -64,6 +62,8 @@
             this.progressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.linkToCodeplex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.btn_NextMatch = new XPathVisualizer.RepeatButton();
+            this.btn_PrevMatch = new XPathVisualizer.RepeatButton();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
@@ -288,18 +288,6 @@
             this.matchPanel.TabIndex = 84;
             this.matchPanel.WrapContents = false;
             // 
-            // btn_NextMatch
-            // 
-            this.btn_NextMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_NextMatch.Location = new System.Drawing.Point(71, 3);
-            this.btn_NextMatch.Name = "btn_NextMatch";
-            this.btn_NextMatch.Size = new System.Drawing.Size(28, 23);
-            this.btn_NextMatch.TabIndex = 81;
-            this.btn_NextMatch.Text = ">>";
-            this.toolTip1.SetToolTip(this.btn_NextMatch, "next match");
-            this.btn_NextMatch.UseVisualStyleBackColor = true;
-            this.btn_NextMatch.Click += new System.EventHandler(this.btn_NextMatch_Click);
-            // 
             // lblMatch
             // 
             this.lblMatch.Anchor = System.Windows.Forms.AnchorStyles.Left;
@@ -313,19 +301,6 @@
             this.lblMatch.TabIndex = 83;
             this.lblMatch.Text = "0/0";
             this.lblMatch.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // btn_PrevMatch
-            // 
-            this.btn_PrevMatch.AccessibleName = "s";
-            this.btn_PrevMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_PrevMatch.Location = new System.Drawing.Point(3, 3);
-            this.btn_PrevMatch.Name = "btn_PrevMatch";
-            this.btn_PrevMatch.Size = new System.Drawing.Size(28, 23);
-            this.btn_PrevMatch.TabIndex = 82;
-            this.btn_PrevMatch.Text = "<<";
-            this.toolTip1.SetToolTip(this.btn_PrevMatch, "previous match");
-            this.btn_PrevMatch.UseVisualStyleBackColor = true;
-            this.btn_PrevMatch.Click += new System.EventHandler(this.btn_PrevMatch_Click);
             // 
             // richTextBox1
             // 
@@ -419,7 +394,7 @@
             // lblStatus
             // 
             this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(164, 17);
+            this.lblStatus.Size = new System.Drawing.Size(169, 17);
             this.lblStatus.Spring = true;
             this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -437,6 +412,35 @@
             this.linkToCodeplex.Size = new System.Drawing.Size(199, 17);
             this.linkToCodeplex.Text = "http://XPathVisualizer.codeplex.com";
             this.linkToCodeplex.Click += new System.EventHandler(this.linkToCodeplex_Click);
+            // 
+            // btn_NextMatch
+            // 
+            this.btn_NextMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_NextMatch.DelayTicks = 3;
+            this.btn_NextMatch.Interval = 150;
+            this.btn_NextMatch.Location = new System.Drawing.Point(71, 3);
+            this.btn_NextMatch.Name = "btn_NextMatch";
+            this.btn_NextMatch.Size = new System.Drawing.Size(28, 23);
+            this.btn_NextMatch.TabIndex = 81;
+            this.btn_NextMatch.Text = ">>";
+            this.toolTip1.SetToolTip(this.btn_NextMatch, "next match");
+            this.btn_NextMatch.UseVisualStyleBackColor = true;
+            this.btn_NextMatch.Click += new System.EventHandler(this.btn_NextMatch_Click);
+            // 
+            // btn_PrevMatch
+            // 
+            this.btn_PrevMatch.AccessibleName = "s";
+            this.btn_PrevMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_PrevMatch.DelayTicks = 3;
+            this.btn_PrevMatch.Interval = 150;
+            this.btn_PrevMatch.Location = new System.Drawing.Point(3, 3);
+            this.btn_PrevMatch.Name = "btn_PrevMatch";
+            this.btn_PrevMatch.Size = new System.Drawing.Size(28, 23);
+            this.btn_PrevMatch.TabIndex = 82;
+            this.btn_PrevMatch.Text = "<<";
+            this.toolTip1.SetToolTip(this.btn_PrevMatch, "previous match");
+            this.btn_PrevMatch.UseVisualStyleBackColor = true;
+            this.btn_PrevMatch.Click += new System.EventHandler(this.btn_PrevMatch_Click);
             // 
             // XPathVisualizerTool
             // 
@@ -498,8 +502,6 @@
         private System.Windows.Forms.ToolStripMenuItem copyAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pasteToolStripMenuItem;
-        private System.Windows.Forms.Button btn_PrevMatch;
-        private System.Windows.Forms.Button btn_NextMatch;
         private System.Windows.Forms.FlowLayoutPanel matchPanel;
         private System.Windows.Forms.Label lblMatch;
         private System.Windows.Forms.ToolStripMenuItem stripNamespacesToolStripMenuItem;
@@ -508,6 +510,8 @@
         private System.Windows.Forms.Button btnExpandCollapse;
         private System.Windows.Forms.ImageList imageList1;
         private System.Windows.Forms.Panel pnlInput;
+        private RepeatButton btn_PrevMatch;
+        private RepeatButton btn_NextMatch;
     }
 }
 

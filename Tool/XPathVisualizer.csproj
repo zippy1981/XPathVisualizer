@@ -51,6 +51,9 @@
   <ItemGroup>
     <Compile Include="Extensions.cs" />
     <Compile Include="Tuple.cs" />
+    <Compile Include="RepeatButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="XPathVisualizer.FormState.cs">
       <SubType>Form</SubType>
     </Compile>

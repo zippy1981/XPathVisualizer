@@ -274,7 +274,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:XPathParser, Version=1.1.0.19, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:XPathParser, Version=1.1.0.20, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_2C8E355F9D03CFF483C0B3C894DE9C86"
@@ -305,7 +305,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.XPathVisualizer, Version=1.1.0.19, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.XPathVisualizer, Version=1.1.0.20, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_683FBD3D81D4C2554220EA03D87CBB65"
@@ -459,14 +459,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Ionic's XPath Visualizer v1.1"
-        "ProductCode" = "8:{C9A04912-5E3C-4624-9941-89C6F8198BBD}"
-        "PackageCode" = "8:{49202AB5-6618-4A8C-B3F3-2EF803EA67C7}"
+        "ProductCode" = "8:{EE00DD8E-5182-45EC-BC5C-9C73295B904F}"
+        "PackageCode" = "8:{7E7FD95F-1723-4DF7-8BBF-30BB9D00C465}"
         "UpgradeCode" = "8:{F6792511-D075-4D05-A5ED-5CCE545BC9D2}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.1.0020"
+        "ProductVersion" = "8:1.1.0021"
         "Manufacturer" = "8:Dino Chiesa"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
