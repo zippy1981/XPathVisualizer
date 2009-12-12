@@ -1,11 +1,12 @@
 // RepeatButton.cs
 // ------------------------------------------------------------------
 //
-// a button that repeates if you hold it down.
+// a Windows Forms button that repeats if you hold it down.
 // 
 // ------------------------------------------------------------------
 //
-// Part of XpathVisualizer
+// Part of XpathVisualizer, and licensed under the Ms-PL as part of
+// XpathVisualizer. 
 //
 // Copyright (c) 2009 by Dino Chiesa
 // All rights reserved!
@@ -14,6 +15,7 @@
 
 
 using System.Windows.Forms;
+using System.ComponentModel;  // for Category, Description attributes
 
 namespace XPathVisualizer
 {
@@ -30,6 +32,7 @@ namespace XPathVisualizer
         /// The number of intervals to delay, during initial press, before
         /// doing the auto-click thing. 
         /// </summary>
+        [Category("Data"),Description("Sets or gets the number of tick intervals to delay, before starting the repeat")]
         public int DelayTicks
         {
             get; set; 
@@ -37,8 +40,9 @@ namespace XPathVisualizer
 
 
         /// <summary>
-        /// The interval on which ticks will occur, while the button is held down. 
+        /// The interval in milliseconds on which ticks will occur, while the button is held down. 
         /// </summary>
+        [Category("Data"),Description("The interval in milliseconds on which ticks will occur, while the button is held down")]
         public int Interval 
         { 
             get 
@@ -93,5 +97,4 @@ namespace XPathVisualizer
         } 
     }
  
-
 }
