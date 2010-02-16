@@ -11,7 +11,7 @@
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.rtf or License.txt for the license details.
 // More info on: http://XPathVisualizer.codeplex.com
 //
@@ -92,6 +92,15 @@ namespace XPathVisualizer
             this.Text = desc.Description + " v" + a.GetName().Version.ToString();
         }
 
+        private static string GetPageMarkup(string uri)
+        {
+            string pageData = null;
+            using (System.Net.WebClient client = new System.Net.WebClient())
+            {
+                pageData = client.DownloadString(uri);
+            }
+            return pageData;
+        }
 
         private void btnLoadXml_Click(object sender, EventArgs e)
         {
@@ -101,9 +110,12 @@ namespace XPathVisualizer
                 this.richTextBox1.Update();
                 _lastRtbKeyPress = _originDateTime;
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
-                this.richTextBox1.Text = File.ReadAllText(this.tbXmlDoc.Text);
+                if (this.tbXmlDoc.Text.StartsWith("http://") || this.tbXmlDoc.Text.StartsWith("https://"))
+                    this.richTextBox1.Text = GetPageMarkup(this.tbXmlDoc.Text);
+                else
+                    this.richTextBox1.Text = File.ReadAllText(this.tbXmlDoc.Text);
                 wantFormat.Set();
-                nav = null; // invalidate the cached doc 
+                nav = null; // invalidate the cached doc
                 matchPositions = null;
                 DisableMatchButtons();
                 PreloadXmlns();
@@ -121,10 +133,10 @@ namespace XPathVisualizer
 
 
 
-        //int priorTextLength = -1; 
+        //int priorTextLength = -1;
         private void richTextBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            nav = null;  // invalidate the cached doc 
+            nav = null;  // invalidate the cached doc
             _lastRtbKeyPress = System.DateTime.Now;
             if (this.richTextBox1.Text.Length == 0) return;
             // assume no length change means format change only
@@ -246,7 +258,7 @@ namespace XPathVisualizer
             string xpathExpr = this.tbXpath.Text;
             // put it back.
             // why? because it's possible to paste in RTF, which won't
-            // show up correctly in that one-line RichTextBox. 
+            // show up correctly in that one-line RichTextBox.
             this.tbXpath.Text = xpathExpr;
             this.tbXpath.SelectAll();
             this.tbXpath.SelectionColor = Color.Black;
@@ -288,7 +300,7 @@ namespace XPathVisualizer
             IntPtr mask = IntPtr.Zero;
             try
             {
-                // reset highlighting 
+                // reset highlighting
                 this.richTextBox1.SelectAll();
                 this.richTextBox1.SelectionBackColor = Color.White;
                 this.richTextBox1.Update();
@@ -379,10 +391,10 @@ namespace XPathVisualizer
 
 
         /// <summary>
-        /// Highlights the selected nodes in the XML RichTextBox, given the XPathNodeIterator. 
+        /// Highlights the selected nodes in the XML RichTextBox, given the XPathNodeIterator.
         /// </summary>
         /// <remarks>
-        /// This finishes pretty quickly, no need to do it asynchronously. 
+        /// This finishes pretty quickly, no need to do it asynchronously.
         /// </remarks>
         /// <param name="selection">the node-set selection</param>
         /// <param name="xmlns">you know</param>
@@ -402,13 +414,13 @@ namespace XPathVisualizer
 
 
 
-                
+
         /// <summary>
         /// Computes the positions of the selected nodes in the XML RichTextBox,
-        /// given the XPathNodeIterator. 
+        /// given the XPathNodeIterator.
         /// </summary>
         /// <remarks>
-        /// This finishes pretty quickly, no need to do it asynchronously. 
+        /// This finishes pretty quickly, no need to do it asynchronously.
         /// </remarks>
         /// <param name="selection">the node-set selection</param>
         /// <param name="xmlns">you know</param>
@@ -460,7 +472,7 @@ namespace XPathVisualizer
                     {
                         if (node.MoveToNext())
                         {
-                            // The navigator moved to the succeeding element. Now backup 
+                            // The navigator moved to the succeeding element. Now backup
                             // through the text to find the ending square bracket for *this* element.
                             ix2 = lc.GetCharIndexFromLine(lineInfo.LineNumber - 1) +
                                 lineInfo.LinePosition - 1;
@@ -474,9 +486,9 @@ namespace XPathVisualizer
                         else
                         {
                             // Manual Labor. Since there is no XPathNavigator.MoveToEndOfElement(),
-                            // we look for the EndElement in the text.  First, advance past the 
-                            // original node name.  If the succeeding char is not / (meaning 
-                            // an empty element), then look for the </NodeName> string.  
+                            // we look for the EndElement in the text.  First, advance past the
+                            // original node name.  If the succeeding char is not / (meaning
+                            // an empty element), then look for the </NodeName> string.
 
                             ix2 = ix + node.Name.Length + 1;
                             //string subs1 = rtbText.Substring(ix2, 1);
@@ -519,7 +531,7 @@ namespace XPathVisualizer
         /// Re-formats (Indents) the text in the XML RichTextBox
         /// </summary>
         /// <remarks>
-        /// This finishes pretty quickly, no need to do it asynchronously. 
+        /// This finishes pretty quickly, no need to do it asynchronously.
         /// </remarks>
         private void IndentXml()
         {
@@ -534,13 +546,13 @@ namespace XPathVisualizer
                         Indent = true,
                         IndentChars= "  "
                             };
-                
+
                 using (var writer = System.Xml.XmlWriter.Create(builder, settings))
                 {
                     doc.Save(writer);
                 }
                 this.richTextBox1.Text = builder.ToString();
-                nav = null; // invalidate the cached doc 
+                nav = null; // invalidate the cached doc
                 wantFormat.Set();
                 matchPositions = null;
                 DisableMatchButtons();
@@ -649,7 +661,7 @@ namespace XPathVisualizer
                 //this.BeginUpdate();
                 this.SuspendLayout();
                 this.pnlPrefixList.SuspendLayout();
-                
+
                 this.pnlPrefixList.Controls.Clear();
 
                 int count = 0;
@@ -714,7 +726,7 @@ namespace XPathVisualizer
                 }
 
                 ExpandXmlPrefixPanel();
-                
+
                 this.pnlPrefixList.ResumeLayout();
                 this.ResumeLayout();
             }
@@ -752,16 +764,16 @@ namespace XPathVisualizer
             this.splitContainer3.SplitterDistance = this.splitContainer3.Panel1MinSize;
         }
 
-        
+
         private void button1_Click(object sender, EventArgs e)
         {
             if (this.pnlPrefixList.Visible == true)
-                CollapseXmlPrefixPanel();                
+                CollapseXmlPrefixPanel();
             else
                 ExpandXmlPrefixPanel();
         }
-       
-        
+
+
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
             IndentXml();
@@ -776,7 +788,7 @@ namespace XPathVisualizer
         /// Strips namespaces from the XML in the XML RichTextBox
         /// </summary>
         /// <remarks>
-        /// This finishes pretty quickly, no need to do it asynchronously. 
+        /// This finishes pretty quickly, no need to do it asynchronously.
         /// </remarks>
         private void StripXmlNamespaces()
         {
@@ -792,13 +804,13 @@ namespace XPathVisualizer
                         Indent = true,
                         IndentChars= "  "
                             };
-                
+
                 using (var writer = new NoNamespaceXmlTextWriter(builder, settings))
                 {
                     doc.Save(writer);
                 }
                 this.richTextBox1.Text = builder.ToString();
-                nav= null; // invalidate the cached doc 
+                nav= null; // invalidate the cached doc
                 wantFormat.Set();
                 matchPositions = null;
                 DisableMatchButtons();
@@ -809,7 +821,7 @@ namespace XPathVisualizer
                 // illegal xml... do nothing
             }
         }
-        
+
         private void copyAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string txt = this.richTextBox1.Text;
@@ -863,16 +875,16 @@ namespace XPathVisualizer
 
             Trace("scrollToPosition(match({0}) position({1}))",
                   currentMatch, position.V1);
-            
+
             int startLine = this.richTextBox1.GetLineFromCharIndex(position.V1);
-            
+
             Trace("scrollToPosition::startLine({0}) numVisibleLines({1})",
                   startLine, numVisibleLines);
 
             this.lblMatch.Text = String.Format("{0}/{1}",
                                                currentMatch + 1, matchPositions.Count);
 
-            // If the start line is in the middle of the doc... 
+            // If the start line is in the middle of the doc...
             //if (startLine > totalLinesInDoc)
             if (startLine > numVisibleLines - 2)
             {
@@ -934,8 +946,8 @@ namespace XPathVisualizer
         private void form_KeyDown(object sender, KeyEventArgs e)
         {
             // Because Form.KeyPreview is true, this method gets invoked before
-            // the KeyDown event is passed to the control with focus.  This way we 
-            // can handle keydown events on a form-wide basis. 
+            // the KeyDown event is passed to the control with focus.  This way we
+            // can handle keydown events on a form-wide basis.
             if (e.Control && e.KeyCode == Keys.N)
             {
                 btn_NextMatch_Click(sender, null);
@@ -950,16 +962,16 @@ namespace XPathVisualizer
 
 
         /// <summary>
-        /// Deletes the selected nodes in the XML RichTextBox, given the XPathNodeIterator. 
+        /// Deletes the selected nodes in the XML RichTextBox, given the XPathNodeIterator.
         /// </summary>
         /// <remarks>
-        /// This finishes pretty quickly, no need to do it asynchronously. 
+        /// This finishes pretty quickly, no need to do it asynchronously.
         /// </remarks>
         private void DeleteSelection()
         {
             if (matchPositions == null) return;
             //ComputePositionsOfSelection(selection, xmlns);
-            int totalRemoved = 0; 
+            int totalRemoved = 0;
             Trace("DeleteSelection(count({0}))", matchPositions.Count);
             int count = 0;
             foreach (var t in matchPositions)
@@ -973,7 +985,7 @@ namespace XPathVisualizer
                 this.richTextBox1.Select(start, length);
                 this.richTextBox1.SelectedText = "";
                 totalRemoved += length;
-                
+
                 Trace("DeleteSelection(total({0})", totalRemoved);
                 count++;
             }
@@ -986,15 +998,15 @@ namespace XPathVisualizer
         }
 
 
-        
-        
+
+
         private void removeSelectedToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (matchPositions == null) return;
             DisableMatchButtons();
-            
+
             IntPtr mask = IntPtr.Zero;
-            try 
+            try
             {
                 mask = this.richTextBox1.BeginUpdate();
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
@@ -1010,13 +1022,13 @@ namespace XPathVisualizer
                 this.Cursor = System.Windows.Forms.Cursors.Default;
                 this.richTextBox1.EndUpdate(mask);
             }
-            
+
         }
- 
+
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
          {
-            try 
+            try
             {
                 var dlg1 = new SaveFileDialog
                     {
@@ -1042,7 +1054,7 @@ namespace XPathVisualizer
                                 "Exception while saving",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Exclamation);
-            }            
+            }
         }
     }
 
