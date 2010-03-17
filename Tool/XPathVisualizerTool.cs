@@ -871,6 +871,7 @@ namespace XPathVisualizer
         private void scrollToCurrentMatch()
         {
             if (matchPositions == null) return;
+            if (matchPositions.Count == 0) return;
             Tuple<int,int> position = matchPositions[currentMatch];
 
             Trace("scrollToPosition(match({0}) position({1}))",
