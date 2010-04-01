@@ -9,7 +9,7 @@
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.rtf or License.txt for the license details.
 // More info on: http://XPathVisualizer.codeplex.com
 //
@@ -58,8 +58,8 @@ namespace XPathVisualizer
         }
 
 
-        
-        
+
+
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         public void KickoffColorizer()
         {
@@ -76,7 +76,7 @@ namespace XPathVisualizer
         }
 
 
-                
+
         public class FormatChange
         {
             public FormatChange(int start, int length, System.Drawing.Color color)
@@ -85,14 +85,14 @@ namespace XPathVisualizer
                 Length = length;
                 ForeColor = color;
             }
-            
+
             public int Start;
             public int Length;
             public System.Drawing.Color ForeColor;
         }
 
-        
-        
+
+
         private RichTextBoxExtras _rtbe;
         private RichTextBoxExtras rtbe
         {
@@ -106,7 +106,25 @@ namespace XPathVisualizer
             }
         }
 
-        
+
+        private void NotifyStopFormatting(string message)
+        {
+            if (this.InvokeRequired)
+            {
+               this.Invoke(new Action<String>(this.NotifyStopFormatting),
+                                        new object[] { message });
+            }
+            else
+            {
+                this.progressBar1.Visible = false;
+                // only reset the status string if it has not changed in the interim
+                if (this.lblStatus.Text == "Formatting...")
+                    this.lblStatus.Text = message;
+            }
+        }
+
+
+
         private void ApplyChanges(List<FormatChange> list)
         {
             if (this.richTextBox1.InvokeRequired)
@@ -121,7 +139,7 @@ namespace XPathVisualizer
                 // auto-scroll.  The way to prevent that is to call
                 // BeginUpdate/EndUpdate.
                 rtbe.BeginUpdateAndSaveState();
-                
+
                 foreach (var change in list)
                 {
                     rtbe.SetSelectionColor(change.Start, change.Start+change.Length, change.ForeColor);
@@ -132,7 +150,7 @@ namespace XPathVisualizer
         }
 
 
-        
+
         private void ResetXmlTextBox()
         {
             if (this.richTextBox1.InvokeRequired)
@@ -142,7 +160,7 @@ namespace XPathVisualizer
             else
             {
                 rtbe.BeginUpdateAndSaveState();
-                
+
                 // get the text.
                 string txt = this.richTextBox1.Text;
                 // put it back.
@@ -157,12 +175,12 @@ namespace XPathVisualizer
             }
         }
 
-        
+
         private const int DELAY_IN_MILLISECONDS = 650;
         private int progressCount = 0;
 
 
-        
+
         private void DoBackgroundColorizing(object sender, DoWorkEventArgs e)
         {
             // Design Notes:
@@ -219,8 +237,8 @@ namespace XPathVisualizer
                 {
                     wantFormat.WaitOne();
                     wantFormat.Reset();
-                    progressCount = 0; 
-    
+                    progressCount = 0;
+
                     var list = new List<FormatChange>();
 
                     // We want a re-format, but let's wait til
@@ -248,10 +266,11 @@ namespace XPathVisualizer
                     int reportingInterval = (maxLines > 96)
                         ? (int)(maxLines / 48)
                         : 4;
-                    
+
                     int lastReport = -1;
                     var sr = new StringReader(txt);
-                    XmlReader reader = XmlReader.Create(sr);
+                    XmlReader reader = XmlReader.Create(sr, new XmlReaderSettings { ProhibitDtd = false });
+                    //XmlReader reader = XmlReader.Create(sr);
 
                     IXmlLineInfo rinfo = (IXmlLineInfo)reader;
                     if (!rinfo.HasLineInfo()) continue;
@@ -264,12 +283,12 @@ namespace XPathVisualizer
                         {
                             // If another format is pending, that means
                             // the text has changed and we should stop this
-                            // formatting effort and start again. 
+                            // formatting effort and start again.
                             if ( wantFormat.WaitOne(0, false))
                                 break;
                         }
                         rcount++;
-                        
+
                         // report progress
                         if ((rinfo.LineNumber / reportingInterval) > lastReport)
                         {
@@ -385,13 +404,14 @@ namespace XPathVisualizer
                         }
                     }
 
-                    // in case there are more 
+                    // in case there are more
                     ApplyChanges(list);
                     self.ReportProgress(100);
-                } 
+                }
                 catch (Exception exc1)
                 {
-                    Console.WriteLine("Exception: " + exc1.Message);
+                    //Console.WriteLine("Exception: " + exc1.Message);
+                    NotifyStopFormatting(exc1.Message);
                 }
                 finally
                 {
@@ -400,7 +420,7 @@ namespace XPathVisualizer
             }
             while (true);
 
-        } 
+        }
     }
 }
 
