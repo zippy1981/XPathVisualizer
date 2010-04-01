@@ -120,6 +120,7 @@ namespace XPathVisualizer
                 matchPositions = null;
                 DisableMatchButtons();
                 PreloadXmlns();
+
             }
             catch (Exception exc1)
             {
@@ -131,6 +132,7 @@ namespace XPathVisualizer
                 this.Cursor = System.Windows.Forms.Cursors.Default;
             }
         }
+
 
         //int priorTextLength = -1;
         private void richTextBox1_KeyPress(object sender, KeyPressEventArgs e)
@@ -537,6 +539,7 @@ namespace XPathVisualizer
             try
             {
                 System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
+                doc.XmlResolver = new Ionic.Xml.XhtmlResolver();
                 doc.LoadXml(this.richTextBox1.Text);
                 var builder = new System.Text.StringBuilder();
                 var settings = new System.Xml.XmlWriterSettings
@@ -544,7 +547,7 @@ namespace XPathVisualizer
                         // OmitXmlDeclaration = true,
                         Indent = true,
                         IndentChars= "  "
-                            };
+                    };
 
                 using (var writer = System.Xml.XmlWriter.Create(builder, settings))
                 {
@@ -557,9 +560,10 @@ namespace XPathVisualizer
                 DisableMatchButtons();
                 PreloadXmlns();
             }
-            catch (System.Exception)
+            catch (System.Exception exc1)
             {
-                // maybe invalid XML, so... just do nothing
+                // maybe invalid XML...
+                this.lblStatus.Text = "Exception while loading: " + exc1.ToString();
             }
         }
 
