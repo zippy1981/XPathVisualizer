@@ -643,25 +643,27 @@ namespace LineNumbers
 
         private static int CountNewlines(string s)
         {
-            //             int len = s.Length;
-            //             int c = 0;
-            //             for (int i=0; i < len;  i++)
-            //             {
-            //                 if (s[i] == '\n') c++;
-            //             }
-            //             return c+1;
-
-            int count = -1;
-            int index = -1;
-
-            do
+            int len = s.Length;
+            int c = 0;
+            for (int i=0; i < len;  i++)
             {
-                count++;
-                index = s.IndexOf('\n', index + 1);
+                if (s[i] == '\n') c++;
             }
-            while (index != -1);
+            return c+1;
 
-            return count+1;
+            // the following is slower...
+            // =================================
+            //   int count = -1;
+            //   int index = -1;
+            //
+            //   do
+            //   {
+            //       count++;
+            //       index = s.IndexOf('\n', index + 1);
+            //   }
+            //   while (index != -1);
+            //
+            //   return count+1;
         }
 
 

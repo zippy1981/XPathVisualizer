@@ -28,6 +28,7 @@ using System.Drawing;
 using System.Linq;                    // for the Contains extension
 using System.Xml.Linq;                // XElement
 using System.Windows.Forms;
+using System.Text.RegularExpressions; // Regex
 using CodePlex.XPathParser;
 
 namespace XPathVisualizer
@@ -35,7 +36,8 @@ namespace XPathVisualizer
     public partial class XPathVisualizerTool : Form
     {
         private XPathNavigator nav;
-        private Dictionary<String, String> _xmlnsPrefixes;
+        private Dictionary<String, String> _xmlns;
+        private string _xmlnsDefaultPrefix;
         private int originalGroupBoxMinHeight;
         private int originalPanel1MinSize;
         private System.Threading.ManualResetEvent wantFormat = new System.Threading.ManualResetEvent(false);
@@ -44,6 +46,7 @@ namespace XPathVisualizer
         private XPathParser<XElement> xpathParser = new XPathParser<XElement>();
         private List<Tuple<int, int>> matchPositions;
         private int currentMatch;
+        private bool okToSave;
         private int numVisibleLines;
         private int totalLinesInDoc;
 
@@ -107,13 +110,20 @@ namespace XPathVisualizer
             try
             {
                 this.richTextBox1.Text = "";
+                this.toolTip1.SetToolTip(this.richTextBox1, "");
                 this.richTextBox1.Update();
                 _lastRtbKeyPress = _originDateTime;
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 if (this.tbXmlDoc.Text.StartsWith("http://") || this.tbXmlDoc.Text.StartsWith("https://"))
+                {
                     this.richTextBox1.Text = GetPageMarkup(this.tbXmlDoc.Text);
+                    okToSave = false;
+                }
                 else
+                {
                     this.richTextBox1.Text = File.ReadAllText(this.tbXmlDoc.Text);
+                    okToSave = true;
+                }
 
                 wantFormat.Set();
                 nav = null; // invalidate the cached doc
@@ -164,16 +174,76 @@ namespace XPathVisualizer
 
 
 
+
+        private void PreloadXmlns()
+        {
+            try
+            {
+                // load the Xml doc, create navigator
+                if (nav == null)
+                {
+                    string rtbText = this.richTextBox1.Text;
+                    var xpathDoc = new XPathDocument(new StringReader(rtbText));
+                    nav = xpathDoc.CreateNavigator();
+                }
+
+                // start from scratch
+                xmlNamespaces.Clear();
+                _xmlnsDefaultPrefix= null;
+                int c = 1;
+
+                // get all xml namespace declarations
+                XPathNodeIterator list = nav.Select("//namespace::*[name() != 'xml'][not(../../namespace::*=.)]");
+                while (list.MoveNext())
+                {
+                    XPathNavigator nsNode = list.Current;
+                    if (nsNode.NodeType == XPathNodeType.Namespace)
+                    {
+                        string ns = nsNode.Value;
+
+                        if (!xmlNamespaces.Values.Contains(ns))
+                        {
+                            // get the prefix - it's either empty or not
+                            string origPrefix = nsNode.LocalName;
+
+                            // make sure the prefix is unique
+                            int dupes = 0;
+                            string actualPrefix = origPrefix;
+                            while (actualPrefix == "" || xmlNamespaces.Keys.Contains(actualPrefix))
+                            {
+                                actualPrefix = (origPrefix == "")
+                                    ? String.Format("ns{0}", c++)
+                                    : String.Format("{0}-{1}", origPrefix, dupes++);
+                            }
+
+                            if (origPrefix=="" && _xmlnsDefaultPrefix == null)
+                                _xmlnsDefaultPrefix = actualPrefix;
+
+                            xmlNamespaces.Add(actualPrefix, ns);
+                        }
+
+                    }
+                }
+                DisplayXmlPrefixList();
+            }
+            catch (System.Exception exc1)
+            {
+                this.lblStatus.Text = "Cannot parse: " + exc1.Message;
+            }
+        }
+
+#if BAD_BOY_WANNA_DO_STRING_MATCH_ON_XML
+
         private static System.Text.RegularExpressions.Regex unnamedXmlnsRegex =
             new System.Text.RegularExpressions.Regex("\\sxmlns\\s*=\\s*['\"](.+?)['\"]");
 
         private static System.Text.RegularExpressions.Regex namedXmlnsRegex =
             new System.Text.RegularExpressions.Regex("\\sxmlns:([^\\s]+)\\s*=\\s*['\"](.+?)['\"]");
 
-
         private void PreloadXmlns()
         {
             xmlNamespaces.Clear();
+            _xmlnsDefaultPrefix= null;
             int c = 1;
             var regexi = new System.Text.RegularExpressions.Regex[] { namedXmlnsRegex, unnamedXmlnsRegex };
 
@@ -204,6 +274,9 @@ namespace XPathVisualizer
                                     : String.Format("{0}-{1}", origPrefix, dupes++);
                             }
 
+                            if (i==1 && _xmlnsDefaultPrefix == null)
+                                _xmlnsDefaultPrefix = actualPrefix;
+
                             xmlNamespaces.Add(actualPrefix, ns);
                         }
                     }
@@ -211,7 +284,7 @@ namespace XPathVisualizer
             }
             DisplayXmlPrefixList();
         }
-
+#endif
 
 
         private void AdjustSplitterSize()
@@ -268,7 +341,7 @@ namespace XPathVisualizer
             try
             {
                 XElement xe = xpathParser.Parse(xpathExpr, new XPathTreeBuilder());
-                this.toolTip1.SetToolTip(this.tbXpath, "XPath expression");
+                this.toolTip1.SetToolTip(this.tbXpath, "enter an XPath expression");
             }
             catch (XPathParserException exc1)
             {
@@ -277,6 +350,42 @@ namespace XPathVisualizer
                 this.tbXpath.Select(ss, sl);
                 this.toolTip1.SetToolTip(this.tbXpath, exc1.Message);
             }
+        }
+
+
+        private XmlNamespaceManager GetXmlNamespaceManager()
+        {
+            var xmlns = new XmlNamespaceManager(nav.NameTable);
+            foreach (string prefix in xmlNamespaces.Keys)
+            {
+                // XPath 1.0 doesn't support "default" namespaces in xpath queries.
+                // see http://www.w3.org/TR/1999/REC-xpath-19991116/#node-tests
+                // if (prefix == _xmlnsDefaultPrefix)
+                //    xmlns.AddNamespace("", xmlNamespaces[prefix]);
+                xmlns.AddNamespace(prefix, xmlNamespaces[prefix]);
+            }
+            return xmlns;
+        }
+
+
+
+
+        string FixupXpathExpressionWithDefaultNamespace(string expr)
+        {
+            if (_xmlnsDefaultPrefix == null) return expr;
+
+            string prefix = _xmlnsDefaultPrefix;
+
+            string s = expr;
+            s = Regex.Replace(s, "^(?!::)([^/:]+)(?=/)", prefix +":$1");                           // beginning
+            s = Regex.Replace(s, "/([^/:]+)(?=/)", "/"+prefix +":$1");                             // stanza
+            s = Regex.Replace(s, "::([A-Za-z][^/:*]*)(?=/)", "::"+prefix +":$1");                  // axis specifier
+            s = Regex.Replace(s, "\\[([A-Za-z][^/:*\\(]*)(?=[\\[\\]])", "["+prefix +":$1");        // predicate
+            s = Regex.Replace(s, "/([A-Za-z][^/:]*)(?!<::)$", "/ns1:$1");                          // end
+            s = Regex.Replace(s, "^([A-Za-z][^/:]*)$", "ns1:$1");                                  // edge case
+            s = Regex.Replace(s, "([-A-Za-z]+)\\(([^/:\\.,\\)]+)(?=[,\\)])", "$1("+prefix +":$2"); // xpath functions
+
+            return s;
         }
 
 
@@ -310,27 +419,37 @@ namespace XPathVisualizer
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 this.tbXpath.BackColor = this.tbXmlns.BackColor; // just in case
 
-                // load the Xml doc
-                if (nav == null)
-                {
-                    var xpathDoc = new XPathDocument(new StringReader(rtbText));
-                    nav = xpathDoc.CreateNavigator();
-                }
-                XmlNamespaceManager xmlns = new XmlNamespaceManager(nav.NameTable);
-                foreach (string prefix in xmlNamespaces.Keys)
-                    xmlns.AddNamespace(prefix, xmlNamespaces[prefix]);
+                XmlNamespaceManager xmlns = GetXmlNamespaceManager();
 
-                XPathNodeIterator selection = nav.Select(xpathExpression, xmlns);
+                var elaboratedXpathExpression = FixupXpathExpressionWithDefaultNamespace(xpathExpression);
+
+                XPathNodeIterator selection = nav.Select(elaboratedXpathExpression, xmlns);
 
                 if (selection == null || selection.Count == 0)
                 {
-                    this.lblStatus.Text = String.Format("{0}: Zero nodes selected", xpathExpression);
+                    if (elaboratedXpathExpression.Length < 64)
+                        this.lblStatus.Text = elaboratedXpathExpression + ": Zero nodes selected";
+                    else
+                        this.lblStatus.Text = "Zero nodes selected";
+
+                    var s = String.Format("{0}\nZero nodes selected",
+                                          elaboratedXpathExpression);
+                    this.toolTip1.SetToolTip(this.richTextBox1, s);
                 }
                 else
                 {
-                    this.lblStatus.Text = String.Format("{0}: {1} {2} selected",
-                                                        xpathExpression,
-                                                        selection.Count, (selection.Count == 1) ? "node" : "nodes");
+                    var s = String.Format("{0}\n{1} {2} selected",
+                                          elaboratedXpathExpression,
+                                          selection.Count, (selection.Count == 1) ? "node" : "nodes");
+                    this.toolTip1.SetToolTip(this.richTextBox1, s);
+
+                    if (elaboratedXpathExpression.Length < 64)
+                        this.lblStatus.Text = String.Format("{0}: {1} {2} selected",
+                                                            elaboratedXpathExpression,
+                                                            selection.Count, (selection.Count == 1) ? "node" : "nodes");
+                    else
+                        this.lblStatus.Text = String.Format("{0} {1} selected",
+                                                            selection.Count, (selection.Count == 1) ? "node" : "nodes");
                     HighlightSelection(selection, xmlns);
                 }
 
@@ -563,7 +682,7 @@ namespace XPathVisualizer
             catch (System.Exception exc1)
             {
                 // maybe invalid XML...
-                this.lblStatus.Text = "Exception while loading: " + exc1.ToString();
+                this.lblStatus.Text = "Exception while loading: " + exc1.Message;  // ToString();
             }
         }
 
@@ -628,6 +747,33 @@ namespace XPathVisualizer
             }
         }
 
+        private void ClickXmlns(object sender, string k)
+        {
+            var chk = sender as System.Windows.Forms.CheckBox;
+            if (chk.Checked)
+            {
+                if (xmlNamespaces.Keys.Contains(k))
+                {
+                    _xmlnsDefaultPrefix = k;
+
+                    // unset checkbox for all others, like a radio button
+                    foreach (Control  c in this.pnlPrefixList.Controls)
+                    {
+                        var chk2 = c as System.Windows.Forms.CheckBox;
+                        if (chk2 != null && chk2 != sender)
+                        {
+                            chk2.Checked = false;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                _xmlnsDefaultPrefix = null;
+            }
+        }
+
+
         private void XPathVisualizerTool_Resize(object sender, EventArgs e)
         {
             AdjustSplitterSize();
@@ -647,9 +793,9 @@ namespace XPathVisualizer
         {
             get
             {
-                if (_xmlnsPrefixes == null)
-                    _xmlnsPrefixes = new Dictionary<String, String>();
-                return _xmlnsPrefixes;
+                if (_xmlns == null)
+                    _xmlns = new Dictionary<String, String>();
+                return _xmlns;
             }
         }
 
@@ -657,7 +803,7 @@ namespace XPathVisualizer
         private int XmlNsPanelDeltaY = 20;
         private void DisplayXmlPrefixList()
         {
-            int offsetX = 0;   // greater is further left
+            int offsetX = 0;  // greater is further left
             int offsetY = 2;  // greater implies further up
             try
             {
@@ -670,9 +816,10 @@ namespace XPathVisualizer
                 int count = 0;
                 if (xmlNamespaces.Keys.Count > 0)
                 {
+                    // add a set of controls to the panel for each key/value pair in the list
                     foreach (var k in xmlNamespaces.Keys)
                     {
-                        // add a set of controls to the panel for each key/value pair in the list
+                        // leftmost textbox.  It is readonly, holds the prefix name
                         var tb1 = new System.Windows.Forms.TextBox
                             {
                                 Anchor = (System.Windows.Forms.AnchorStyles) (System.Windows.Forms.AnchorStyles.Top |
@@ -685,16 +832,19 @@ namespace XPathVisualizer
                                 TabStop = false,
                                 };
                         this.pnlPrefixList.Controls.Add(tb1);
+
+                        // first label.  It's an equals sign, indicating the prefix assigned to the xml namespace
                         var lbl1 = new System.Windows.Forms.Label
                             {
                                 AutoSize = true,
-                                Location = new System.Drawing.Point(this.tbXmlns.Location.X - offsetX - 18,
+                                Location = new System.Drawing.Point(this.tbXmlns.Location.X - offsetX - 14,
                                                                     this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
                                 Size = new System.Drawing.Size(24, 13),
                                 Text = ":=",
                                 };
                         this.pnlPrefixList.Controls.Add(lbl1);
 
+                        // second textbox.Holds the xml namespace
                         var tb2 = new System.Windows.Forms.TextBox
                             {
                                 Anchor = (System.Windows.Forms.AnchorStyles)
@@ -703,12 +853,31 @@ namespace XPathVisualizer
                                      System.Windows.Forms.AnchorStyles.Right),
                                 Location = new System.Drawing.Point(this.tbXmlns.Location.X - offsetX,
                                                                     this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
-                                Size = new System.Drawing.Size(this.tbXmlns.Size.Width, this.tbXmlns.Size.Height),
+                                Size = new System.Drawing.Size(this.tbXmlns.Size.Width - 18, this.tbXmlns.Size.Height),
                                 Text = xmlNamespaces[k],
                                 ReadOnly = true,
                                 TabStop = false,
                                 };
                         this.pnlPrefixList.Controls.Add(tb2);
+
+                        // checkbox to select the default namespace
+                        var chk1 = new System.Windows.Forms.CheckBox
+                            {
+                                Anchor = (System.Windows.Forms.AnchorStyles)
+                                    (System.Windows.Forms.AnchorStyles.Top |
+                                     System.Windows.Forms.AnchorStyles.Right ),
+                                Location = new System.Drawing.Point(this.tbXmlns.Location.X - offsetX +
+                                                                    this.tbXmlns.Size.Width - 14,
+                                                                    this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
+                                Size = new System.Drawing.Size(14, this.tbXmlns.Size.Height),
+                                TabStop = true,
+                                Checked = (k == _xmlnsDefaultPrefix)
+                                };
+                        chk1.Click += (src, e) => { ClickXmlns(src, k); };
+                        this.toolTip1.SetToolTip(chk1, "use as default ns");
+                        this.pnlPrefixList.Controls.Add(chk1);
+
+                        // button to delete the namespace and its prefix
                         var btn1 = new System.Windows.Forms.Button
                             {
                                 Anchor = (System.Windows.Forms.AnchorStyles)
@@ -723,6 +892,7 @@ namespace XPathVisualizer
                                 TabStop = false,
                                 };
                         btn1.Click += (src, e) => { RemovePrefix(k); };
+                        this.toolTip1.SetToolTip(btn1, "remove this ns+prefix");
                         this.pnlPrefixList.Controls.Add(btn1);
                         count++;
                     }
@@ -1031,26 +1201,36 @@ namespace XPathVisualizer
 
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
-         {
+        {
             try
             {
-                var dlg1 = new SaveFileDialog
-                    {
-                        FileName = System.IO.Path.GetFileName(this.tbXmlDoc.Text),
-                        InitialDirectory = System.IO.Path.GetDirectoryName(this.tbXmlDoc.Text),
-                        OverwritePrompt = true,
-                        Title = "Where would you like to save the XML?",
-                        Filter = "XML files|*.xml|All files (*.*)|*.*"
-                    };
-
-                var result = dlg1.ShowDialog();
-                if (result == DialogResult.OK)
+                if (okToSave)
                 {
-                    this.tbXmlDoc.Text = dlg1.FileName;
-
                     File.WriteAllText(this.tbXmlDoc.Text,
                                       this.richTextBox1.Text);
                 }
+                else
+                {
+                    var dlg1 = new SaveFileDialog
+                        {
+                            FileName = System.IO.Path.GetFileName(this.tbXmlDoc.Text),
+                            InitialDirectory = System.IO.Path.GetDirectoryName(this.tbXmlDoc.Text),
+                            OverwritePrompt = true,
+                            Title = "Where would you like to save the XML?",
+                            Filter = "XML files|*.xml|All files (*.*)|*.*"
+                                };
+
+                    var result = dlg1.ShowDialog();
+
+                    if (result == DialogResult.OK)
+                    {
+                        this.tbXmlDoc.Text = dlg1.FileName;
+                        File.WriteAllText(this.tbXmlDoc.Text,
+                                          this.richTextBox1.Text);
+                        okToSave = true;
+                    }
+                }
+                this.lblStatus.Text = "Saved.";
             }
             catch (System.Exception exc1)
             {
@@ -1060,6 +1240,63 @@ namespace XPathVisualizer
                                 MessageBoxIcon.Exclamation);
             }
         }
+
+
+        /// <summary>
+        ///   Pop a context menu displaying the MRU list of xpath expressions
+        /// </summary>
+        private void tbXpath_MouseUp(Object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                contextMenuStrip2.Items.Clear();
+                int c = _xpathExpressionMruList.Count;
+                for (int i=0; i < c;  i++)
+                {
+                    string s = _xpathExpressionMruList[c-i-1].ToString();
+                    var mi = new System.Windows.Forms.ToolStripMenuItem();
+                    mi.Text = s;
+                    mi.Click += (src,evt) => { this.tbXpath.Text = (src as ToolStripMenuItem).Text; };
+                    contextMenuStrip2.Items.Add(mi);
+                }
+                contextMenuStrip2.Show(this.tbXpath, new Point(e.X, e.Y));
+            }
+        }
+
+
+        /// <summary>
+        ///   Handle ctrl-S for save, ctrl-F for format.
+        /// </summary>
+        protected override bool ProcessDialogKey(Keys keyData)
+        {
+            // Get the actual integer value of the keystroke
+            int keyCode = (int)keyData;
+
+            if ((keyCode & (int)Keys.Shift) != 0)
+                return base.ProcessDialogKey(keyData);
+
+            if ((keyCode & (int)Keys.Alt) != 0)
+                return base.ProcessDialogKey(keyData);
+
+            if ((keyCode & (int)Keys.Control) != 0)
+            {
+                // Strip off the modifier keys
+                Keys cleanKey = (Keys)(keyCode & 0xFFFF);
+                switch (cleanKey)
+                {
+                    case Keys.S:
+                        saveAsToolStripMenuItem_Click(null, null);
+                        return true; // handled
+                    case Keys.F:
+                        IndentXml();
+                        return true;
+                }
+            }
+
+            // chain
+            return base.ProcessDialogKey(keyData);
+        }
+
     }
 
 }

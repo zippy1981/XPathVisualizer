@@ -46,7 +46,6 @@
             this.btnBrowse = new System.Windows.Forms.Button();
             this.tbXmlDoc = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.rtbLineNumbers1 = new LineNumbers.RtbLineNumbers();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -57,14 +56,16 @@
             this.pasteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.matchPanel = new System.Windows.Forms.FlowLayoutPanel();
-            this.btn_NextMatch = new XPathVisualizer.RepeatButton();
             this.lblMatch = new System.Windows.Forms.Label();
-            this.btn_PrevMatch = new XPathVisualizer.RepeatButton();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.progressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.linkToCodeplex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.rtbLineNumbers1 = new LineNumbers.RtbLineNumbers();
+            this.btn_NextMatch = new XPathVisualizer.RepeatButton();
+            this.btn_PrevMatch = new XPathVisualizer.RepeatButton();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
@@ -165,6 +166,7 @@
             this.tbXmlns.Name = "tbXmlns";
             this.tbXmlns.Size = new System.Drawing.Size(373, 20);
             this.tbXmlns.TabIndex = 55;
+            this.toolTip1.SetToolTip(this.tbXmlns, "enter an xml namespace");
             // 
             // tbPrefix
             // 
@@ -172,6 +174,7 @@
             this.tbPrefix.Name = "tbPrefix";
             this.tbPrefix.Size = new System.Drawing.Size(78, 20);
             this.tbPrefix.TabIndex = 50;
+            this.toolTip1.SetToolTip(this.tbPrefix, "enter a unique xmlns prefix");
             this.tbPrefix.TextChanged += new System.EventHandler(this.tbPrefix_TextChanged);
             // 
             // btnAddNsPrefix
@@ -182,6 +185,7 @@
             this.btnAddNsPrefix.Size = new System.Drawing.Size(28, 20);
             this.btnAddNsPrefix.TabIndex = 60;
             this.btnAddNsPrefix.Text = "+";
+            this.toolTip1.SetToolTip(this.btnAddNsPrefix, "add the specified namespace+prefix");
             this.btnAddNsPrefix.UseVisualStyleBackColor = true;
             this.btnAddNsPrefix.Click += new System.EventHandler(this.btnAddNsPrefix_Click);
             // 
@@ -203,6 +207,7 @@
             this.btnEvalXpath.Size = new System.Drawing.Size(40, 23);
             this.btnEvalXpath.TabIndex = 45;
             this.btnEvalXpath.Text = "Eval";
+            this.toolTip1.SetToolTip(this.btnEvalXpath, "evaluate the expression");
             this.btnEvalXpath.UseVisualStyleBackColor = true;
             this.btnEvalXpath.Click += new System.EventHandler(this.btnEvalXpath_Click);
             // 
@@ -214,6 +219,7 @@
             this.btnLoadXml.Size = new System.Drawing.Size(40, 23);
             this.btnLoadXml.TabIndex = 30;
             this.btnLoadXml.Text = "Load";
+            this.toolTip1.SetToolTip(this.btnLoadXml, "load the document");
             this.btnLoadXml.UseVisualStyleBackColor = true;
             this.btnLoadXml.Click += new System.EventHandler(this.btnLoadXml_Click);
             // 
@@ -231,8 +237,9 @@
             this.tbXpath.Size = new System.Drawing.Size(372, 20);
             this.tbXpath.TabIndex = 40;
             this.tbXpath.Text = "";
-            this.toolTip1.SetToolTip(this.tbXpath, "XPath expression");
+            this.toolTip1.SetToolTip(this.tbXpath, "enter an XPath expression");
             this.tbXpath.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbXpath_KeyDown);
+            this.tbXpath.MouseUp += new System.Windows.Forms.MouseEventHandler(this.tbXpath_MouseUp);
             this.tbXpath.TextChanged += new System.EventHandler(this.tbXpath_TextChanged);
             // 
             // label2
@@ -252,6 +259,7 @@
             this.btnBrowse.Size = new System.Drawing.Size(29, 26);
             this.btnBrowse.TabIndex = 20;
             this.btnBrowse.Text = "...";
+            this.toolTip1.SetToolTip(this.btnBrowse, "browse the filesystem...");
             this.btnBrowse.UseVisualStyleBackColor = true;
             this.btnBrowse.Click += new System.EventHandler(this.btnBrowse_Click);
             // 
@@ -263,6 +271,7 @@
             this.tbXmlDoc.Name = "tbXmlDoc";
             this.tbXmlDoc.Size = new System.Drawing.Size(337, 20);
             this.tbXmlDoc.TabIndex = 10;
+            this.toolTip1.SetToolTip(this.tbXmlDoc, "a file path or URL to load from");
             // 
             // label1
             // 
@@ -272,46 +281,6 @@
             this.label1.Size = new System.Drawing.Size(52, 13);
             this.label1.TabIndex = 0;
             this.label1.Text = "XML Doc";
-            // 
-            // rtbLineNumbers1
-            // 
-            this.rtbLineNumbers1._SeeThroughMode_ = false;
-            this.rtbLineNumbers1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
-            this.rtbLineNumbers1.AutoSizing = true;
-            this.rtbLineNumbers1.BackgroundGradient_AlphaColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.rtbLineNumbers1.BackgroundGradient_BetaColor = System.Drawing.Color.LightSteelBlue;
-            this.rtbLineNumbers1.BackgroundGradient_Direction = System.Drawing.Drawing2D.LinearGradientMode.Horizontal;
-            this.rtbLineNumbers1.BorderLines_Color = System.Drawing.Color.SlateGray;
-            this.rtbLineNumbers1.BorderLines_Style = System.Drawing.Drawing2D.DashStyle.Dot;
-            this.rtbLineNumbers1.BorderLines_Thickness = 1F;
-            this.rtbLineNumbers1.DockSide = LineNumbers.RtbLineNumbers.LineNumberDockSide.Left;
-            this.rtbLineNumbers1.GridLines_Color = System.Drawing.Color.SlateGray;
-            this.rtbLineNumbers1.GridLines_Style = System.Drawing.Drawing2D.DashStyle.Dot;
-            this.rtbLineNumbers1.GridLines_Thickness = 1F;
-            this.rtbLineNumbers1.LineNrs_Alignment = System.Drawing.ContentAlignment.TopRight;
-            this.rtbLineNumbers1.LineNrs_AntiAlias = true;
-            this.rtbLineNumbers1.LineNrs_AsHexadecimal = false;
-            this.rtbLineNumbers1.LineNrs_ClippedByItemRectangle = true;
-            this.rtbLineNumbers1.LineNrs_LeadingZeroes = true;
-            this.rtbLineNumbers1.LineNrs_Offset = new System.Drawing.Size(0, 0);
-            this.rtbLineNumbers1.Location = new System.Drawing.Point(-2, 0);
-            this.rtbLineNumbers1.Margin = new System.Windows.Forms.Padding(0);
-            this.rtbLineNumbers1.MarginLines_Color = System.Drawing.Color.SlateGray;
-            this.rtbLineNumbers1.MarginLines_Side = LineNumbers.RtbLineNumbers.LineNumberDockSide.Right;
-            this.rtbLineNumbers1.MarginLines_Style = System.Drawing.Drawing2D.DashStyle.Solid;
-            this.rtbLineNumbers1.MarginLines_Thickness = 1F;
-            this.rtbLineNumbers1.Name = "rtbLineNumbers1";
-            this.rtbLineNumbers1.Padding = new System.Windows.Forms.Padding(0, 0, 2, 0);
-            this.rtbLineNumbers1.ParentRichTextBox = this.richTextBox1;
-            this.rtbLineNumbers1.Show_BackgroundGradient = true;
-            this.rtbLineNumbers1.Show_BorderLines = true;
-            this.rtbLineNumbers1.Show_GridLines = true;
-            this.rtbLineNumbers1.Show_LineNrs = true;
-            this.rtbLineNumbers1.Show_MarginLines = true;
-            this.rtbLineNumbers1.Size = new System.Drawing.Size(17, 196);
-            this.rtbLineNumbers1.TabIndex = 85;
-            this.rtbLineNumbers1.TabStop = false;
             // 
             // richTextBox1
             // 
@@ -409,20 +378,6 @@
             this.matchPanel.TabIndex = 84;
             this.matchPanel.WrapContents = false;
             // 
-            // btn_NextMatch
-            // 
-            this.btn_NextMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_NextMatch.DelayTicks = 3;
-            this.btn_NextMatch.Interval = 150;
-            this.btn_NextMatch.Location = new System.Drawing.Point(71, 3);
-            this.btn_NextMatch.Name = "btn_NextMatch";
-            this.btn_NextMatch.Size = new System.Drawing.Size(28, 23);
-            this.btn_NextMatch.TabIndex = 81;
-            this.btn_NextMatch.Text = ">>";
-            this.toolTip1.SetToolTip(this.btn_NextMatch, "next match");
-            this.btn_NextMatch.UseVisualStyleBackColor = true;
-            this.btn_NextMatch.Click += new System.EventHandler(this.btn_NextMatch_Click);
-            // 
             // lblMatch
             // 
             this.lblMatch.Anchor = System.Windows.Forms.AnchorStyles.Left;
@@ -436,21 +391,6 @@
             this.lblMatch.TabIndex = 83;
             this.lblMatch.Text = "0/0";
             this.lblMatch.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // btn_PrevMatch
-            // 
-            this.btn_PrevMatch.AccessibleName = "s";
-            this.btn_PrevMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_PrevMatch.DelayTicks = 3;
-            this.btn_PrevMatch.Interval = 150;
-            this.btn_PrevMatch.Location = new System.Drawing.Point(3, 3);
-            this.btn_PrevMatch.Name = "btn_PrevMatch";
-            this.btn_PrevMatch.Size = new System.Drawing.Size(28, 23);
-            this.btn_PrevMatch.TabIndex = 82;
-            this.btn_PrevMatch.Text = "<<";
-            this.toolTip1.SetToolTip(this.btn_PrevMatch, "previous match");
-            this.btn_PrevMatch.UseVisualStyleBackColor = true;
-            this.btn_PrevMatch.Click += new System.EventHandler(this.btn_PrevMatch_Click);
             // 
             // statusStrip1
             // 
@@ -485,6 +425,80 @@
             this.linkToCodeplex.Size = new System.Drawing.Size(199, 17);
             this.linkToCodeplex.Text = "http://XPathVisualizer.codeplex.com";
             this.linkToCodeplex.Click += new System.EventHandler(this.linkToCodeplex_Click);
+            // 
+            // contextMenuStrip2
+            // 
+            this.contextMenuStrip2.Name = "contextMenuStrip2";
+            this.contextMenuStrip2.Size = new System.Drawing.Size(61, 4);
+            // 
+            // rtbLineNumbers1
+            // 
+            this.rtbLineNumbers1._SeeThroughMode_ = false;
+            this.rtbLineNumbers1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.rtbLineNumbers1.AutoSizing = true;
+            this.rtbLineNumbers1.BackgroundGradient_AlphaColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.rtbLineNumbers1.BackgroundGradient_BetaColor = System.Drawing.Color.LightSteelBlue;
+            this.rtbLineNumbers1.BackgroundGradient_Direction = System.Drawing.Drawing2D.LinearGradientMode.Horizontal;
+            this.rtbLineNumbers1.BorderLines_Color = System.Drawing.Color.SlateGray;
+            this.rtbLineNumbers1.BorderLines_Style = System.Drawing.Drawing2D.DashStyle.Dot;
+            this.rtbLineNumbers1.BorderLines_Thickness = 1F;
+            this.rtbLineNumbers1.DockSide = LineNumbers.RtbLineNumbers.LineNumberDockSide.Left;
+            this.rtbLineNumbers1.GridLines_Color = System.Drawing.Color.SlateGray;
+            this.rtbLineNumbers1.GridLines_Style = System.Drawing.Drawing2D.DashStyle.Dot;
+            this.rtbLineNumbers1.GridLines_Thickness = 1F;
+            this.rtbLineNumbers1.LineNrs_Alignment = System.Drawing.ContentAlignment.TopRight;
+            this.rtbLineNumbers1.LineNrs_AntiAlias = true;
+            this.rtbLineNumbers1.LineNrs_AsHexadecimal = false;
+            this.rtbLineNumbers1.LineNrs_ClippedByItemRectangle = true;
+            this.rtbLineNumbers1.LineNrs_LeadingZeroes = true;
+            this.rtbLineNumbers1.LineNrs_Offset = new System.Drawing.Size(0, 0);
+            this.rtbLineNumbers1.Location = new System.Drawing.Point(-2, 0);
+            this.rtbLineNumbers1.Margin = new System.Windows.Forms.Padding(0);
+            this.rtbLineNumbers1.MarginLines_Color = System.Drawing.Color.SlateGray;
+            this.rtbLineNumbers1.MarginLines_Side = LineNumbers.RtbLineNumbers.LineNumberDockSide.Right;
+            this.rtbLineNumbers1.MarginLines_Style = System.Drawing.Drawing2D.DashStyle.Solid;
+            this.rtbLineNumbers1.MarginLines_Thickness = 1F;
+            this.rtbLineNumbers1.Name = "rtbLineNumbers1";
+            this.rtbLineNumbers1.Padding = new System.Windows.Forms.Padding(0, 0, 2, 0);
+            this.rtbLineNumbers1.ParentRichTextBox = this.richTextBox1;
+            this.rtbLineNumbers1.Show_BackgroundGradient = true;
+            this.rtbLineNumbers1.Show_BorderLines = true;
+            this.rtbLineNumbers1.Show_GridLines = true;
+            this.rtbLineNumbers1.Show_LineNrs = true;
+            this.rtbLineNumbers1.Show_MarginLines = true;
+            this.rtbLineNumbers1.Size = new System.Drawing.Size(17, 196);
+            this.rtbLineNumbers1.TabIndex = 85;
+            this.rtbLineNumbers1.TabStop = false;
+            // 
+            // btn_NextMatch
+            // 
+            this.btn_NextMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_NextMatch.DelayTicks = 3;
+            this.btn_NextMatch.Interval = 150;
+            this.btn_NextMatch.Location = new System.Drawing.Point(71, 3);
+            this.btn_NextMatch.Name = "btn_NextMatch";
+            this.btn_NextMatch.Size = new System.Drawing.Size(28, 23);
+            this.btn_NextMatch.TabIndex = 81;
+            this.btn_NextMatch.Text = ">>";
+            this.toolTip1.SetToolTip(this.btn_NextMatch, "next match");
+            this.btn_NextMatch.UseVisualStyleBackColor = true;
+            this.btn_NextMatch.Click += new System.EventHandler(this.btn_NextMatch_Click);
+            // 
+            // btn_PrevMatch
+            // 
+            this.btn_PrevMatch.AccessibleName = "s";
+            this.btn_PrevMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_PrevMatch.DelayTicks = 3;
+            this.btn_PrevMatch.Interval = 150;
+            this.btn_PrevMatch.Location = new System.Drawing.Point(3, 3);
+            this.btn_PrevMatch.Name = "btn_PrevMatch";
+            this.btn_PrevMatch.Size = new System.Drawing.Size(28, 23);
+            this.btn_PrevMatch.TabIndex = 82;
+            this.btn_PrevMatch.Text = "<<";
+            this.toolTip1.SetToolTip(this.btn_PrevMatch, "previous match");
+            this.btn_PrevMatch.UseVisualStyleBackColor = true;
+            this.btn_PrevMatch.Click += new System.EventHandler(this.btn_PrevMatch_Click);
             // 
             // XPathVisualizerTool
             // 
@@ -557,6 +571,7 @@
         private RepeatButton btn_PrevMatch;
         private RepeatButton btn_NextMatch;
         private LineNumbers.RtbLineNumbers rtbLineNumbers1;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
     }
 }
 
