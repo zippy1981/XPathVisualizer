@@ -49,6 +49,12 @@ namespace XPathVisualizer
         private bool okToSave;
         private int numVisibleLines;
         private int totalLinesInDoc;
+        private XmlReaderSettings readerSettings = new XmlReaderSettings
+            {
+                ProhibitDtd = false,
+                XmlResolver = new Ionic.Xml.XhtmlResolver()
+            };
+
 
         public XPathVisualizerTool()
         {
@@ -183,7 +189,8 @@ namespace XPathVisualizer
                 if (nav == null)
                 {
                     string rtbText = this.richTextBox1.Text;
-                    var xpathDoc = new XPathDocument(new StringReader(rtbText));
+                    var xreader = XmlReader.Create(new StringReader(rtbText), readerSettings); 
+                    var xpathDoc = new XPathDocument(xreader);
                     nav = xpathDoc.CreateNavigator();
                 }
 

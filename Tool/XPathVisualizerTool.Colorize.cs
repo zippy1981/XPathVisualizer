@@ -230,17 +230,17 @@ namespace XPathVisualizer
             //
             BackgroundWorker self = sender as BackgroundWorker;
 
-            var xmlReaderSettings = new XmlReaderSettings
-                {
-                    ProhibitDtd = false,
-                    XmlResolver = new Ionic.Xml.XhtmlResolver()
-
-                    // this works in .NET 4.0 ??
-                    //DtdProcessing = DtdProcessing.Parse,
-                    //XmlResolver =
-                    //new XmlPreloadedResolver(new XmlXapResolver(),
-                    //XmlKnownDtds.Xhtml10)
-                };
+//             var xmlReaderSettings = new XmlReaderSettings
+//                 {
+//                     ProhibitDtd = false,
+//                     XmlResolver = new Ionic.Xml.XhtmlResolver()
+//
+//                     // this works in .NET 4.0 ??
+//                     //DtdProcessing = DtdProcessing.Parse,
+//                     //XmlResolver =
+//                     //new XmlPreloadedResolver(new XmlXapResolver(),
+//                     //XmlKnownDtds.Xhtml10)
+//                 };
 
             do
             {
@@ -281,8 +281,7 @@ namespace XPathVisualizer
                     int lastReport = -1;
                     var sr = new StringReader(txt);
 
-                    XmlReader reader = XmlReader.Create(sr, xmlReaderSettings);
-                    //XmlReader reader = XmlReader.Create(sr);
+                    XmlReader reader = XmlReader.Create(sr, readerSettings);
 
                     IXmlLineInfo rinfo = (IXmlLineInfo)reader;
                     if (!rinfo.HasLineInfo()) continue;
