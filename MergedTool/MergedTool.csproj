@@ -38,6 +38,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <DllsToMerge Include="..\Tool\Ionic.Xml.XhtmlResolver.dll"/>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="Compile">
@@ -46,24 +47,24 @@
     <Message Text="Performing the Ilmerge." />
     <!-- in this CreateItem stanza, we collect all the DLLs for the referenced projects -->
     <CreateItem Include="@(_ResolvedProjectReferencePaths)">
-      <Output TaskParameter="Include" ItemName="AssembliesToMerge" />
+      <Output TaskParameter="Include" ItemName="ProjectAssembliesToMerge" />
     </CreateItem>
     <!-- This weird bit of hieroglyphics is the assemblies to merge, quoted, and separated by spaces -->
     <!-- Example:  "c:\foo\project1\bin\Debug\ProjectOne.dll"   "c:\foo\project2\bin\Debug\ProjectTwo.dll"  -->
-    <Message Text="AssembliesToMerge= @(AssembliesToMerge -> '&quot;%(Fullpath)&quot;', ' ')" />
+    <Message Text="AssembliesToMerge= @(ProjectAssembliesToMerge -> '&quot;%(Fullpath)&quot;', ' ')  @(DllsToMerge -> '&quot;%(Fullpath)&quot;', ' ')" />
     <!-- Message Text="TargetPath= $(TargetPath)" / -->
     <Message Text="TargetFileName= $(TargetFileName)" />
     <!-- produce the merged assembly - putting the output in the "IntermediateOutputPath" eg obj\Debug. -->
     <!-- it will be copied later by the CopyFilestoOutputDirectory task defined in Microsoft.Common.Targets -->
     <Error Text="ILMerge cannot be found. You need to download and install ILMerge in order to build DotNetZip." Condition="!Exists('$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe')" />
-    <Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot; /keyfile:..\..\Ionic.snk  /t:winexe  /out:&quot;$(IntermediateOutputPath)$(TargetFileName)&quot;  @(AssembliesToMerge -> '&quot;%(Fullpath)&quot;', ' ') " />
+    <Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot; /keyfile:..\..\Ionic.snk  /t:winexe  /out:&quot;$(IntermediateOutputPath)$(TargetFileName)&quot;  @(ProjectAssembliesToMerge -> '&quot;%(Fullpath)&quot;', ' ')  @(DllsToMerge -> '&quot;%(Fullpath)&quot;', ' ') " />
     <!-- for some reason the XML doc file does not get copied automatically from obj\Debug to bin\Debug. -->
     <!-- we do it here explicitly. -->
   </Target>
   <Target Name="EchoTargetPath">
     <Message Text="TargetPath= $(TargetPath)" />
   </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

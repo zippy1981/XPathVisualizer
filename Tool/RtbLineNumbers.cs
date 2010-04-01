@@ -566,12 +566,19 @@ namespace LineNumbers
 
                     int delta = zNewSize.Width - this.Size.Width;
 
-                    if (delta == 0) return; // no change!
+                    if (delta < 3) return; // no change!
+
+                    // Worthwhile changes will be big, bigger than 3px.
+                    // This change will be in case a new set of lines
+                    // is added, popping us up from 99 lines to more than 100,
+                    // necessitating a 3-digit display for the line number.
+                    // The delta should be around 14 for that.
 
 
                     var newParentSize = zParent.Size;
                     newParentSize.Width = newParentSize.Width - delta;
-
+                    Console.WriteLine("zNewSize[{0}] this.Size.Width[{1}] delta[{2}]",
+                        zNewSize.Width, this.Size.Width, delta);
                     if (zDockSide == LineNumberDockSide.Left)
                     {
                         // The line numbers appear to the left of the RTB.
@@ -598,6 +605,7 @@ namespace LineNumbers
                     zParent.Size = newParentSize;
                     this.Location = zNewLocation;
                     this.Size = zNewSize;
+                    Console.WriteLine("this.Size.Width[{0}]", this.Size.Width);
                 }
                 else if (zDockSide == LineNumberDockSide.None)
                 {
@@ -681,7 +689,10 @@ namespace LineNumbers
             //   To measure the LineNumber's width, its Format 0 is replaced by w as that is likely to be one of the widest characters in non-monospace fonts.
 
             if (zAutoSizing == true)
+            {
                 zAutoSizing_Size = new Size(TextRenderer.MeasureText(zLineNumbers_Format.Replace('0', 'W'), this.Font).Width, 0);
+                Console.WriteLine("autosize.Width[{0}]", zAutoSizing_Size.Width);
+            }
 
             //zAutoSizing_Size = new Size(TextRenderer.MeasureText(zLineNumbers_Format.Replace("0".ToCharArray(), "W".ToCharArray()), this.Font).Width, 0);
 

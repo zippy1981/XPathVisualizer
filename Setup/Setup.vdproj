@@ -45,6 +45,18 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_5EF580833F54160D13DF32CB165B70AF"
+        "OwnerKey" = "8:_CC19FE8FD52F4CA2995A2967BDCB251D"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_5EF580833F54160D13DF32CB165B70AF"
+        "OwnerKey" = "8:_683FBD3D81D4C2554220EA03D87CBB65"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_683FBD3D81D4C2554220EA03D87CBB65"
         "OwnerKey" = "8:_CC19FE8FD52F4CA2995A2967BDCB251D"
         "MsmSig" = "8:_UNDEFINED"
@@ -77,6 +89,12 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_CC19FE8FD52F4CA2995A2967BDCB251D"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_5EF580833F54160D13DF32CB165B70AF"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -274,7 +292,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:XPathParser, Version=1.1.0.23, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:XPathParser, Version=1.1.0.25, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_2C8E355F9D03CFF483C0B3C894DE9C86"
@@ -301,11 +319,42 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_5EF580833F54160D13DF32CB165B70AF"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:Ionic.Xml.XhtmlResolver, Version=1.1.1.1, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_5EF580833F54160D13DF32CB165B70AF"
+                    {
+                    "Name" = "8:Ionic.Xml.XhtmlResolver.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:Ionic.Xml.XhtmlResolver.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_C6DE19FE9A604C5382BFE0A0D0082690"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_683FBD3D81D4C2554220EA03D87CBB65"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.XPathVisualizer, Version=1.1.0.23, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.XPathVisualizer, Version=1.1.0.25, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_683FBD3D81D4C2554220EA03D87CBB65"
@@ -459,14 +508,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Ionic's XPath Visualizer v1.1"
-        "ProductCode" = "8:{E5688B93-B41B-4EE2-BEC9-7FA90A46D621}"
-        "PackageCode" = "8:{A3E10D71-EAE5-4B62-9471-31D62ECDE515}"
+        "ProductCode" = "8:{C5296B99-058F-4A2E-863A-EBC076EBABFD}"
+        "PackageCode" = "8:{9F8B8496-134D-4741-AEAE-2746EB1BCD55}"
         "UpgradeCode" = "8:{F6792511-D075-4D05-A5ED-5CCE545BC9D2}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.1.0024"
+        "ProductVersion" = "8:1.1.0025"
         "Manufacturer" = "8:Dino Chiesa"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"

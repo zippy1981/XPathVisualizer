@@ -117,9 +117,7 @@ namespace XPathVisualizer
             else
             {
                 this.progressBar1.Visible = false;
-                // only reset the status string if it has not changed in the interim
-                if (this.lblStatus.Text == "Formatting...")
-                    this.lblStatus.Text = message;
+                this.lblStatus.Text = message;
             }
         }
 
@@ -231,6 +229,19 @@ namespace XPathVisualizer
             // signal again.
             //
             BackgroundWorker self = sender as BackgroundWorker;
+
+            var xmlReaderSettings = new XmlReaderSettings
+                {
+                    ProhibitDtd = false,
+                    XmlResolver = new Ionic.Xml.XhtmlResolver()
+
+                    // this works in .NET 4.0 ??
+                    //DtdProcessing = DtdProcessing.Parse,
+                    //XmlResolver =
+                    //new XmlPreloadedResolver(new XmlXapResolver(),
+                    //XmlKnownDtds.Xhtml10)
+                };
+
             do
             {
                 try
@@ -269,7 +280,8 @@ namespace XPathVisualizer
 
                     int lastReport = -1;
                     var sr = new StringReader(txt);
-                    XmlReader reader = XmlReader.Create(sr, new XmlReaderSettings { ProhibitDtd = false });
+
+                    XmlReader reader = XmlReader.Create(sr, xmlReaderSettings);
                     //XmlReader reader = XmlReader.Create(sr);
 
                     IXmlLineInfo rinfo = (IXmlLineInfo)reader;
