@@ -2,7 +2,7 @@
 //
 // Runs on installation, to create an uninstaller
 // .cmd file in the application folder.  This makes it
-// easy to uninstall. 
+// easy to uninstall.
 //
 // Mon, 31 Aug 2009  05:13
 //
@@ -12,7 +12,7 @@
     var ForWriting= 2;
     fso = new ActiveXObject("Scripting.FileSystemObject");
 
-    var parameters = Session.Property("CustomActionData").split("|"); 
+    var parameters = Session.Property("CustomActionData").split("|");
     var targetDir = parameters[0];
     var productCode = parameters[1];
 
@@ -24,22 +24,22 @@
     ts.WriteLine("=======================================================");
     ts.WriteLine(" Uninstall.cmd");
     ts.WriteBlankLines(1);
-    ts.WriteLine(" This is part of DotNetZip.");
+    ts.WriteLine(" This is part of the XpathVisualizer Tool installation.");
     ts.WriteBlankLines(1);
-    ts.WriteLine(" Run this to uninstall the DotNetZip Utilities and Tools");
+    ts.WriteLine(" Run this to uninstall the XPathVisualizer Tool");
     ts.WriteBlankLines(1);
     ts.WriteLine("=======================================================");
     ts.WriteBlankLines(1);
     ts.WriteLine(":START");
     ts.WriteLine("@REM The uuid is the 'ProductCode' in the Visual Studio setup project");
-    ts.WriteLine("@REM for the DotNetZip Utilities v1.9.1.x");
+    ts.WriteLine("@REM for the XpathVisualizer v1.2.x.y");
     ts.WriteLine("%windir%\\system32\\msiexec /x " + productCode);
     ts.WriteBlankLines(1);
     ts.Close();
 
 
 // all done - try to delete myself.
-try 
+try
 {
     var scriptName = targetDir + "createUninstaller.js";
     if (fso.FileExists(scriptName))

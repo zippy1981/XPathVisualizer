@@ -42,7 +42,7 @@ call :MakeMsiForConfig
 
 set config=Release
 call :MakeMsiForConfig
-copy Setup\%config%\XPathVisualizer-v1.1.msi %rdir%
+copy Setup\%config%\XPathVisualizer-v%version%.msi %rdir%
 
 call :MakeBinZip
 call :MakeSourceZip
@@ -68,7 +68,7 @@ c:\.net3.5\msbuild.exe XPathVisualizer.sln /p:Configuration=%config%
   echo.
 
   c:\vs2008\Common7\ide\devenv.exe XpathVisualizer.sln /build %config% /project "Setup"
-  c:\dinoch\dev\dotnet\AwaitFile -v -t 50 Setup\%config%\XPathVisualizer-v1.1.msi
+  c:\dinoch\dev\dotnet\AwaitFile -v -t 50 Setup\%config%\XPathVisualizer-v%version%.msi
 
 goto :EOF
 -------------------------------------------------------
@@ -85,8 +85,8 @@ goto :EOF
   echo Making the Bin zip...
   echo.
 
-set binzip=%rdir%\XpathVisualizer-v%version%-bin.zip
-%zipit%  %binzip%  -s Readme.txt "This is the binary distribution for Ionic's XPathVisualizer v1.1. Packed %stamp%."  -D MergedTool\bin\Release  XPathVisualizer.exe
+set binzip=%rdir%\XpathVisualizer-v%longversion%-bin.zip
+%zipit%  %binzip%  -s Readme.txt "This is the binary distribution for Ionic's XPathVisualizer v%version%. Packed %stamp%."  -D MergedTool\bin\Release  XPathVisualizer.exe
 
   goto :EOF
 -------------------------------------------------------
@@ -102,8 +102,8 @@ set binzip=%rdir%\XpathVisualizer-v%version%-bin.zip
   echo.
 
 cd ..
-set srczip=%rdir%\XpathVisualizer-v1.1-src.zip
-%zipit%  %srczip%  -s Readme.txt "This is the source distribution for Ionic's XPathVisualizer v1.1. Packed %stamp%."  -r+  -D XPathVisualizer  "(name != *.vssscc) and (name != *.*~) and (name != *.cache) and (name != *\Debug\*.*) and (name != *\Release\*.*) and (name != *\obj\*.*) and (name != *\bin\*.*) and (name != #*.*#) and (name != *.vspscc) and (name != *.suo) and (name != Makezips.cmd) and (name != *.vsp) and (name != *.psess) and (name != *\releases\*)"
+set srczip=%rdir%\XpathVisualizer-v%longversion%-src.zip
+%zipit%  %srczip%  -s Readme.txt "This is the source distribution for Ionic's XPathVisualizer v%version%. Packed %stamp%."  -r+  -D XPathVisualizer  "(name != *.vssscc) and (name != *.*~) and (name != *.cache) and (name != *\Debug\*.*) and (name != *\Release\*.*) and (name != *\obj\*.*) and (name != *\bin\*.*) and (name != #*.*#) and (name != *.vspscc) and (name != *.suo) and (name != Makezips.cmd) and (name != *.vsp) and (name != *.psess) and (name != *\releases\*)"
 
 cd XPathVisualizer
 
