@@ -189,7 +189,7 @@ namespace XPathVisualizer
                 if (nav == null)
                 {
                     string rtbText = this.richTextBox1.Text;
-                    var xreader = XmlReader.Create(new StringReader(rtbText), readerSettings); 
+                    var xreader = XmlReader.Create(new StringReader(rtbText), readerSettings);
                     var xpathDoc = new XPathDocument(xreader);
                     nav = xpathDoc.CreateNavigator();
                 }
@@ -385,9 +385,9 @@ namespace XPathVisualizer
 
             string s = expr;
             s = Regex.Replace(s, "^(?!::)([^/:]+)(?=/)", prefix +":$1");                           // beginning
-            s = Regex.Replace(s, "/([^/:]+)(?=/)", "/"+prefix +":$1");                             // stanza
+            s = Regex.Replace(s, "/([^/:]+)(?=[/\\[])", "/"+prefix +":$1");                        // segment
             s = Regex.Replace(s, "::([A-Za-z][^/:*]*)(?=/)", "::"+prefix +":$1");                  // axis specifier
-            s = Regex.Replace(s, "\\[([A-Za-z][^/:*\\(]*)(?=[\\[\\]])", "["+prefix +":$1");        // predicate
+            s = Regex.Replace(s, "\\[([A-Za-z][^/:*\\(]*)(?=[\\[\\]])", "["+prefix +":$1");        // within predicate
             s = Regex.Replace(s, "/([A-Za-z][^/:]*)(?!<::)$", "/ns1:$1");                          // end
             s = Regex.Replace(s, "^([A-Za-z][^/:]*)$", "ns1:$1");                                  // edge case
             s = Regex.Replace(s, "([-A-Za-z]+)\\(([^/:\\.,\\)]+)(?=[,\\)])", "$1("+prefix +":$2"); // xpath functions
