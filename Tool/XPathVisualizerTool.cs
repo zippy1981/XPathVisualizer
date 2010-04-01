@@ -114,6 +114,7 @@ namespace XPathVisualizer
                     this.richTextBox1.Text = GetPageMarkup(this.tbXmlDoc.Text);
                 else
                     this.richTextBox1.Text = File.ReadAllText(this.tbXmlDoc.Text);
+
                 wantFormat.Set();
                 nav = null; // invalidate the cached doc
                 matchPositions = null;
@@ -130,8 +131,6 @@ namespace XPathVisualizer
                 this.Cursor = System.Windows.Forms.Cursors.Default;
             }
         }
-
-
 
         //int priorTextLength = -1;
         private void richTextBox1_KeyPress(object sender, KeyPressEventArgs e)

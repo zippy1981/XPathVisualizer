@@ -50,6 +50,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions.cs" />
+    <Compile Include="RtbLineNumbers.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Tuple.cs" />
     <Compile Include="RepeatButton.cs">
       <SubType>Component</SubType>
