@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Ionic.XPathVisualizer</RootNamespace>
     <AssemblyName>XPathVisualizer</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <StartupObject>
     </StartupObject>
@@ -38,7 +38,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <DllsToMerge Include="..\Tool\Ionic.Xml.XhtmlResolver.dll"/>
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <DllsToMerge Include="..\Tool\Ionic.Xml.XhtmlResolver.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="Compile">

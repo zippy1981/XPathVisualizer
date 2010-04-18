@@ -9,7 +9,7 @@
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.rtf or License.txt for the license details.
 // More info on: http://XPathVisualizer.codeplex.com
 //
@@ -22,6 +22,67 @@ using System.Runtime.InteropServices;
 
 namespace XPathVisualizer
 {
+
+    internal static class User32
+    {
+        [DllImport("User32.dll", EntryPoint="SendMessage", CharSet=CharSet.Auto)]
+        public static extern int SendMessage(IntPtr hwnd, int wMsg, int wparam, int lparam);
+
+        [DllImport("User32.dll", EntryPoint="SendMessage", CharSet=CharSet.Auto)]
+        public static extern int SendMessageRef(IntPtr hwnd, int wMsg, out int wparam, out int lparam);
+
+        // [DllImport("User32.dll", EntryPoint="SendMessage", CharSet=CharSet.Auto)]
+        // public static extern int SendMessage(IntPtr hwnd, int wMsg, int ignored, out RECT lpRect);
+
+        //[DllImport("User32.dll", EntryPoint="SendMessage", CharSet=CharSet.Auto)]
+        //public static extern int SendMessage(IntPtr hwnd, int wMsg, int ignored, POINT lpPoint);
+
+        [DllImport("User32.dll", EntryPoint="SendMessage", CharSet=CharSet.Auto)]
+        public static extern int SendMessage(IntPtr hwnd, int wMsg, int wparam, IntPtr lparam);
+
+
+        public static void BeginUpdate(IntPtr hWnd)
+        {
+            SendMessage(hWnd, WM_SETREDRAW, 0, IntPtr.Zero);
+        }
+
+        public static void EndUpdate(IntPtr hWnd)
+        {
+            SendMessage(hWnd, WM_SETREDRAW, 1, IntPtr.Zero);
+        }
+
+
+        // from WinUser.h and RichEdit.h
+        public const int EM_GETSEL              = 0x00B0;
+        public const int EM_SETSEL              = 0x00B1;
+        public const int EM_GETRECT             = 0x00B2;
+        public const int EM_LINESCROLL          = 0x00B6;
+        public const int EM_GETLINECOUNT        = 0x00BA;
+        public const int EM_LINEFROMCHAR        = 0x00C9;
+        public const int EM_GETFIRSTVISIBLELINE = 0x00CE;
+        public const int EM_CHARFROMPOS         = 0x00D7;
+        public const int EM_GETCHARFORMAT       = 0x0400 + 58;
+        public const int EM_SETCHARFORMAT       = 0x0400 + 68;
+        public const int SCF_SELECTION          = 0x0001;
+        public const int WM_SETREDRAW           = 0x000B;
+
+        [ StructLayout( LayoutKind.Sequential )]
+        public struct CHARFORMAT
+        {
+            public int    cbSize;
+            public UInt32 dwMask;
+            public UInt32 dwEffects;
+            public Int32  yHeight;
+            public Int32  yOffset;
+            public Int32   crTextColor;
+            public byte   bCharSet;
+            public byte   bPitchAndFamily;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst=32)]
+            public char[] szFaceName;
+        }
+    }
+
+
     /// <summary>
     /// Defines methods for performing operations on RichTextBox.
     /// </summary>
@@ -54,71 +115,26 @@ namespace XPathVisualizer
     /// </remarks>
     public class RichTextBoxExtras
     {
-        [DllImport("User32.dll", EntryPoint="SendMessage", CharSet=CharSet.Auto)]
-        private static extern int SendMessage(IntPtr hwnd, int wMsg, int wparam, int lparam);
-        
-        [DllImport("User32.dll", EntryPoint="SendMessage", CharSet=CharSet.Auto)]
-        private static extern int SendMessageRef(IntPtr hwnd, int wMsg, out int wparam, out int lparam);
-
-        // [DllImport("User32.dll", EntryPoint="SendMessage", CharSet=CharSet.Auto)]
-        // private static extern int SendMessage(IntPtr hwnd, int wMsg, int ignored, out RECT lpRect);
-
-        //[DllImport("User32.dll", EntryPoint="SendMessage", CharSet=CharSet.Auto)]
-        //private static extern int SendMessage(IntPtr hwnd, int wMsg, int ignored, POINT lpPoint);
-
-        [DllImport("User32.dll", EntryPoint="SendMessage", CharSet=CharSet.Auto)]
-        private static extern int SendMessage(IntPtr hwnd, int wMsg, int wparam, IntPtr lparam);
-
-        // from WinUser.h and RichEdit.h
-        private const int EM_GETSEL              = 0x00B0;
-        private const int EM_SETSEL              = 0x00B1;
-        private const int EM_GETRECT             = 0x00B2;
-        private const int EM_LINESCROLL          = 0x00B6;
-        private const int EM_GETLINECOUNT        = 0x00BA;
-        private const int EM_LINEFROMCHAR        = 0x00C9;
-        private const int EM_GETFIRSTVISIBLELINE = 0x00CE;
-        private const int EM_CHARFROMPOS         = 0x00D7;
-        private const int EM_GETCHARFORMAT       = 0x0400 + 58;
-        private const int EM_SETCHARFORMAT       = 0x0400 + 68;
-        private const int SCF_SELECTION          = 0x0001;
-        private const int WM_SETREDRAW           = 0x000B;
-
-        [ StructLayout( LayoutKind.Sequential )]
-        private struct CHARFORMAT
-        {
-            public int    cbSize; 
-            public UInt32 dwMask; 
-            public UInt32 dwEffects; 
-            public Int32  yHeight; 
-            public Int32  yOffset; 
-            public Int32   crTextColor; 
-            public byte   bCharSet; 
-            public byte   bPitchAndFamily; 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst=32)]
-            public char[] szFaceName; 
-        }
-
-        
         private System.Windows.Forms.RichTextBox _rtb;
         private IntPtr hWnd;
-        private CHARFORMAT charFormat;
+        private User32.CHARFORMAT charFormat;
         private IntPtr lParam1;
 
         private int _savedScrollLine;
         private int _savedSelectionStart;
         private int _savedSelectionEnd;
-        
+
         public RichTextBoxExtras(System.Windows.Forms.RichTextBox rtb)
         {
             hWnd = rtb.Handle;
             _rtb = rtb;
-            charFormat = new CHARFORMAT()
+            charFormat = new User32.CHARFORMAT()
                 {
-                    cbSize = Marshal.SizeOf(typeof(CHARFORMAT)),
+                    cbSize = Marshal.SizeOf(typeof(User32.CHARFORMAT)),
                     szFaceName= new char[32]
                 };
 
-            lParam1= Marshal.AllocCoTaskMem( charFormat.cbSize ); 
+            lParam1= Marshal.AllocCoTaskMem( charFormat.cbSize );
         }
 
         ~RichTextBoxExtras()
@@ -126,44 +142,33 @@ namespace XPathVisualizer
             // Free the allocated memory
             Marshal.FreeCoTaskMem(lParam1);
         }
-        
+
         public int GetFirstVisibleLine()
         {
-            return SendMessage(hWnd, EM_GETFIRSTVISIBLELINE, 0, 0);
+            return User32.SendMessage(hWnd, User32.EM_GETFIRSTVISIBLELINE, 0, 0);
         }
 
         public void GetSelection(out int start, out int end)
         {
-            SendMessageRef(hWnd, EM_GETSEL, out start, out end);
+            User32.SendMessageRef(hWnd, User32.EM_GETSEL, out start, out end);
         }
 
         public void SetSelection(int start, int end)
         {
-            SendMessage(hWnd, EM_SETSEL, start, end);
+            User32.SendMessage(hWnd, User32.EM_SETSEL, start, end);
         }
 
-        
-        public void BeginUpdate()
-        {
-            SendMessage(hWnd, WM_SETREDRAW, 0, IntPtr.Zero);
-        }
-        
-        public void EndUpdate()
-        {
-            SendMessage(hWnd, WM_SETREDRAW, 1, IntPtr.Zero);
-        }
-        
 
         public void BeginUpdateAndSaveState()
         {
-            SendMessage(hWnd, WM_SETREDRAW, 0, IntPtr.Zero);
+            User32.SendMessage(hWnd, User32.WM_SETREDRAW, 0, IntPtr.Zero);
             // save scroll position
             _savedScrollLine = GetFirstVisibleLine();
 
             // save selection
             GetSelection(out _savedSelectionStart, out _savedSelectionEnd);
         }
-        
+
         public void EndUpdateAndRestoreState()
         {
             // restore scroll position
@@ -174,7 +179,7 @@ namespace XPathVisualizer
             SetSelection(_savedSelectionStart, _savedSelectionEnd);
 
             // allow redraw
-            SendMessage(hWnd, WM_SETREDRAW, 1, IntPtr.Zero);
+            User32.SendMessage(hWnd, User32.WM_SETREDRAW, 1, IntPtr.Zero);
 
             // explicitly ask for a redraw
             _rtb.Refresh();
@@ -195,20 +200,20 @@ namespace XPathVisualizer
         ///
         public void SetSelectionColor(int start, int end, System.Drawing.Color color)
         {
-            SendMessage(hWnd, EM_SETSEL, start, end);
-            
+            User32.SendMessage(hWnd, User32.EM_SETSEL, start, end);
+
             charFormat.dwMask = 0x40000000;
             charFormat.dwEffects = 0;
             charFormat.crTextColor = System.Drawing.ColorTranslator.ToWin32(color);
-            
+
             Marshal.StructureToPtr(charFormat, lParam1, false);
-            
-            SendMessage(hWnd, EM_SETCHARFORMAT, SCF_SELECTION, lParam1);
+
+            User32.SendMessage(hWnd, User32.EM_SETCHARFORMAT, User32.SCF_SELECTION, lParam1);
         }
 
         public void Scroll(int delta)
         {
-            SendMessage(hWnd,EM_LINESCROLL,0,delta);
+            User32.SendMessage(hWnd, User32.EM_LINESCROLL, 0, delta);
         }
 
 
@@ -217,9 +222,9 @@ namespace XPathVisualizer
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT
         {
-            public int Left;    
-            public int Top;    
-            public int Right;    
+            public int Left;
+            public int Top;
+            public int Right;
             public int Bottom;
         }
 
@@ -245,7 +250,7 @@ namespace XPathVisualizer
             return new POINT(p.X, p.Y);
         }
     }
-        
+
         private RECT GetRect()
         {
             int rawSize = Marshal.SizeOf( typeof(RECT) );
@@ -268,7 +273,7 @@ namespace XPathVisualizer
             return cix;
         }
 
-        
+
         public int NumberOfVisibleLines
         {
             get
@@ -276,10 +281,10 @@ namespace XPathVisualizer
 
                 int topIndex = RichTextBox1.GetCharIndexFromPosition(New Point(1, 1))
       Dim bottomIndex As Integer = RichTextBox1.GetCharIndexFromPosition(New Point(1, RichTextBox1.Height - 1))
-    
+
       Dim topLine As Integer = RichTextBox1.GetLineFromCharIndex(topIndex)
       Dim bottomLine As Integer = RichTextBox1.GetLineFromCharIndex(bottomIndex)
-    
+
       Dim numLinesDisplayed As Integer = bottomLine - topLine
 
 
@@ -291,23 +296,23 @@ namespace XPathVisualizer
                 return n;
             }
         }
-        
+
 #else
         public int NumberOfVisibleLines
         {
             get
             {
                 int topIndex = _rtb.GetCharIndexFromPosition(new System.Drawing.Point(1, 1));
-                int bottomIndex = _rtb.GetCharIndexFromPosition(new System.Drawing.Point(1, _rtb.Height - 1)); 
+                int bottomIndex = _rtb.GetCharIndexFromPosition(new System.Drawing.Point(1, _rtb.Height - 1));
                 int topLine = _rtb.GetLineFromCharIndex(topIndex);
                 int bottomLine = _rtb.GetLineFromCharIndex(bottomIndex);
                 int n = bottomLine - topLine + 1;
                 return n;
             }
         }
-                
+
 #endif
-        
+
     }
 }
 
