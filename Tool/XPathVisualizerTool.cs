@@ -1,9 +1,9 @@
-//﻿#define Trace
+//#define Trace
 
 // XPathVisualizerTool.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2009 Dino Chiesa.
+// Copyright (c) 2009-2010 Dino Chiesa.
 // All rights reserved.
 //
 // This file is part of the source code disribution for Ionic's
@@ -35,20 +35,39 @@ namespace XPathVisualizer
 {
     public partial class XPathVisualizerTool : Form
     {
-        private XPathNavigator nav;
-        private Dictionary<String, String> _xmlns;
-        private string _xmlnsDefaultPrefix;
+        // Design notes:
+        //
+        // The major portion of the UI is a CustomTabControl, each tab holds a
+        // single control, a RichTextBox.  The CustomTabControl displays
+        // good-looking Visual-Studio like tabs, except that each one has a
+        // IE8-like "close" button.
+        //
+        // richTextBox holds a reference to the currently-displayed
+        // RichTextBox.  At design time, it is the rtb in the single page, in
+        // the TabControl.  But, during form load, at runtime, the TabPage
+        // visible during design-time is removed from the TabControl.
+        //
+        // When the user loads a new XML document, a new RTB is created,
+        // dynamically, and then richTextBox1 gets that reference. When the
+        // user selects a new tab, richTextBox1 gets the reference to the
+        // currently-selected tab.
+        //
+        // There's a RichTextBoxExtras class, which wraps RTB and provides
+        // some additional capabilities, most notably, suppression of redraw,
+        // which allows smoother UI experience during the progressive syntax
+        // highlighting. The _rtbe instance refers to richTextBox1, so _rtbe
+        // gets reset to null when the selected tab changes.
+        //
+
         private int originalGroupBoxMinHeight;
         private int originalPanel1MinSize;
         private System.Threading.ManualResetEvent wantFormat = new System.Threading.ManualResetEvent(false);
         private DateTime _originDateTime = new System.DateTime(0);
         private System.DateTime _lastRtbKeyPress;
         private XPathParser<XElement> xpathParser = new XPathParser<XElement>();
-        private List<Tuple<int, int>> matchPositions;
-        private int currentMatch;
-        private bool okToSave;
-        private int numVisibleLines;
-        private int totalLinesInDoc;
+        private bool isLoading;
+        private int extractCount;
+
         private XmlReaderSettings readerSettings = new XmlReaderSettings
             {
                 ProhibitDtd = false,
@@ -111,55 +130,103 @@ namespace XPathVisualizer
             return pageData;
         }
 
+
+        private System.Windows.Forms.TabPage CreateNewTabPage()
+        {
+            var rtb = new System.Windows.Forms.RichTextBox();
+
+            rtb.BackColor                   = System.Drawing.SystemColors.Window;
+            rtb.ContextMenuStrip            = this.contextMenuStrip1;
+            rtb.DetectUrls                  = false;
+            rtb.Dock                        = System.Windows.Forms.DockStyle.Fill;
+            rtb.Font                        = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            rtb.Location                    = new System.Drawing.Point(3, 3);
+            rtb.Name                        = "richTextBox1";
+            rtb.Size                        = new System.Drawing.Size(510, 166);
+            rtb.TabIndex                    = 80;
+            rtb.Text                        = "";
+            rtb.Leave                       += new System.EventHandler(this.richTextBox1_Leave);
+            rtb.KeyPress                    += new System.Windows.Forms.KeyPressEventHandler(this.richTextBox1_KeyPress);
+
+            this.richTextBox1 = rtb;
+
+            var tabPage1                     = new System.Windows.Forms.TabPage();
+            tabPage1.Controls.Add(rtb);
+            tabPage1.Location                = new System.Drawing.Point(4, 19);
+            tabPage1.Padding                 = new System.Windows.Forms.Padding(3);
+            tabPage1.TabIndex                = 0;
+            tabPage1.Text                    = "";
+            tabPage1.UseVisualStyleBackColor = true;
+            tabPage1.Tag                     = new TabState();
+
+            this.customTabControl1.Controls.Add(tabPage1);
+            this.customTabControl1.SelectTab(tabPage1);
+
+                _rtbe = null; // reset the wrapper
+                this.toolTip1.SetToolTip(richTextBox1, "");
+                _lastRtbKeyPress = _originDateTime;
+
+            return tabPage1;
+        }
+
+
+
         private void btnLoadXml_Click(object sender, EventArgs e)
         {
+            TabPage tp = null;
             try
             {
-                this.richTextBox1.Text = "";
-                this.toolTip1.SetToolTip(this.richTextBox1, "");
-                this.richTextBox1.Update();
-                _lastRtbKeyPress = _originDateTime;
+                isLoading = true;
+                tp = CreateNewTabPage();
+                User32.BeginUpdate(this.customTabControl1.Handle);
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 if (this.tbXmlDoc.Text.StartsWith("http://") || this.tbXmlDoc.Text.StartsWith("https://"))
                 {
-                    this.richTextBox1.Text = GetPageMarkup(this.tbXmlDoc.Text);
-                    okToSave = false;
+                    this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
+                    richTextBox1.Text = GetPageMarkup(this.tbXmlDoc.Text);
+                    tabState.okToSave = false;
+                    var segs = this.tbXmlDoc.Text.Split("/".ToCharArray());
+                    tp.Text = "  " + segs[segs.Length-1] + "  ";
+                    this.Cursor = System.Windows.Forms.Cursors.Default;
                 }
                 else
                 {
-                    this.richTextBox1.Text = File.ReadAllText(this.tbXmlDoc.Text);
-                    okToSave = true;
+                    richTextBox1.Text = File.ReadAllText(this.tbXmlDoc.Text);
+                    tabState.okToSave = true;
+                    tp.Text = "  " + Path.GetFileName(this.tbXmlDoc.Text) + "  ";
                 }
 
+                tabState.src = this.tbXmlDoc.Text;
+                richTextBox1.Select(0, 0);
                 wantFormat.Set();
-                nav = null; // invalidate the cached doc
-                matchPositions = null;
                 DisableMatchButtons();
                 PreloadXmlns();
-
             }
             catch (Exception exc1)
             {
-                this.richTextBox1.Text = "file read error:  " + exc1.ToString();
+                richTextBox1.Text = "file read error:  " + exc1.ToString();
                 this.lblStatus.Text = "Cannot read that file.";
+                if (tabPage!=null)
+                    tabPage.Text = "  error  ";
+
             }
             finally
             {
+                isLoading = false;
                 this.Cursor = System.Windows.Forms.Cursors.Default;
+                User32.EndUpdate(this.customTabControl1.Handle);
             }
         }
 
 
-        //int priorTextLength = -1;
         private void richTextBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            nav = null;  // invalidate the cached doc
+            System.Console.WriteLine("KeyPress");
+
+            tabState.nav = null;
             _lastRtbKeyPress = System.DateTime.Now;
-            if (this.richTextBox1.Text.Length == 0) return;
-            // assume no length change means format change only
-            //if (priorTextLength == this.richTextBox1.Text.Length) return;
+            if (richTextBox1.Text.Length == 0) return;
             wantFormat.Set();
-            //priorTextLength = this.richTextBox1.Text.Length;
         }
 
 
@@ -170,6 +237,7 @@ namespace XPathVisualizer
             IntPtr mask = IntPtr.Zero;
             try
             {
+                //  in case it changes, I guess?
                 PreloadXmlns();
             }
             catch (Exception exc1)
@@ -185,18 +253,9 @@ namespace XPathVisualizer
         {
             try
             {
-                // load the Xml doc, create navigator
-                if (nav == null)
-                {
-                    string rtbText = this.richTextBox1.Text;
-                    var xreader = XmlReader.Create(new StringReader(rtbText), readerSettings);
-                    var xpathDoc = new XPathDocument(xreader);
-                    nav = xpathDoc.CreateNavigator();
-                }
-
                 // start from scratch
                 xmlNamespaces.Clear();
-                _xmlnsDefaultPrefix= null;
+                tabState.xmlnsDefaultPrefix= null;
                 int c = 1;
 
                 // get all xml namespace declarations
@@ -223,8 +282,8 @@ namespace XPathVisualizer
                                     : String.Format("{0}-{1}", origPrefix, dupes++);
                             }
 
-                            if (origPrefix=="" && _xmlnsDefaultPrefix == null)
-                                _xmlnsDefaultPrefix = actualPrefix;
+                            if (origPrefix=="" && tabState.xmlnsDefaultPrefix == null)
+                                tabState.xmlnsDefaultPrefix = actualPrefix;
 
                             xmlNamespaces.Add(actualPrefix, ns);
                         }
@@ -239,60 +298,6 @@ namespace XPathVisualizer
             }
         }
 
-#if BAD_BOY_WANNA_DO_STRING_MATCH_ON_XML
-
-        private static System.Text.RegularExpressions.Regex unnamedXmlnsRegex =
-            new System.Text.RegularExpressions.Regex("\\sxmlns\\s*=\\s*['\"](.+?)['\"]");
-
-        private static System.Text.RegularExpressions.Regex namedXmlnsRegex =
-            new System.Text.RegularExpressions.Regex("\\sxmlns:([^\\s]+)\\s*=\\s*['\"](.+?)['\"]");
-
-        private void PreloadXmlns()
-        {
-            xmlNamespaces.Clear();
-            _xmlnsDefaultPrefix= null;
-            int c = 1;
-            var regexi = new System.Text.RegularExpressions.Regex[] { namedXmlnsRegex, unnamedXmlnsRegex };
-
-            for (int i = 0; i < regexi.Length; i++)
-            {
-                // check for xmlnamespaces in the loaded document
-                var matches = regexi[i].Matches(this.richTextBox1.Text);
-
-                if (matches != null && matches.Count != 0)
-                {
-                    foreach (System.Text.RegularExpressions.Match m in matches)
-                    {
-                        string ns = m.Groups[2 - i].Value.ToString();
-                        if (!xmlNamespaces.Values.Contains(ns))
-                        {
-                            // get the prefix - it's either explicit or contrived
-                            string origPrefix = (i == 1)
-                                ? String.Format("ns{0}", c++)    // contrived
-                                : m.Groups[1].Value.ToString();  // explicit
-
-                            // make sure the prefix is unique
-                            int dupes = 0;
-                            string actualPrefix = origPrefix;
-                            while (xmlNamespaces.Keys.Contains(actualPrefix))
-                            {
-                                actualPrefix = (i == 1)
-                                    ? String.Format("ns{0}", c++)
-                                    : String.Format("{0}-{1}", origPrefix, dupes++);
-                            }
-
-                            if (i==1 && _xmlnsDefaultPrefix == null)
-                                _xmlnsDefaultPrefix = actualPrefix;
-
-                            xmlNamespaces.Add(actualPrefix, ns);
-                        }
-                    }
-                }
-            }
-            DisplayXmlPrefixList();
-        }
-#endif
-
 
         private void AdjustSplitterSize()
         {
@@ -305,9 +310,20 @@ namespace XPathVisualizer
             this.SaveFormToRegistry();
         }
 
+        private void ClearTabs()
+        {
+            while (this.customTabControl1.TabCount > 0)
+            {
+                var tb = this.customTabControl1.TabPages[this.customTabControl1.TabCount-1];
+                this.customTabControl1.TabPages.Remove(tb);
+            }
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
             this.FillFormFromRegistry();
+            ClearTabs();
+            CollapseXmlPrefixPanel();
         }
 
 
@@ -379,9 +395,9 @@ namespace XPathVisualizer
 
         string FixupXpathExpressionWithDefaultNamespace(string expr)
         {
-            if (_xmlnsDefaultPrefix == null) return expr;
+            if (tabState.xmlnsDefaultPrefix == null) return expr;
 
-            string prefix = _xmlnsDefaultPrefix;
+            string prefix = tabState.xmlnsDefaultPrefix;
 
             string s = expr;
             s = Regex.Replace(s, "^(?!::)([^/:]+)(?=/)", prefix +":$1");                           // beginning
@@ -398,7 +414,8 @@ namespace XPathVisualizer
 
         private void btnEvalXpath_Click(object sender, EventArgs e)
         {
-            matchPositions = null;
+            List<Tuple<int, int>> matches = null;
+
             DisableMatchButtons();
             string xpathExpression = this.tbXpath.Text;
             if (String.IsNullOrEmpty(xpathExpression))
@@ -407,7 +424,7 @@ namespace XPathVisualizer
                 return;
             }
 
-            string rtbText = this.richTextBox1.Text;
+            string rtbText = richTextBox1.Text;
             if (String.IsNullOrEmpty(rtbText))
             {
                 this.lblStatus.Text = "Cannot evaluate: There is no XML document.";
@@ -418,11 +435,11 @@ namespace XPathVisualizer
             try
             {
                 // reset highlighting
-                this.richTextBox1.SelectAll();
-                this.richTextBox1.SelectionBackColor = Color.White;
-                this.richTextBox1.Update();
+                richTextBox1.SelectAll();
+                richTextBox1.SelectionBackColor = Color.White;
+                richTextBox1.Update();
 
-                mask = this.richTextBox1.BeginUpdate();
+                mask = richTextBox1.BeginUpdate();
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 this.tbXpath.BackColor = this.tbXmlns.BackColor; // just in case
 
@@ -441,14 +458,14 @@ namespace XPathVisualizer
 
                     var s = String.Format("{0}\nZero nodes selected",
                                           elaboratedXpathExpression);
-                    this.toolTip1.SetToolTip(this.richTextBox1, s);
+                    this.toolTip1.SetToolTip(richTextBox1, s);
                 }
                 else
                 {
                     var s = String.Format("{0}\n{1} {2} selected",
                                           elaboratedXpathExpression,
                                           selection.Count, (selection.Count == 1) ? "node" : "nodes");
-                    this.toolTip1.SetToolTip(this.richTextBox1, s);
+                    this.toolTip1.SetToolTip(richTextBox1, s);
 
                     if (elaboratedXpathExpression.Length < 64)
                         this.lblStatus.Text = String.Format("{0}: {1} {2} selected",
@@ -457,7 +474,7 @@ namespace XPathVisualizer
                     else
                         this.lblStatus.Text = String.Format("{0} {1} selected",
                                                             selection.Count, (selection.Count == 1) ? "node" : "nodes");
-                    HighlightSelection(selection, xmlns);
+                    matches = HighlightSelection(selection, xmlns);
                 }
 
                 // remember the successful xpath queries
@@ -493,11 +510,13 @@ namespace XPathVisualizer
             finally
             {
                 this.Cursor = System.Windows.Forms.Cursors.Default;
-                this.richTextBox1.EndUpdate(mask);
+                richTextBox1.EndUpdate(mask);
             }
 
+            tabState.matches = matches;
+            tabState.xpath = this.tbXpath.Text;
+            tabState.currentMatch = 0;
             EnableMatchButtons();
-            currentMatch = 0;
             scrollToCurrentMatch();
         }
 
@@ -518,26 +537,30 @@ namespace XPathVisualizer
 
 
         /// <summary>
-        /// Highlights the selected nodes in the XML RichTextBox, given the XPathNodeIterator.
+        ///   Highlights the selected nodes in the XML RichTextBox, given the XPathNodeIterator.
         /// </summary>
         /// <remarks>
-        /// This finishes pretty quickly, no need to do it asynchronously.
+        ///   This finishes pretty quickly, no need to do it asynchronously.
         /// </remarks>
         /// <param name="selection">the node-set selection</param>
         /// <param name="xmlns">you know</param>
-        private void HighlightSelection(XPathNodeIterator selection, XmlNamespaceManager xmlns)
+        /// <returns>
+        ///   a list of match positions, each of which is a pair of
+        ///   ints, describing the begin and end of the match.
+        /// </returns>
+        private List<Tuple<int, int>> HighlightSelection(XPathNodeIterator selection, XmlNamespaceManager xmlns)
         {
-            ComputePositionsOfSelection(selection, xmlns);
+            var mp = ComputePositionsOfSelection(selection, xmlns);
 
-            foreach (var t in matchPositions)
+            foreach (var t in mp)
             {
                 // do the highlight
-                this.richTextBox1.Select(t.V1, t.V2 - t.V1 + 1);
-                this.richTextBox1.SelectionBackColor =
+                richTextBox1.Select(t.V1, t.V2 - t.V1 + 1);
+                richTextBox1.SelectionBackColor =
                     Color.FromArgb(Color.Red.A, 0x98, 0xFb, 0x98);
             }
+            return mp;
         }
-
 
 
 
@@ -551,13 +574,17 @@ namespace XPathVisualizer
         /// </remarks>
         /// <param name="selection">the node-set selection</param>
         /// <param name="xmlns">you know</param>
-        private void ComputePositionsOfSelection(XPathNodeIterator selection, XmlNamespaceManager xmlns)
+        /// <returns>
+        ///   a list of match positions, each of which is a pair of
+        ///   ints, describing the begin and end of the match.
+        /// </returns>
+        private List<Tuple<int, int>> ComputePositionsOfSelection(XPathNodeIterator selection, XmlNamespaceManager xmlns)
         {
-            var lc = new LineCalculator(this.richTextBox1);
-            matchPositions = new List<Tuple<int, int>>();
+            var lc = new LineCalculator(richTextBox1);
+            var matchPositions = new List<Tuple<int, int>>();
 
             // get Text once (it's expensive)
-            string rtbText = this.richTextBox1.Text;
+            string rtbText = richTextBox1.Text;
             foreach (XPathNavigator node in selection)
             {
                 IXmlLineInfo lineInfo = node as IXmlLineInfo;
@@ -648,9 +675,9 @@ namespace XPathVisualizer
                     }
                 }
             }
+
+            return matchPositions;
         }
-
-
 
 
 
@@ -666,7 +693,8 @@ namespace XPathVisualizer
             {
                 System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
                 doc.XmlResolver = new Ionic.Xml.XhtmlResolver();
-                doc.LoadXml(this.richTextBox1.Text);
+                User32.BeginUpdate(richTextBox1.Handle);
+                doc.LoadXml(richTextBox1.Text);
                 var builder = new System.Text.StringBuilder();
                 var settings = new System.Xml.XmlWriterSettings
                     {
@@ -679,10 +707,15 @@ namespace XPathVisualizer
                 {
                     doc.Save(writer);
                 }
-                this.richTextBox1.Text = builder.ToString();
-                nav = null; // invalidate the cached doc
+                richTextBox1.Text = builder.ToString();
+                richTextBox1.SelectAll();
+                richTextBox1.SelectionColor = Color.Black;
+                richTextBox1.Select(0,0); // top of file
+                User32.EndUpdate(richTextBox1.Handle);
+
+                tabState.nav = null; // The spacing changed; invalidate the cached doc.
                 wantFormat.Set();
-                matchPositions = null;
+                tabState.matches = null;
                 DisableMatchButtons();
                 PreloadXmlns();
             }
@@ -761,7 +794,7 @@ namespace XPathVisualizer
             {
                 if (xmlNamespaces.Keys.Contains(k))
                 {
-                    _xmlnsDefaultPrefix = k;
+                    tabState.xmlnsDefaultPrefix = k;
 
                     // unset checkbox for all others, like a radio button
                     foreach (Control  c in this.pnlPrefixList.Controls)
@@ -776,7 +809,7 @@ namespace XPathVisualizer
             }
             else
             {
-                _xmlnsDefaultPrefix = null;
+                tabState.xmlnsDefaultPrefix = null;
             }
         }
 
@@ -796,18 +829,7 @@ namespace XPathVisualizer
         }
 
 
-        private Dictionary<String, String> xmlNamespaces
-        {
-            get
-            {
-                if (_xmlns == null)
-                    _xmlns = new Dictionary<String, String>();
-                return _xmlns;
-            }
-        }
-
-
-        private int XmlNsPanelDeltaY = 20;
+        private const int XmlNsPanelDeltaY = 20;
         private void DisplayXmlPrefixList()
         {
             int offsetX = 0;  // greater is further left
@@ -878,7 +900,7 @@ namespace XPathVisualizer
                                                                     this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
                                 Size = new System.Drawing.Size(14, this.tbXmlns.Size.Height),
                                 TabStop = true,
-                                Checked = (k == _xmlnsDefaultPrefix)
+                                Checked = (k == tabState.xmlnsDefaultPrefix)
                                 };
                         chk1.Click += (src, e) => { ClickXmlns(src, k); };
                         this.toolTip1.SetToolTip(chk1, "use as default ns");
@@ -905,7 +927,7 @@ namespace XPathVisualizer
                     }
                 }
 
-                ExpandXmlPrefixPanel();
+                CollapseXmlPrefixPanel();  // ExpandXmlPrefixPanel
 
                 this.pnlPrefixList.ResumeLayout();
                 this.ResumeLayout();
@@ -975,7 +997,7 @@ namespace XPathVisualizer
             try
             {
                 System.Xml.XmlDocument doc= new System.Xml.XmlDocument();
-                doc.LoadXml(this.richTextBox1.Text);
+                doc.LoadXml(richTextBox1.Text);
 
                 var builder = new System.Text.StringBuilder();
                 var settings = new System.Xml.XmlWriterSettings
@@ -989,10 +1011,10 @@ namespace XPathVisualizer
                 {
                     doc.Save(writer);
                 }
-                this.richTextBox1.Text = builder.ToString();
-                nav= null; // invalidate the cached doc
+                richTextBox1.Text = builder.ToString();
+                tabState.nav= null; // invalidate the cached doc
                 wantFormat.Set();
-                matchPositions = null;
+                tabState.matches = null;
                 DisableMatchButtons();
                 PreloadXmlns();
             }
@@ -1004,13 +1026,13 @@ namespace XPathVisualizer
 
         private void copyAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string txt = this.richTextBox1.Text;
+            string txt = richTextBox1.Text;
             Clipboard.SetDataObject(txt, true);
         }
 
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string txt = this.richTextBox1.SelectedText;
+            string txt = richTextBox1.SelectedText;
             Clipboard.SetDataObject(txt, true);
         }
 
@@ -1020,7 +1042,7 @@ namespace XPathVisualizer
             string o = Clipboard.GetData(DataFormats.Text) as String;
             if (o != null)
             {
-                this.richTextBox1.SelectedText = o;
+                richTextBox1.SelectedText = o;
                 wantFormat.Set();
             }
         }
@@ -1037,70 +1059,78 @@ namespace XPathVisualizer
 
         private void EnableMatchButtons()
         {
-            if (matchPositions != null && matchPositions.Count > 0)
+            if (tabState.matches != null && tabState.matches.Count > 0)
             {
                 this.btn_NextMatch.Enabled = true;
                 this.btn_PrevMatch.Enabled = true;
-                currentMatch = 0;
-                numVisibleLines = this.rtbe.NumberOfVisibleLines;
-                totalLinesInDoc = this.richTextBox1.Lines.Count();
+                //tabState.currentMatch = 0;
+                tabState.numVisibleLines = this.rtbe.NumberOfVisibleLines;
+                tabState.totalLinesInDoc = richTextBox1.Lines.Count();
                 this.matchPanel.Visible = true;
             }
+            else DisableMatchButtons();
+        }
+
+
+        private void UpdateMatchCount ()
+        {
+            if (tabState.matches == null) return;
+            this.lblMatch.Text = String.Format("{0}/{1}",
+                                               tabState.currentMatch + 1, tabState.matches.Count);
         }
 
         private void scrollToCurrentMatch()
         {
-            if (matchPositions == null) return;
-            if (matchPositions.Count == 0) return;
-            Tuple<int,int> position = matchPositions[currentMatch];
+            if (tabState.matches == null) return;
+            if (tabState.matches.Count == 0) return;
+            Tuple<int,int> position = tabState.matches[tabState.currentMatch];
 
             Trace("scrollToPosition(match({0}) position({1}))",
-                  currentMatch, position.V1);
+                  tabState.currentMatch, position.V1);
 
-            int startLine = this.richTextBox1.GetLineFromCharIndex(position.V1);
+            int startLine = richTextBox1.GetLineFromCharIndex(position.V1);
 
             Trace("scrollToPosition::startLine({0}) numVisibleLines({1})",
-                  startLine, numVisibleLines);
+                  startLine, tabState.numVisibleLines);
 
-            this.lblMatch.Text = String.Format("{0}/{1}",
-                                               currentMatch + 1, matchPositions.Count);
+            UpdateMatchCount();
 
             // If the start line is in the middle of the doc...
             //if (startLine > totalLinesInDoc)
-            if (startLine > numVisibleLines - 2)
+            if (startLine > tabState.numVisibleLines - 2)
             {
                 // scroll so that the first line is 1/3 the way from the top
-                int cix = this.richTextBox1.GetFirstCharIndexFromLine(startLine - numVisibleLines / 3 + 1);
-                this.richTextBox1.Select(cix, cix + 1);
+                int cix = richTextBox1.GetFirstCharIndexFromLine(startLine - tabState.numVisibleLines / 3 + 1);
+                richTextBox1.Select(cix, cix + 1);
             }
             else
             {
                 // set the selection at the very beginning
-                this.richTextBox1.Select(0, 1);
+                richTextBox1.Select(0, 1);
             }
-            this.richTextBox1.ScrollToCaret();
+            richTextBox1.ScrollToCaret();
 
             // restore selection:
-            this.richTextBox1.Select(position.V1, 0);
+            richTextBox1.Select(position.V1, 0);
         }
 
 
         private void btn_NextMatch_Click(object sender, EventArgs e)
         {
-            if (matchPositions == null) return;
-            currentMatch++;
-            if (currentMatch == matchPositions.Count)
-                currentMatch = 0;
+            if (tabState.matches == null) return;
+            tabState.currentMatch++;
+            if (tabState.currentMatch == tabState.matches.Count)
+                tabState.currentMatch = 0;
             scrollToCurrentMatch();
         }
 
         private void btn_PrevMatch_Click(object sender, EventArgs e)
         {
-            if (matchPositions == null) return;
-            currentMatch--;
-            if (currentMatch < 0)
-                currentMatch = matchPositions.Count - 1;
-            Trace("currentMatch = {0}", currentMatch);
+            if (tabState.matches == null) return;
+            tabState.currentMatch--;
+            if (tabState.currentMatch < 0)
+                tabState.currentMatch = tabState.matches.Count - 1;
+            Trace("currentMatch = {0}", tabState.currentMatch);
             scrollToCurrentMatch();
         }
 
@@ -1150,12 +1180,12 @@ namespace XPathVisualizer
         /// </remarks>
         private void DeleteSelection()
         {
-            if (matchPositions == null) return;
-            //ComputePositionsOfSelection(selection, xmlns);
+            if (tabState.matches == null) return;
+
             int totalRemoved = 0;
-            Trace("DeleteSelection(count({0}))", matchPositions.Count);
+            Trace("DeleteSelection(count({0}))", tabState.matches.Count);
             int count = 0;
-            foreach (var t in matchPositions)
+            foreach (var t in tabState.matches)
             {
                 // do the deletion
                 Trace("DeleteSelection(match({0},{1}))", t.V1, t.V2);
@@ -1163,18 +1193,18 @@ namespace XPathVisualizer
                 int start = t.V1 - totalRemoved;
                 int length = t.V2 - t.V1 + 1;
                 if (start < 0) continue;
-                this.richTextBox1.Select(start, length);
-                this.richTextBox1.SelectedText = "";
+                richTextBox1.Select(start, length);
+                richTextBox1.SelectedText = "";
                 totalRemoved += length;
 
                 Trace("DeleteSelection(total({0})", totalRemoved);
                 count++;
             }
             this.lblStatus.Text = String.Format("{0} nodes removed.", count);
-            nav = null;
+            tabState.nav = null;
             wantFormat.Set();
-            currentMatch = 0;
-            matchPositions = null;
+            tabState.currentMatch = 0;
+            tabState.matches = null;
             DisableMatchButtons();
         }
 
@@ -1183,13 +1213,13 @@ namespace XPathVisualizer
 
         private void removeSelectedToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (matchPositions == null) return;
+            if (tabState.matches == null) return;
             DisableMatchButtons();
 
             IntPtr mask = IntPtr.Zero;
             try
             {
-                mask = this.richTextBox1.BeginUpdate();
+                mask = richTextBox1.BeginUpdate();
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
 
                 DeleteSelection();
@@ -1201,20 +1231,82 @@ namespace XPathVisualizer
             finally
             {
                 this.Cursor = System.Windows.Forms.Cursors.Default;
-                this.richTextBox1.EndUpdate(mask);
+                richTextBox1.EndUpdate(mask);
             }
 
         }
+
+
+        private String ExtractSelection()
+        {
+            if (tabState.matches == null) return null;
+
+            string textExtracted = "";
+            Trace("ExtractSelection(count({0}))", tabState.matches.Count);
+            int count = 0;
+            foreach (var t in tabState.matches)
+            {
+                // do the extraction
+                int start = t.V1;
+                int length = t.V2 - t.V1 + 1;
+                if (start < 0) continue;
+                richTextBox1.Select(start, length);
+                textExtracted += richTextBox1.SelectedText;
+                count++;
+            }
+            this.lblStatus.Text = String.Format("{0} nodes extracted.", count);
+
+            return textExtracted;
+        }
+
+
+        private String EnvelopeNodes (string t, SortedDictionary<string,string> xmlns)
+        {
+            string nsDeclaration = "";
+            foreach (string prefix in xmlns.Keys)
+            {
+                nsDeclaration+= String.Format("xmlns:{0}='{1}'\n", prefix, xmlns[prefix]);
+            }
+            return "<root " + nsDeclaration + ">" + t + "</root>";
+        }
+
+        private void extractHighlightedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            TabPage tp = null;
+            try
+            {
+                isLoading = true;
+                var xmlns = new SortedDictionary<String, String> (tabState.xmlns);
+                string text = ExtractSelection();
+                if (text == null) return; // flash?
+                text = EnvelopeNodes(text, xmlns);
+                tp = CreateNewTabPage();
+                tp.Text = "  extract " + (++extractCount) + "  ";
+                richTextBox1.Text = text;
+                tabState.xmlns = xmlns;
+                IndentXml();
+                tabState.src = "";
+                richTextBox1.Select(0, 0);
+                wantFormat.Set();
+                DisableMatchButtons();
+                PreloadXmlns();
+            }
+            finally
+            {
+                isLoading = false;
+            }
+        }
+
+
 
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
-                if (okToSave)
+                if (tabState.okToSave)
                 {
-                    File.WriteAllText(this.tbXmlDoc.Text,
-                                      this.richTextBox1.Text);
+                    File.WriteAllText(this.tbXmlDoc.Text, richTextBox1.Text);
                 }
                 else
                 {
@@ -1232,9 +1324,8 @@ namespace XPathVisualizer
                     if (result == DialogResult.OK)
                     {
                         this.tbXmlDoc.Text = dlg1.FileName;
-                        File.WriteAllText(this.tbXmlDoc.Text,
-                                          this.richTextBox1.Text);
-                        okToSave = true;
+                        File.WriteAllText(this.tbXmlDoc.Text,richTextBox1.Text);
+                        tabState.okToSave = true;
                     }
                 }
                 this.lblStatus.Text = "Saved.";
@@ -1304,6 +1395,97 @@ namespace XPathVisualizer
             return base.ProcessDialogKey(keyData);
         }
 
+
+        private TabPage tabPage
+        {
+            get
+            {
+                int ix = this.customTabControl1.SelectedIndex;
+                if (ix < 0) return null;
+                var tp = this.customTabControl1.TabPages[ix];
+                return tp;
+            }
+        }
+
+
+
+        private TabState tabState
+        {
+            get
+            {
+                if (tabPage == null) return null;
+                return (tabPage.Tag as TabState);
+            }
+        }
+
+
+        private  XPathNavigator nav
+        {
+            get
+            {
+                // load the Xml doc, create navigator
+                if (tabState.nav == null)
+                {
+                    string rtbText = richTextBox1.Text;
+                    var xreader = XmlReader.Create(new StringReader(rtbText), readerSettings);
+                    var xpathDoc = new XPathDocument(xreader);
+                    tabState.nav = xpathDoc.CreateNavigator();
+                }
+                return tabState.nav;
+            }
+            set
+            {
+                tabState.nav = value;
+            }
+        }
+
+
+        private SortedDictionary<String, String> xmlNamespaces
+        {
+            get
+            {
+                if (tabState.xmlns == null)
+                    tabState.xmlns = new SortedDictionary<String, String>();
+                return tabState.xmlns;
+            }
+        }
+
+
+
+        private void customTabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            _rtbe = null;  // reset the wrapper
+
+            if (!isLoading && tabState != null)
+            {
+                // When loading, the tab gets selected before any of the other data,
+                // like xpath and so on, is available.
+                // Subsbequently, the tab state holds real data.
+                richTextBox1 = tabPage.Controls[0] as RichTextBox;
+                this.tbXpath.Text = tabState.xpath;
+                this.tbXmlDoc.Text = tabState.src;
+                DisplayXmlPrefixList();
+                EnableMatchButtons();
+                UpdateMatchCount();
+            }
+        }
+
+    }
+
+
+    // Holds arbitrary state associated to the TabPage
+    internal class TabState
+    {
+        public SortedDictionary<String, String> xmlns { get; set; }
+        public String src { get; set; }
+        public List<Tuple<int, int>> matches { get; set; }
+        public int currentMatch { get; set; }
+        public String xpath { get; set; }
+        public String xmlnsDefaultPrefix { get; set; }
+        public XPathNavigator nav { get; set; }
+        public bool okToSave { get; set; }
+        public int numVisibleLines;
+        public int totalLinesInDoc;
     }
 
 }

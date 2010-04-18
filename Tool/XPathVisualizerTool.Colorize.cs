@@ -100,7 +100,7 @@ namespace XPathVisualizer
             {
                 if (_rtbe == null)
                 {
-                    _rtbe= new RichTextBoxExtras(this.richTextBox1);
+                    _rtbe = new RichTextBoxExtras(this.richTextBox1);
                 }
                 return _rtbe;
             }
@@ -111,8 +111,8 @@ namespace XPathVisualizer
         {
             if (this.InvokeRequired)
             {
-               this.Invoke(new Action<String>(this.NotifyStopFormatting),
-                                        new object[] { message });
+                this.Invoke(new Action<String>(this.NotifyStopFormatting),
+                                         new object[] { message });
             }
             else
             {
@@ -140,7 +140,7 @@ namespace XPathVisualizer
 
                 foreach (var change in list)
                 {
-                    rtbe.SetSelectionColor(change.Start, change.Start+change.Length, change.ForeColor);
+                    rtbe.SetSelectionColor(change.Start, change.Start + change.Length, change.ForeColor);
                 }
 
                 rtbe.EndUpdateAndRestoreState();
@@ -159,11 +159,10 @@ namespace XPathVisualizer
             {
                 rtbe.BeginUpdateAndSaveState();
 
-                // get the text.
-                string txt = this.richTextBox1.Text;
-                // put it back.
+                // get the text, and put it back.
                 // why? because it's possible to paste in RTF, which won't
-                // show up correctly.
+                // show up correctly. This strips any RTF formatting.
+                string txt = this.richTextBox1.Text;
                 this.richTextBox1.Text = txt;
 
                 this.richTextBox1.SelectAll();
@@ -184,12 +183,13 @@ namespace XPathVisualizer
             // Design Notes:
             // -------------------------------------------------------------------
             //
-            // It takes a long time, maybe 10s or more, to colorize the XML syntax
-            // in an xml file 100k in size.  Therefore the approach we take is to
-            // perform the syntax highlighting asynchronously.
+            // It takes a long time, maybe 10s or more, to colorize the XML
+            // syntax in an xml file 100k in size.  Therefore, to maintain UI
+            // responsiveness, it's necessary to perform the syntax highlighting
+            // asynchronously.
             //
-            // This method runs endlessly.  The first thing it does is wait for a
-            // signal on the wantFormat event.  This event is set when an XML file
+            // This method runs endlessly. The first thing it does is wait for a
+            // signal on the wantFormat event. This event is set when an XML file
             // is loaded, or when the text in the richtextbox changes.
             //
             // When the signal is received, execution continues, and the
@@ -205,42 +205,47 @@ namespace XPathVisualizer
             // appears while highlighting is happening, and disappears when
             // highlighting finishes.
             //
-            // The reason for the batch approach: the control.Invoke() method
-            // can be costly. So I'd like to amortize the cost of it across a
-            // batch of format changes.
+            // The reason for the batch approach: the control.Invoke() method,
+            // necessary to apply changes to the richtextbox, can be costly. Batching
+            // changes amortizes the cost of that method across a number of format
+            // changes.
             //
-            // These ApplyChanges method applies the batch of changes.  It first
+            // The ApplyChanges method applies the batch of changes.  It first
             // does a richtextbox.Invoke() to get on the proper thread.  Once
             // there, it saves the scroll and selection state, applies each
             // formatting change in the list to the rtb text, restores the scroll
             // and selection state, and then calls Refresh() on the RTB.  After
             // that method returns, this method clears the list of format changes
-            // and continues reading the next segment XML.
+            // and continues reading and analyzing the next segment of XML.
             //
             // If at any time, the user changes the RTB text, either through a new
             // load of an XML file, or through direct editing in the richtextbox,
             // the main UI signals the wantFormat event again.  This method treats
             // the raising of that signal as a "cancel-and-restart" message.  Upon
-            // detecting that signal, this method stops working (if it was
-            // working), and then starts reading and highlighting at the beginning
-            // again. (modulo the delay, waiting for the user to stop typing.)
+            // detecting that signal, this method stops working, if it was
+            // working, and then starts reading and highlighting at the beginning
+            // again.
             //
-            // When it finishes highlighting, this method waits for the wantFormat
-            // signal again.
+            // There's also some logic to delay the formatting, to wait for the
+            // user to stop typing, if that is what caused the wantFormat to get
+            // signalled.
+            //
+            // When this method finishes highlighting, this method waits for the
+            // wantFormat signal again.  This method never returns.
             //
             BackgroundWorker self = sender as BackgroundWorker;
 
-//             var xmlReaderSettings = new XmlReaderSettings
-//                 {
-//                     ProhibitDtd = false,
-//                     XmlResolver = new Ionic.Xml.XhtmlResolver()
-//
-//                     // this works in .NET 4.0 ??
-//                     //DtdProcessing = DtdProcessing.Parse,
-//                     //XmlResolver =
-//                     //new XmlPreloadedResolver(new XmlXapResolver(),
-//                     //XmlKnownDtds.Xhtml10)
-//                 };
+            //             var xmlReaderSettings = new XmlReaderSettings
+            //                 {
+            //                     ProhibitDtd = false,
+            //                     XmlResolver = new Ionic.Xml.XhtmlResolver()
+            //
+            //                     // this works in .NET 4.0 ??
+            //                     //DtdProcessing = DtdProcessing.Parse,
+            //                     //XmlResolver =
+            //                     //new XmlPreloadedResolver(new XmlXapResolver(),
+            //                     //XmlKnownDtds.Xhtml10)
+            //                 };
 
             do
             {
@@ -272,7 +277,7 @@ namespace XPathVisualizer
                     ResetXmlTextBox();
 
                     var lc = new LineCalculator(txt);
-                    float maxLines = (float) lc.CountLines();
+                    float maxLines = (float)lc.CountLines();
 
                     int reportingInterval = (maxLines > 96)
                         ? (int)(maxLines / 48)
@@ -286,8 +291,9 @@ namespace XPathVisualizer
                     IXmlLineInfo rinfo = (IXmlLineInfo)reader;
                     if (!rinfo.HasLineInfo()) continue;
 
-                    int rcount= 0;
+                    int rcount = 0;
                     int ix = 0;
+                    int t = 0;
                     while (reader.Read())
                     {
                         if ((rcount % 8) == 0)
@@ -295,7 +301,7 @@ namespace XPathVisualizer
                             // If another format is pending, that means
                             // the text has changed and we should stop this
                             // formatting effort and start again.
-                            if ( wantFormat.WaitOne(0, false))
+                            if (wantFormat.WaitOne(0, false))
                                 break;
                         }
                         rcount++;
@@ -313,14 +319,29 @@ namespace XPathVisualizer
 
                         switch (reader.NodeType)
                         {
+                            case XmlNodeType.XmlDeclaration: // The node is an declaration.
+                                ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
+                                    rinfo.LinePosition - 1;
+                                t = 2 + reader.Name.Length + 1 + reader.Value.Length + 2;
+                                list.Add(new FormatChange(ix - 2, t, Color.Blue));
+                                break;
+
+                            case XmlNodeType.DocumentType: // DTD
+                                break;
+
+                            case XmlNodeType.ProcessingInstruction:
+                                // eg, <?xml-stylesheet type="text/xsl" href="http://www.codeplex.com/rss.xsl"?>
+                                ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +  rinfo.LinePosition - 1;
+                                t = 2 + reader.Name.Length + 1 + reader.Value.Length + 2;
+                                list.Add(new FormatChange(ix - 2, t, Color.Blue));
+                                break;
+
                             case XmlNodeType.Element: // The node is an element.
                                 ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                    + rinfo.LinePosition - 1;
+                                    rinfo.LinePosition - 1;
 
                                 list.Add(new FormatChange(ix - 1, 1, Color.Blue));
-                                //HighlightText(ix - 1, 1, Color.Blue);
-                                list.Add(new FormatChange(ix,      reader.Name.Length, Color.DarkRed));
-                                //HighlightText(ix, reader.Name.Length, Color.DarkRed);
+                                list.Add(new FormatChange(ix, reader.Name.Length, Color.DarkRed));
 
                                 if (reader.HasAttributes)
                                 {
@@ -329,9 +350,8 @@ namespace XPathVisualizer
                                     {
                                         //string s = reader.Value;
                                         ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                            + rinfo.LinePosition - 1;
+                                            +rinfo.LinePosition - 1;
                                         list.Add(new FormatChange(ix, reader.Name.Length, Color.Red));
-                                        //HighlightText(ix, reader.Name.Length, Color.Red);
 
                                         ix += reader.Name.Length;
 
@@ -339,7 +359,6 @@ namespace XPathVisualizer
 
                                         // make the equals sign blue
                                         list.Add(new FormatChange(ix, 1, Color.Blue));
-                                        //HighlightText(ix, 1, Color.Blue);
 
                                         // skip over the quote char (it remains black)
                                         ix = txt.IndexOf(reader.QuoteChar, ix);
@@ -348,7 +367,6 @@ namespace XPathVisualizer
                                         if (txt.Substring(ix).StartsWith(reader.Value))
                                         {
                                             list.Add(new FormatChange(ix, reader.Value.Length, Color.Blue));
-                                            //HighlightText(ix, reader.Value.Length, Color.Blue);
                                         }
                                         else
                                         {
@@ -357,7 +375,6 @@ namespace XPathVisualizer
                                             string s = reader.Value.XmlEscapeQuotes();
                                             int delta = s.Length - reader.Value.Length;
                                             list.Add(new FormatChange(ix, reader.Value.Length + delta, Color.Blue));
-                                            //HighlightText(ix, reader.Value.Length + delta, Color.Blue);
                                         }
 
                                     }
@@ -369,47 +386,34 @@ namespace XPathVisualizer
                                     if (txt[ix - 1] == '/')
                                     {
                                         list.Add(new FormatChange(ix - 1, 2, Color.Blue));
-                                        //HighlightText(ix - 1, 2, Color.Blue);
                                     }
                                     else
                                     {
                                         list.Add(new FormatChange(ix, 1, Color.Blue));
-                                        //HighlightText(ix, 1, Color.Blue);
                                     }
                                 }
                                 break;
 
-                            case XmlNodeType.Text: // Display the text in each element.
-                                //ix = rtb.MyGetCharIndexFromLine(rinfo.LineNumber-1) +
-                                //    + rinfo.LinePosition-1;
-                                //rtb.Select(ix, reader.Value.Length);
-                                //rtb.SelectionColor = Color.Black;
+                            case XmlNodeType.Text:
+                                // Leave these black - no addl formatting
                                 break;
 
-                            case XmlNodeType.EndElement: // Display the end of the element.
+                            case XmlNodeType.EndElement:
                                 ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                    + rinfo.LinePosition - 1;
+                                    +rinfo.LinePosition - 1;
 
-                                //HighlightText(ix - 2, 2, Color.Blue);
                                 list.Add(new FormatChange(ix - 2, 2, Color.Blue));
-                                //HighlightText(ix, reader.Name.Length, Color.DarkRed);
                                 list.Add(new FormatChange(ix, reader.Name.Length, Color.DarkRed));
-                                //HighlightText(ix + reader.Name.Length, 1, Color.Blue);
                                 list.Add(new FormatChange(ix + reader.Name.Length, 1, Color.Blue));
                                 break;
 
                             case XmlNodeType.Attribute:
                                 // These are handed within XmlNodeType.Element
-                                // ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                //    + rinfo.LinePosition - 1;
-                                //rtb.Select(ix, reader.Name.Length);
-                                //rtb.SelectionColor = Color.Green;
                                 break;
 
                             case XmlNodeType.Comment:
                                 ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                    + rinfo.LinePosition - 1;
-                                //HighlightText(ix, reader.Value.Length, Color.Green);
+                                    +rinfo.LinePosition - 1;
                                 list.Add(new FormatChange(ix, reader.Value.Length, Color.Green));
                                 break;
                         }
@@ -421,7 +425,7 @@ namespace XPathVisualizer
                 }
                 catch (Exception exc1)
                 {
-                    //Console.WriteLine("Exception: " + exc1.Message);
+                    Console.WriteLine("Exception: " + exc1.Message);
                     NotifyStopFormatting(exc1.Message);
                 }
                 finally
