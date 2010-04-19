@@ -3,10 +3,12 @@
 //
 // An extended RichTextBox that provides a few extra capabilities:
 //
-//  1. line numbering (fast and easy)
+//  1. line numbering (fast and easy).  One limitation is that
+//     it numbers lines according to the hard newlines in the text,
+//     not according to the way the lines break in the RTB.
 //  2. programmatic scrolling
 //  3. BeginUpdate/EndUpdate
-//  4. FirstVisibleLine / NumberOfVisibleLines
+//  4. properties: FirstVisibleLine / NumberOfVisibleLines
 //
 //
 // Copyright (c) 2010 Dino Chiesa.
@@ -27,7 +29,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Drawing;
@@ -71,12 +72,11 @@ namespace Ionic.WinForms
     {
         private User32.CHARFORMAT charFormat;
         private IntPtr lParam1;
-        //private Rectangle _bounds;
 
         private int _savedScrollLine;
         private int _savedSelectionStart;
         private int _savedSelectionEnd;
-
+        private Pen _borderPen;
         private System.Drawing.StringFormat _stringDrawingFormat;
 
         public RichTextBoxEx()
@@ -92,13 +92,20 @@ namespace Ionic.WinForms
             _stringDrawingFormat = new System.Drawing.StringFormat
                 {
                     Alignment = StringAlignment.Center,
-                    LineAlignment = StringAlignment.Near,
+                    LineAlignment = StringAlignment.Center,
                     Trimming = StringTrimming.None,
                 };
 
             // defaults
+            NumberFont= new System.Drawing.Font("Consolas",
+                                                9.75F,
+                                                System.Drawing.FontStyle.Regular,
+                                                System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+
             NumberColor = Color.FromName("Red");
             NumberBorder = SystemColors.ControlDark;
+            NumberBorderThickness = 1;
+            NumberPadding = 4;
             NumberBackground1 = SystemColors.ControlLight;
             NumberBackground2= SystemColors.Window;
         }
@@ -192,12 +199,19 @@ namespace Ionic.WinForms
             {
                 if (_lnw > 0) return _lnw;
                 int ndigits = (CharIndexForTextLine.Length == 0)
-                ? 1
-                : (int)(1 + Math.Log((double)CharIndexForTextLine.Length, 10));
-                _lnw = (int)(8 * (1 + ndigits));
+                    ? 1
+                    : (int)(1 + Math.Log((double)CharIndexForTextLine.Length, 10));
+                var s = new String('0', ndigits);
+
+                var b = new Bitmap(400,400); // in pixels
+                var g = Graphics.FromImage(b);
+                SizeF size = g.MeasureString(s, NumberFont);
+                g.Dispose();
+                _lnw = NumberPadding * 2 + 4 + (int) (size.Width + 0.5 + NumberBorderThickness);
                 return _lnw;
             }
         }
+
 
         public bool _lineNumbers;
         public bool ShowLineNumbers
@@ -211,6 +225,7 @@ namespace Ionic.WinForms
                 if (value == _lineNumbers) return;
                 SetLeftMargin(value ? LineNumberWidth + Margin.Left : Margin.Left);
                 _lineNumbers = value;
+                User32.SendMessage(this.Handle, User32.Msgs.WM_PAINT, 0, 0);
             }
         }
 
@@ -221,12 +236,107 @@ namespace Ionic.WinForms
             _lnw = -1;
         }
 
-        public Color NumberColor  { get;set; }
-        public Color NumberBorder { get;set; }
-        public Color NumberBackground1 { get;set; }
-        public Color NumberBackground2 { get;set; }
+        private Font _NumberFont;
+        public Font NumberFont
+        {
+            get { return _NumberFont; }
+            set
+            {
+                if (_NumberFont == value) return;
+                _lnw = -1;
+                _NumberFont = value;
+                User32.SendMessage(this.Handle, User32.Msgs.WM_PAINT, 0, 0);
+            }
+        }
 
-        private DateTime _lastMsgRecd = new DateTime(1901,1,1);
+        private Color _NumberColor;
+        public Color NumberColor
+        {
+            get { return _NumberColor; }
+            set
+            {
+                if (_NumberColor.ToArgb() == value.ToArgb()) return;
+                _NumberColor = value;
+                User32.SendMessage(this.Handle, User32.Msgs.WM_PAINT, 0, 0);
+            }
+        }
+
+        private Color _NumberBorder;
+        public Color NumberBorder
+        {
+            get { return _NumberBorder; }
+            set
+            {
+                if (_NumberBorder.ToArgb() == value.ToArgb()) return;
+                _NumberBorder = value;
+                NewBorderPen();
+                User32.SendMessage(this.Handle, User32.Msgs.WM_PAINT, 0, 0);
+            }
+        }
+
+        private int _NumberPadding;
+        public int NumberPadding
+        {
+            get { return _NumberPadding; }
+            set
+            {
+                if (_NumberPadding == value) return;
+                _lnw = -1;
+                _NumberPadding = value;
+                User32.SendMessage(this.Handle, User32.Msgs.WM_PAINT, 0, 0);
+            }
+        }
+
+        public Single _NumberBorderThickness;
+        public Single NumberBorderThickness
+        {
+            get { return _NumberBorderThickness; }
+            set
+            {
+                if (_NumberBorderThickness == value) return;
+                _lnw = -1;
+                _NumberBorderThickness = value;
+                NewBorderPen();
+                User32.SendMessage(this.Handle, User32.Msgs.WM_PAINT, 0, 0);
+            }
+        }
+
+        private Color _NumberBackground1;
+        public Color NumberBackground1
+        {
+            get { return _NumberBackground1; }
+            set
+            {
+                if (_NumberBackground1.ToArgb() == value.ToArgb()) return;
+                _NumberBackground1 = value;
+                User32.SendMessage(this.Handle, User32.Msgs.WM_PAINT, 0, 0);
+            }
+        }
+
+        private Color _NumberBackground2;
+        public Color NumberBackground2
+        {
+            get { return _NumberBackground2; }
+            set
+            {
+                if (_NumberBackground2.ToArgb() == value.ToArgb()) return;
+                _NumberBackground2 = value;
+                User32.SendMessage(this.Handle, User32.Msgs.WM_PAINT, 0, 0);
+            }
+        }
+
+
+
+        private void NewBorderPen()
+        {
+            _borderPen = new Pen(NumberBorder);
+            _borderPen.Width = NumberBorderThickness;
+            _borderPen.SetLineCap(LineCap.Round, LineCap.Round, DashCap.Round);
+        }
+
+
+
+        //private DateTime _lastMsgRecd = new DateTime(1901,1,1);
 
         protected override void WndProc(ref Message m)
         {
@@ -297,49 +407,69 @@ namespace Ionic.WinForms
             Bitmap buffer = new Bitmap(w, this.Bounds.Height);
             Graphics g = Graphics.FromImage(buffer);
 
-            Font font= new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-
             Brush forebrush = new SolidBrush(NumberColor);
-            Brush backBrush = SystemBrushes.Window;
             var rect = new Rectangle (0, 0, w, this.Bounds.Height);
+
+            bool wantDivider = NumberBackground1.ToArgb() == NumberBackground2.ToArgb();
+            Brush backBrush = (wantDivider)
+                ? (Brush) new SolidBrush(NumberBackground2)
+                : SystemBrushes.Window;
+
             g.FillRectangle(backBrush, rect);
 
-            Pen borderPen = new Pen(NumberBorder);
-            g.DrawLine(borderPen, w-1, 0, w-1, this.Bounds.Height);
-
-            int n = NumberOfVisibleTextLines;
+            int n = NumberOfVisibleTextLines + 1;
             int ix = FirstVisibleTextLine;
             int py = 0;
+            int w2 = w - 2 - (int)NumberBorderThickness;
+            LinearGradientBrush brush;
+            Pen dividerPen = new Pen(NumberBorder);
+
             for (int i=0; i <= n; i++)
             {
-                //System.Console.Write(".");
                 int c = GetCharIndexForTextLine(ix);
                 var p = GetPosFromCharIndex(c+1);
-                if (p.Y < py) continue;
-                rect = new Rectangle (1, py, LineNumberWidth-2, p.Y);
-                // new brush each time for gradient across variable rect sizes
-                backBrush = new LinearGradientBrush(rect,
-                                                    NumberBackground1,
-                                                    NumberBackground2,
-                                                    LinearGradientMode.Vertical);
-                g.FillRectangle(backBrush, rect);
+                Rectangle r4 = Rectangle.Empty;
+
+                if (i==n)
+                {
+                    if (this.Bounds.Height <= py) continue;
+                    r4 = new Rectangle (1, py, w2, this.Bounds.Height-py);
+                }
+                else
+                {
+                    if (p.Y <= py) continue;
+                    r4 = new Rectangle (1, py, w2, p.Y-py);
+                }
+
+                if (wantDivider)
+                {
+                    if (i!=n)
+                    g.DrawLine(dividerPen, 1, p.Y+1, w2, p.Y+1); // divider line
+                }
+                else
+                {
+                    // new brush each time for gradient across variable rect sizes
+                    brush = new LinearGradientBrush( r4,
+                                                     NumberBackground1,
+                                                     NumberBackground2,
+                                                     LinearGradientMode.Vertical);
+                    g.FillRectangle(brush, r4);
+                }
+
                 ix++;
-                g.DrawString(ix.ToString(), font, forebrush, rect, _stringDrawingFormat);
+
+                // slide up - to draw the number 1px higher in the box
+                rect.Offset(0, -1);
+                g.DrawString(ix.ToString(), NumberFont, forebrush, r4, _stringDrawingFormat);
                 py = p.Y;
             }
 
-            // in case the file ends with a partiaal line
-            rect = new Rectangle (1, py, LineNumberWidth-2, 20);  // this.Bounds.Y+this.Bounds.Height);
-            // new brush each time for gradient across variable rect sizes
-            backBrush = new LinearGradientBrush(rect,
-                                                NumberBackground1,
-                                                NumberBackground2,
-                                                LinearGradientMode.Vertical);
-            g.FillRectangle(backBrush, rect);
-            if (n>0)
-                ix++;
-            g.DrawString(ix.ToString(), font, forebrush, rect, _stringDrawingFormat);
-
+            if (NumberBorderThickness != 0.0)
+            {
+                int t = (int)(w-(NumberBorderThickness+0.5)/2) - 1;
+                g.DrawLine(_borderPen, t, 0, t, this.Bounds.Height);
+                //g.DrawLine(_borderPen, w-2, 0, w-2, this.Bounds.Height);
+            }
 
             // paint that buffer to the screen
             Graphics g1 = this.CreateGraphics();
@@ -426,7 +556,6 @@ namespace Ionic.WinForms
         public Tuple<int,int> GetMargins()
         {
             int r = User32.SendMessage(this.Handle, (int)User32.Msgs.EM_GETMARGINS, 0,0);
-            //System.Console.WriteLine("Margins: 0x{0,8:X8}", r);
             return Tuple.New(r & 0x0000FFFF, (int)((r>>16) & 0x0000FFFF));
         }
 
