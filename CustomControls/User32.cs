@@ -3,7 +3,7 @@
 //
 // Wrapper for User32.dll methods, etc.
 //
-// Time-stamp: <2010-April-19 06:39:58>
+// Time-stamp: <2010-April-19 14:09:52>
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2010 by Dino Chiesa
@@ -318,12 +318,19 @@ namespace Ionic
         public static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
 
         [DllImport("User32.dll", EntryPoint = "SendMessage", CharSet = CharSet.Auto)]
-        public static extern IntPtr SendMessage(IntPtr hWnd, 
-                [MarshalAs(UnmanagedType.I4)] Msgs msg,
-             int  wParam, 
-            IntPtr lParam);
+        public static extern IntPtr SendMessage(IntPtr hWnd,
+                                                [MarshalAs(UnmanagedType.I4)] Msgs msg,
+                                                int  wParam,
+                                                IntPtr lParam);
 
-        
+
+        [DllImport("User32.dll", EntryPoint = "SendMessage", CharSet = CharSet.Auto)]
+        public static extern IntPtr SendMessage(IntPtr hWnd,
+                                                [MarshalAs(UnmanagedType.I4)] Msgs msg,
+                                                int  wParam,
+                                                int lParam);
+
+
         [DllImport("User32.dll", EntryPoint = "SendMessage", CharSet = CharSet.Auto)]
         public static extern int SendMessage(IntPtr hWnd, int msg, int wparam, IntPtr lparam);
 
