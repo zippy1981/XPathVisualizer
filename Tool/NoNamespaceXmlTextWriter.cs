@@ -1,3 +1,21 @@
+// NoNamespaceXmlTextWriter.cs
+// ------------------------------------------------------------------
+//
+// Copyright (c) 2009-2010 Dino Chiesa.
+// All rights reserved.
+//
+// This file is part of the source code disribution for Ionic's
+// XPath Visualizer Tool.
+//
+// ------------------------------------------------------------------
+//
+// This code is licensed under the Microsoft Public License.
+// See the file License.rtf or License.txt for the license details.
+// More info on: http://XPathVisualizer.codeplex.com
+//
+// ------------------------------------------------------------------
+//
+
 
 using System.Xml;
 using System.Globalization;
@@ -21,7 +39,7 @@ namespace XPathVisualizer
         {
             base.WriteStartElement("", localName, "");
         }
-        
+
         bool suppressing = false;
         public override void WriteStartAttribute(string prefix, string localName, string ns)
         {
@@ -49,7 +67,7 @@ namespace XPathVisualizer
             base.WriteEndAttribute();
         }
 
-        
+
         public override void WriteString(string s)
         {
             if (suppressing)
