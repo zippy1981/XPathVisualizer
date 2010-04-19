@@ -93,20 +93,6 @@ namespace XPathVisualizer
 
 
 
-        private RichTextBoxExtras _rtbe;
-        private RichTextBoxExtras rtbe
-        {
-            get
-            {
-                if (_rtbe == null)
-                {
-                    _rtbe = new RichTextBoxExtras(this.richTextBox1);
-                }
-                return _rtbe;
-            }
-        }
-
-
         private void NotifyStopFormatting(string message)
         {
             if (this.InvokeRequired)
@@ -136,14 +122,14 @@ namespace XPathVisualizer
                 // selection changes and it has focus, the control will
                 // auto-scroll.  The way to prevent that is to call
                 // BeginUpdate/EndUpdate.
-                rtbe.BeginUpdateAndSaveState();
+                richTextBox1.BeginUpdateAndSaveState();
 
                 foreach (var change in list)
                 {
-                    rtbe.SetSelectionColor(change.Start, change.Start + change.Length, change.ForeColor);
+                    richTextBox1.SetSelectionColor(change.Start, change.Start + change.Length, change.ForeColor);
                 }
 
-                rtbe.EndUpdateAndRestoreState();
+                richTextBox1.EndUpdateAndRestoreState();
             }
         }
 
@@ -157,7 +143,7 @@ namespace XPathVisualizer
             }
             else
             {
-                rtbe.BeginUpdateAndSaveState();
+                richTextBox1.BeginUpdateAndSaveState();
 
                 // get the text, and put it back.
                 // why? because it's possible to paste in RTF, which won't
@@ -168,7 +154,7 @@ namespace XPathVisualizer
                 this.richTextBox1.SelectAll();
                 this.richTextBox1.SelectionBackColor = Color.White;
 
-                rtbe.EndUpdateAndRestoreState();
+                richTextBox1.EndUpdateAndRestoreState();
             }
         }
 

@@ -47,15 +47,14 @@
             this.tbXmlDoc = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.matchPanel = new System.Windows.Forms.FlowLayoutPanel();
-            this.btn_NextMatch = new XPathVisualizer.RepeatButton();
             this.lblMatch = new System.Windows.Forms.Label();
-            this.btn_PrevMatch = new XPathVisualizer.RepeatButton();
-            this.customTabControl1 = new Ionic.CustomTabControl();
+            this.customTabControl1 = new Ionic.WinForms.CustomTabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.richTextBox1 = new Ionic.WinForms.RichTextBoxEx();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.stripNamespacesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.extractHighlightedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -67,7 +66,9 @@
             this.linkToCodeplex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.extractHighlightedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.btn_NextMatch = new XPathVisualizer.RepeatButton();
+            this.btn_PrevMatch = new XPathVisualizer.RepeatButton();
+            this.toggleLineNumbersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
@@ -302,20 +303,6 @@
             this.matchPanel.TabIndex = 84;
             this.matchPanel.WrapContents = false;
             // 
-            // btn_NextMatch
-            // 
-            this.btn_NextMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_NextMatch.DelayTicks = 3;
-            this.btn_NextMatch.Interval = 150;
-            this.btn_NextMatch.Location = new System.Drawing.Point(65, 3);
-            this.btn_NextMatch.Name = "btn_NextMatch";
-            this.btn_NextMatch.Size = new System.Drawing.Size(22, 23);
-            this.btn_NextMatch.TabIndex = 81;
-            this.btn_NextMatch.Text = ">";
-            this.toolTip1.SetToolTip(this.btn_NextMatch, "next match");
-            this.btn_NextMatch.UseVisualStyleBackColor = true;
-            this.btn_NextMatch.Click += new System.EventHandler(this.btn_NextMatch_Click);
-            // 
             // lblMatch
             // 
             this.lblMatch.Anchor = System.Windows.Forms.AnchorStyles.Left;
@@ -330,21 +317,6 @@
             this.lblMatch.Text = "0/0";
             this.lblMatch.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // btn_PrevMatch
-            // 
-            this.btn_PrevMatch.AccessibleName = "s";
-            this.btn_PrevMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_PrevMatch.DelayTicks = 3;
-            this.btn_PrevMatch.Interval = 150;
-            this.btn_PrevMatch.Location = new System.Drawing.Point(3, 3);
-            this.btn_PrevMatch.Name = "btn_PrevMatch";
-            this.btn_PrevMatch.Size = new System.Drawing.Size(22, 23);
-            this.btn_PrevMatch.TabIndex = 82;
-            this.btn_PrevMatch.Text = "<";
-            this.toolTip1.SetToolTip(this.btn_PrevMatch, "previous match");
-            this.btn_PrevMatch.UseVisualStyleBackColor = true;
-            this.btn_PrevMatch.Click += new System.EventHandler(this.btn_PrevMatch_Click);
-            // 
             // customTabControl1
             // 
             this.customTabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
@@ -352,11 +324,11 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.customTabControl1.Controls.Add(this.tabPage1);
             this.customTabControl1.ItemSize = new System.Drawing.Size(0, 15);
-            this.customTabControl1.Location = new System.Drawing.Point(14, 1);
+            this.customTabControl1.Location = new System.Drawing.Point(0, 1);
             this.customTabControl1.Name = "customTabControl1";
             this.customTabControl1.Padding = new System.Drawing.Point(18, 0);
             this.customTabControl1.SelectedIndex = 0;
-            this.customTabControl1.Size = new System.Drawing.Size(524, 195);
+            this.customTabControl1.Size = new System.Drawing.Size(538, 195);
             this.customTabControl1.TabIndex = 86;
             this.customTabControl1.TabStop = false;
             this.customTabControl1.SelectedIndexChanged += new System.EventHandler(this.customTabControl1_SelectedIndexChanged);
@@ -367,9 +339,9 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 19);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(516, 172);
+            this.tabPage1.Size = new System.Drawing.Size(530, 172);
             this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "tabPage1";
+            this.tabPage1.Text = "tabPage1   ";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // richTextBox1
@@ -378,10 +350,16 @@
             this.richTextBox1.ContextMenuStrip = this.contextMenuStrip1;
             this.richTextBox1.DetectUrls = false;
             this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richTextBox1.FirstVisibleDisplayLine = 0;
             this.richTextBox1.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.richTextBox1.Location = new System.Drawing.Point(3, 3);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(510, 166);
+            this.richTextBox1.NumberBackground1 = System.Drawing.SystemColors.ControlLight;
+            this.richTextBox1.NumberBackground2 = System.Drawing.SystemColors.Window;
+            this.richTextBox1.NumberBorder = System.Drawing.SystemColors.ControlDark;
+            this.richTextBox1.NumberColor = System.Drawing.Color.Red;
+            this.richTextBox1.ShowLineNumbers = true;
+            this.richTextBox1.Size = new System.Drawing.Size(524, 166);
             this.richTextBox1.TabIndex = 80;
             this.richTextBox1.Text = "";
             this.richTextBox1.Leave += new System.EventHandler(this.richTextBox1_Leave);
@@ -391,6 +369,7 @@
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem1,
+            this.toggleLineNumbersToolStripMenuItem,
             this.stripNamespacesToolStripMenuItem,
             this.extractHighlightedToolStripMenuItem,
             this.removeSelectedToolStripMenuItem,
@@ -399,54 +378,61 @@
             this.pasteToolStripMenuItem,
             this.saveAsToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(182, 202);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(189, 224);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(181, 22);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(188, 22);
             this.toolStripMenuItem1.Text = "Reformat";
             this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
             // 
             // stripNamespacesToolStripMenuItem
             // 
             this.stripNamespacesToolStripMenuItem.Name = "stripNamespacesToolStripMenuItem";
-            this.stripNamespacesToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.stripNamespacesToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
             this.stripNamespacesToolStripMenuItem.Text = "Strip Namespaces";
             this.stripNamespacesToolStripMenuItem.Click += new System.EventHandler(this.stripNamespacesToolStripMenuItem_Click);
+            // 
+            // extractHighlightedToolStripMenuItem
+            // 
+            this.extractHighlightedToolStripMenuItem.Name = "extractHighlightedToolStripMenuItem";
+            this.extractHighlightedToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
+            this.extractHighlightedToolStripMenuItem.Text = "Extract highlighted";
+            this.extractHighlightedToolStripMenuItem.Click += new System.EventHandler(this.extractHighlightedToolStripMenuItem_Click);
             // 
             // removeSelectedToolStripMenuItem
             // 
             this.removeSelectedToolStripMenuItem.Name = "removeSelectedToolStripMenuItem";
-            this.removeSelectedToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.removeSelectedToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
             this.removeSelectedToolStripMenuItem.Text = "Remove highlighted";
             this.removeSelectedToolStripMenuItem.Click += new System.EventHandler(this.removeSelectedToolStripMenuItem_Click);
             // 
             // copyToolStripMenuItem
             // 
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
             this.copyToolStripMenuItem.Text = "Copy";
             this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
             // 
             // copyAllToolStripMenuItem
             // 
             this.copyAllToolStripMenuItem.Name = "copyAllToolStripMenuItem";
-            this.copyAllToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.copyAllToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
             this.copyAllToolStripMenuItem.Text = "Copy All";
             this.copyAllToolStripMenuItem.Click += new System.EventHandler(this.copyAllToolStripMenuItem_Click);
             // 
             // pasteToolStripMenuItem
             // 
             this.pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
-            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
             this.pasteToolStripMenuItem.Text = "Paste";
             this.pasteToolStripMenuItem.Click += new System.EventHandler(this.pasteToolStripMenuItem_Click);
             // 
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
             this.saveAsToolStripMenuItem.Text = "Save As...";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
             // 
@@ -489,12 +475,41 @@
             this.contextMenuStrip2.Name = "contextMenuStrip2";
             this.contextMenuStrip2.Size = new System.Drawing.Size(61, 4);
             // 
-            // extractHighlightedToolStripMenuItem
+            // btn_NextMatch
             // 
-            this.extractHighlightedToolStripMenuItem.Name = "extractHighlightedToolStripMenuItem";
-            this.extractHighlightedToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
-            this.extractHighlightedToolStripMenuItem.Text = "Extract highlighted";
-            this.extractHighlightedToolStripMenuItem.Click += new System.EventHandler(this.extractHighlightedToolStripMenuItem_Click);
+            this.btn_NextMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_NextMatch.DelayTicks = 3;
+            this.btn_NextMatch.Interval = 150;
+            this.btn_NextMatch.Location = new System.Drawing.Point(65, 3);
+            this.btn_NextMatch.Name = "btn_NextMatch";
+            this.btn_NextMatch.Size = new System.Drawing.Size(22, 23);
+            this.btn_NextMatch.TabIndex = 81;
+            this.btn_NextMatch.Text = ">";
+            this.toolTip1.SetToolTip(this.btn_NextMatch, "next match");
+            this.btn_NextMatch.UseVisualStyleBackColor = true;
+            this.btn_NextMatch.Click += new System.EventHandler(this.btn_NextMatch_Click);
+            // 
+            // btn_PrevMatch
+            // 
+            this.btn_PrevMatch.AccessibleName = "s";
+            this.btn_PrevMatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_PrevMatch.DelayTicks = 3;
+            this.btn_PrevMatch.Interval = 150;
+            this.btn_PrevMatch.Location = new System.Drawing.Point(3, 3);
+            this.btn_PrevMatch.Name = "btn_PrevMatch";
+            this.btn_PrevMatch.Size = new System.Drawing.Size(22, 23);
+            this.btn_PrevMatch.TabIndex = 82;
+            this.btn_PrevMatch.Text = "<";
+            this.toolTip1.SetToolTip(this.btn_PrevMatch, "previous match");
+            this.btn_PrevMatch.UseVisualStyleBackColor = true;
+            this.btn_PrevMatch.Click += new System.EventHandler(this.btn_PrevMatch_Click);
+            // 
+            // toggleLineNumbersToolStripMenuItem
+            // 
+            this.toggleLineNumbersToolStripMenuItem.Name = "toggleLineNumbersToolStripMenuItem";
+            this.toggleLineNumbersToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
+            this.toggleLineNumbersToolStripMenuItem.Text = "Toggle Line Numbers";
+            this.toggleLineNumbersToolStripMenuItem.Click += new System.EventHandler(this.toggleLineNumbersToolStripMenuItem_Click);
             // 
             // XPathVisualizerTool
             // 
@@ -539,7 +554,7 @@
         private System.Windows.Forms.SplitContainer splitContainer3;
         private System.Windows.Forms.Button btnLoadXml;
         private System.Windows.Forms.Button btnBrowse;
-        private System.Windows.Forms.RichTextBox richTextBox1;
+        private Ionic.WinForms.RichTextBoxEx richTextBox1;
         private System.Windows.Forms.Button btnEvalXpath;
         private System.Windows.Forms.RichTextBox tbXpath;
         private System.Windows.Forms.Label label2;
@@ -569,9 +584,10 @@
         private RepeatButton btn_PrevMatch;
         private RepeatButton btn_NextMatch;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
-        private Ionic.CustomTabControl customTabControl1;
+        private Ionic.WinForms.CustomTabControl customTabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.ToolStripMenuItem extractHighlightedToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toggleLineNumbersToolStripMenuItem;
     }
 }
 

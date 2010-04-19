@@ -41,28 +41,66 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <DllsToMerge Include="..\Tool\Ionic.Xml.XhtmlResolver.dll" />
+    <OtherDllsToMerge Include="..\Tool\Ionic.Xml.XhtmlResolver.dll" />
+    <ProjectForPrimaryAssembly Include="..\Tool\XPathVisualizer.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="Compile">
     <!-- Outputs="$(IntermediateOutputPath)$(TargetFileName)" -->
     <!-- Outputs="$(TargetPath)" -->
     <Message Text="Performing the Ilmerge." />
-    <!-- in this CreateItem stanza, we collect all the DLLs for the referenced projects -->
-    <CreateItem Include="@(_ResolvedProjectReferencePaths)">
+
+    <CreateItem Include="@(ProjectReference)" Exclude="@(ProjectForPrimaryAssembly)">
+      <Output TaskParameter="Include" ItemName="ProjectsToMerge"/>
+    </CreateItem>
+
+    <Message Text="ProjectsToMerge= @(ProjectsToMerge)" />
+
+        <MSBuild
+            Projects="@(ProjectsToMerge)"
+            Targets="GetTargetPath"
+            Properties="%(ProjectsToMerge.SetConfiguration); %(ProjectsToMerge.SetPlatform)"
+            ContinueOnError="!$(BuildingProject)">
+
+            <Output TaskParameter="TargetOutputs" ItemName="ProjectDllsToMerge"/>
+        </MSBuild>
+
+    <Message Text="ProjectDllsToMerge= @(ProjectDllsToMerge)" />
+
+    <Message Text="OtherDllsToMerge= @(OtherDllsToMerge)" />
+
+        <MSBuild
+            Projects="@(ProjectForPrimaryAssembly)"
+            Targets="GetTargetPath"
+            Properties="%(ProjectForPrimaryAssembly.SetConfiguration); %(ProjectForPrimaryAssembly.SetPlatform)"
+            ContinueOnError="!$(BuildingProject)">
+
+            <Output TaskParameter="TargetOutputs" ItemName="PrimaryAssembly"/>
+        </MSBuild>
+
+    <Message Text="PrimaryAssembly= @(PrimaryAssembly)" />
+
+
+    <!-- CreateItem:  create lists of projects from the references -->
+    <!-- Condition="Exists('%(Identity)')" -->
+<!--
+    <CreateItem Include="@(_ResolvedProjectReferencePaths)" Exclude="**\Ionic.XPathVisualizer.exe" >
       <Output TaskParameter="Include" ItemName="ProjectAssembliesToMerge" />
     </CreateItem>
+-->
+
     <!-- This weird bit of hieroglyphics is the assemblies to merge, quoted, and separated by spaces -->
-    <!-- Example:  "c:\foo\project1\bin\Debug\ProjectOne.dll"   "c:\foo\project2\bin\Debug\ProjectTwo.dll"  -->
-    <Message Text="AssembliesToMerge= @(ProjectAssembliesToMerge -> '&quot;%(Fullpath)&quot;', ' ')  @(DllsToMerge -> '&quot;%(Fullpath)&quot;', ' ')" />
+    <!-- Example:  "c:\foo\project1\bin\Debug\ProjectOne.dll" "c:\foo\project2\bin\Debug\ProjectTwo.dll"  -->
+<!--    <Message Text="AssembliesToMerge= @(ProjectAssembliesToMerge ->
+    '&quot;%(Fullpath)&quot;', ' ')  @(OtherDllsToMerge ->
+    '&quot;%(Fullpath)&quot;', ' ')" />
+-->
     <!-- Message Text="TargetPath= $(TargetPath)" / -->
     <Message Text="TargetFileName= $(TargetFileName)" />
     <!-- produce the merged assembly - putting the output in the "IntermediateOutputPath" eg obj\Debug. -->
     <!-- it will be copied later by the CopyFilestoOutputDirectory task defined in Microsoft.Common.Targets -->
-    <Error Text="ILMerge cannot be found. You need to download and install ILMerge in order to build DotNetZip." Condition="!Exists('$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe')" />
-    <Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot; /keyfile:..\..\Ionic.snk  /t:winexe  /out:&quot;$(IntermediateOutputPath)$(TargetFileName)&quot;  @(ProjectAssembliesToMerge -> '&quot;%(Fullpath)&quot;', ' ')  @(DllsToMerge -> '&quot;%(Fullpath)&quot;', ' ') " />
-    <!-- for some reason the XML doc file does not get copied automatically from obj\Debug to bin\Debug. -->
-    <!-- we do it here explicitly. -->
+    <Error Text="ILMerge cannot be found. You need to download and install ILMerge in order to build XPathVisualizer." Condition="!Exists('$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe')" />
+    <Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot; /keyfile:..\..\Ionic.snk  /t:winexe  /out:&quot;$(IntermediateOutputPath)$(TargetFileName)&quot;  @(PrimaryAssembly) @(ProjectDllsToMerge -> '&quot;%(Fullpath)&quot;', ' ')  @(OtherDllsToMerge -> '&quot;%(Fullpath)&quot;', ' ') " />
   </Target>
   <Target Name="EchoTargetPath">
     <Message Text="TargetPath= $(TargetPath)" />
@@ -75,6 +113,10 @@
   </Target>
   -->
   <ItemGroup>
+    <ProjectReference Include="..\CustomControls\CustomControls.csproj">
+      <Project>{D7A1E8CB-769B-4EB0-87E0-3051990469D8}</Project>
+      <Name>CustomControls</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Tool\XPathVisualizer.csproj">
       <Project>{E31EEE69-4623-4A50-A15C-4335FB02EA49}</Project>
       <Name>XPathVisualizer Tool</Name>

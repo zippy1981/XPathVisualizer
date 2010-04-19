@@ -36,10 +36,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ionic.WinForms.TabControl, Version=1.0.2.1, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\bin\Ionic.WinForms.TabControl.dll</HintPath>
-    </Reference>
     <Reference Include="Ionic.Xml.XhtmlResolver, Version=1.1.1.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\Ionic.Xml.XhtmlResolver.dll</HintPath>
@@ -58,9 +54,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions.cs" />
-    <Compile Include="RtbLineNumbers.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Tuple.cs" />
     <Compile Include="RepeatButton.cs">
       <SubType>Component</SubType>
@@ -81,7 +74,6 @@
       <DependentUpon>XPathVisualizerTool.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
-    <Compile Include="RichTextBoxExtras.cs" />
     <Compile Include="NoNamespaceXmlTextWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="XPathVisualizerTool.resx">
@@ -111,6 +103,10 @@
     <Content Include="icon1.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CustomControls\CustomControls.csproj">
+      <Project>{D7A1E8CB-769B-4EB0-87E0-3051990469D8}</Project>
+      <Name>CustomControls</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Parser\XPathParser.csproj">
       <Project>{A8072758-E8D2-4551-89C2-564BDE162403}</Project>
       <Name>XPathParser</Name>

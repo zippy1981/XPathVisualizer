@@ -87,7 +87,14 @@ namespace XPathVisualizer
             DisableMatchButtons();
 
             this.progressBar1.Visible = false;
-            this.lblStatus.Text = "Ready";
+            UpdateStatus("Ready");
+        }
+
+        private void UpdateStatus(string s )
+        {
+            this.lblStatus.Text = s;
+            if (tabState != null)
+                tabState.status = s;
         }
 
         private void RememberSizes()
@@ -133,38 +140,37 @@ namespace XPathVisualizer
 
         private System.Windows.Forms.TabPage CreateNewTabPage()
         {
-            var rtb = new System.Windows.Forms.RichTextBox();
+            var rtb = new Ionic.WinForms.RichTextBoxEx();
 
-            rtb.BackColor                   = System.Drawing.SystemColors.Window;
-            rtb.ContextMenuStrip            = this.contextMenuStrip1;
-            rtb.DetectUrls                  = false;
-            rtb.Dock                        = System.Windows.Forms.DockStyle.Fill;
-            rtb.Font                        = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            rtb.Location                    = new System.Drawing.Point(3, 3);
-            rtb.Name                        = "richTextBox1";
-            rtb.Size                        = new System.Drawing.Size(510, 166);
-            rtb.TabIndex                    = 80;
-            rtb.Text                        = "";
-            rtb.Leave                       += new System.EventHandler(this.richTextBox1_Leave);
-            rtb.KeyPress                    += new System.Windows.Forms.KeyPressEventHandler(this.richTextBox1_KeyPress);
+            rtb.BackColor = System.Drawing.SystemColors.Window;
+            rtb.ContextMenuStrip = this.contextMenuStrip1;
+            rtb.DetectUrls = false;
+            rtb.Dock = System.Windows.Forms.DockStyle.Fill;
+            rtb.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            rtb.Location = new System.Drawing.Point(3, 3);
+            rtb.Name = "richTextBox1";
+            rtb.Size = new System.Drawing.Size(510, 166);
+            rtb.TabIndex = 80;
+            rtb.Text = "";
+            rtb.Leave += new System.EventHandler(this.richTextBox1_Leave);
+            rtb.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.richTextBox1_KeyPress);
 
             this.richTextBox1 = rtb;
 
-            var tabPage1                     = new System.Windows.Forms.TabPage();
+            var tabPage1 = new System.Windows.Forms.TabPage();
             tabPage1.Controls.Add(rtb);
-            tabPage1.Location                = new System.Drawing.Point(4, 19);
-            tabPage1.Padding                 = new System.Windows.Forms.Padding(3);
-            tabPage1.TabIndex                = 0;
-            tabPage1.Text                    = "";
+            tabPage1.Location = new System.Drawing.Point(4, 19);
+            tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            tabPage1.TabIndex = 0;
+            tabPage1.Text = "";
             tabPage1.UseVisualStyleBackColor = true;
-            tabPage1.Tag                     = new TabState();
+            tabPage1.Tag = new TabState { status = "" };
 
             this.customTabControl1.Controls.Add(tabPage1);
             this.customTabControl1.SelectTab(tabPage1);
 
-                _rtbe = null; // reset the wrapper
-                this.toolTip1.SetToolTip(richTextBox1, "");
-                _lastRtbKeyPress = _originDateTime;
+            this.toolTip1.SetToolTip(richTextBox1, "");
+            _lastRtbKeyPress = _originDateTime;
 
             return tabPage1;
         }
@@ -178,7 +184,7 @@ namespace XPathVisualizer
             {
                 isLoading = true;
                 tp = CreateNewTabPage();
-                User32.BeginUpdate(this.customTabControl1.Handle);
+                Ionic.User32.BeginUpdate(this.customTabControl1.Handle);
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 if (this.tbXmlDoc.Text.StartsWith("http://") || this.tbXmlDoc.Text.StartsWith("https://"))
                 {
@@ -186,7 +192,7 @@ namespace XPathVisualizer
                     richTextBox1.Text = GetPageMarkup(this.tbXmlDoc.Text);
                     tabState.okToSave = false;
                     var segs = this.tbXmlDoc.Text.Split("/".ToCharArray());
-                    tp.Text = "  " + segs[segs.Length-1] + "  ";
+                    tp.Text = "  " + segs[segs.Length - 1] + "  ";
                     this.Cursor = System.Windows.Forms.Cursors.Default;
                 }
                 else
@@ -205,8 +211,8 @@ namespace XPathVisualizer
             catch (Exception exc1)
             {
                 richTextBox1.Text = "file read error:  " + exc1.ToString();
-                this.lblStatus.Text = "Cannot read that file.";
-                if (tabPage!=null)
+                UpdateStatus("Cannot read that file.");
+                if (tabPage != null)
                     tabPage.Text = "  error  ";
 
             }
@@ -214,15 +220,14 @@ namespace XPathVisualizer
             {
                 isLoading = false;
                 this.Cursor = System.Windows.Forms.Cursors.Default;
-                User32.EndUpdate(this.customTabControl1.Handle);
+                Ionic.User32.EndUpdate(this.customTabControl1.Handle);
             }
         }
 
 
         private void richTextBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            System.Console.WriteLine("KeyPress");
-
+            //System.Console.WriteLine("KeyPress");
             tabState.nav = null;
             _lastRtbKeyPress = System.DateTime.Now;
             if (richTextBox1.Text.Length == 0) return;
@@ -242,7 +247,7 @@ namespace XPathVisualizer
             }
             catch (Exception exc1)
             {
-                this.lblStatus.Text = String.Format("Cannot process that XML. ({0})", exc1.Message);
+                UpdateStatus(String.Format("Cannot process that XML. ({0})", exc1.Message));
             }
         }
 
@@ -255,7 +260,7 @@ namespace XPathVisualizer
             {
                 // start from scratch
                 xmlNamespaces.Clear();
-                tabState.xmlnsDefaultPrefix= null;
+                tabState.xmlnsDefaultPrefix = null;
                 int c = 1;
 
                 // get all xml namespace declarations
@@ -282,7 +287,7 @@ namespace XPathVisualizer
                                     : String.Format("{0}-{1}", origPrefix, dupes++);
                             }
 
-                            if (origPrefix=="" && tabState.xmlnsDefaultPrefix == null)
+                            if (origPrefix == "" && tabState.xmlnsDefaultPrefix == null)
                                 tabState.xmlnsDefaultPrefix = actualPrefix;
 
                             xmlNamespaces.Add(actualPrefix, ns);
@@ -294,7 +299,7 @@ namespace XPathVisualizer
             }
             catch (System.Exception exc1)
             {
-                this.lblStatus.Text = "Cannot parse: " + exc1.Message;
+                UpdateStatus("Cannot parse: " + exc1.Message);
             }
         }
 
@@ -314,7 +319,7 @@ namespace XPathVisualizer
         {
             while (this.customTabControl1.TabCount > 0)
             {
-                var tb = this.customTabControl1.TabPages[this.customTabControl1.TabCount-1];
+                var tb = this.customTabControl1.TabPages[this.customTabControl1.TabCount - 1];
                 this.customTabControl1.TabPages.Remove(tb);
             }
         }
@@ -400,13 +405,13 @@ namespace XPathVisualizer
             string prefix = tabState.xmlnsDefaultPrefix;
 
             string s = expr;
-            s = Regex.Replace(s, "^(?!::)([^/:]+)(?=/)", prefix +":$1");                           // beginning
-            s = Regex.Replace(s, "/([^/:]+)(?=[/\\[])", "/"+prefix +":$1");                        // segment
-            s = Regex.Replace(s, "::([A-Za-z][^/:*]*)(?=/)", "::"+prefix +":$1");                  // axis specifier
-            s = Regex.Replace(s, "\\[([A-Za-z][^/:*\\(]*)(?=[\\[\\]])", "["+prefix +":$1");        // within predicate
+            s = Regex.Replace(s, "^(?!::)([^/:]+)(?=/)", prefix + ":$1");                           // beginning
+            s = Regex.Replace(s, "/([^/:]+)(?=[/\\[])", "/" + prefix + ":$1");                        // segment
+            s = Regex.Replace(s, "::([A-Za-z][^/:*]*)(?=/)", "::" + prefix + ":$1");                  // axis specifier
+            s = Regex.Replace(s, "\\[([A-Za-z][^/:*\\(]*)(?=[\\[\\]])", "[" + prefix + ":$1");        // within predicate
             s = Regex.Replace(s, "/([A-Za-z][^/:]*)(?!<::)$", "/ns1:$1");                          // end
             s = Regex.Replace(s, "^([A-Za-z][^/:]*)$", "ns1:$1");                                  // edge case
-            s = Regex.Replace(s, "([-A-Za-z]+)\\(([^/:\\.,\\)]+)(?=[,\\)])", "$1("+prefix +":$2"); // xpath functions
+            s = Regex.Replace(s, "([-A-Za-z]+)\\(([^/:\\.,\\)]+)(?=[,\\)])", "$1(" + prefix + ":$2"); // xpath functions
 
             return s;
         }
@@ -420,14 +425,14 @@ namespace XPathVisualizer
             string xpathExpression = this.tbXpath.Text;
             if (String.IsNullOrEmpty(xpathExpression))
             {
-                this.lblStatus.Text = "Cannot evaluate: There is no XPath expression.";
+                UpdateStatus("Cannot evaluate: There is no XPath expression.");
                 return;
             }
 
             string rtbText = richTextBox1.Text;
             if (String.IsNullOrEmpty(rtbText))
             {
-                this.lblStatus.Text = "Cannot evaluate: There is no XML document.";
+                UpdateStatus("Cannot evaluate: There is no XML document.");
                 return;
             }
 
@@ -439,7 +444,7 @@ namespace XPathVisualizer
                 richTextBox1.SelectionBackColor = Color.White;
                 richTextBox1.Update();
 
-                mask = richTextBox1.BeginUpdate();
+                mask = richTextBox1.BeginUpdateAndSuspendEvents();
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 this.tbXpath.BackColor = this.tbXmlns.BackColor; // just in case
 
@@ -452,9 +457,9 @@ namespace XPathVisualizer
                 if (selection == null || selection.Count == 0)
                 {
                     if (elaboratedXpathExpression.Length < 64)
-                        this.lblStatus.Text = elaboratedXpathExpression + ": Zero nodes selected";
+                        UpdateStatus(elaboratedXpathExpression + ": Zero nodes selected");
                     else
-                        this.lblStatus.Text = "Zero nodes selected";
+                        UpdateStatus("Zero nodes selected");
 
                     var s = String.Format("{0}\nZero nodes selected",
                                           elaboratedXpathExpression);
@@ -468,12 +473,12 @@ namespace XPathVisualizer
                     this.toolTip1.SetToolTip(richTextBox1, s);
 
                     if (elaboratedXpathExpression.Length < 64)
-                        this.lblStatus.Text = String.Format("{0}: {1} {2} selected",
-                                                            elaboratedXpathExpression,
-                                                            selection.Count, (selection.Count == 1) ? "node" : "nodes");
+                        UpdateStatus(String.Format("{0}: {1} {2} selected",
+                                                   elaboratedXpathExpression,
+                                                   selection.Count, (selection.Count == 1) ? "node" : "nodes"));
                     else
-                        this.lblStatus.Text = String.Format("{0} {1} selected",
-                                                            selection.Count, (selection.Count == 1) ? "node" : "nodes");
+                        UpdateStatus(String.Format("{0} {1} selected",
+                                                   selection.Count, (selection.Count == 1) ? "node" : "nodes"));
                     matches = HighlightSelection(selection, xmlns);
                 }
 
@@ -489,14 +494,14 @@ namespace XPathVisualizer
                     this.tbXpath.Select(ix, brokenPrefix.Length);
                     this.tbXpath.BackColor = Color.FromArgb((Color.Red.A << 24) | 0xFFDEAD);
                     this.tbXpath.Focus();
-                    this.lblStatus.Text = "Exception: " + exc1.Message;
+                    UpdateStatus("Exception: " + exc1.Message);
                 }
                 else if (BadExpression(exc1))
                 {
                     this.tbXpath.SelectAll();
                     this.tbXpath.BackColor = Color.FromArgb((Color.Red.A << 24) | 0xFFDEAD);
                     this.tbXpath.Focus();
-                    this.lblStatus.Text = "Exception: " + exc1.Message;
+                    UpdateStatus("Exception: " + exc1.Message);
                 }
                 else
                 {
@@ -510,7 +515,7 @@ namespace XPathVisualizer
             finally
             {
                 this.Cursor = System.Windows.Forms.Cursors.Default;
-                richTextBox1.EndUpdate(mask);
+                richTextBox1.EndUpdateAndResumeEvents(mask);
             }
 
             tabState.matches = matches;
@@ -693,14 +698,14 @@ namespace XPathVisualizer
             {
                 System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
                 doc.XmlResolver = new Ionic.Xml.XhtmlResolver();
-                User32.BeginUpdate(richTextBox1.Handle);
+                Ionic.User32.BeginUpdate(richTextBox1.Handle);
                 doc.LoadXml(richTextBox1.Text);
                 var builder = new System.Text.StringBuilder();
                 var settings = new System.Xml.XmlWriterSettings
                     {
                         // OmitXmlDeclaration = true,
                         Indent = true,
-                        IndentChars= "  "
+                        IndentChars = "  "
                     };
 
                 using (var writer = System.Xml.XmlWriter.Create(builder, settings))
@@ -710,8 +715,8 @@ namespace XPathVisualizer
                 richTextBox1.Text = builder.ToString();
                 richTextBox1.SelectAll();
                 richTextBox1.SelectionColor = Color.Black;
-                richTextBox1.Select(0,0); // top of file
-                User32.EndUpdate(richTextBox1.Handle);
+                richTextBox1.Select(0, 0); // top of file
+                Ionic.User32.EndUpdate(richTextBox1.Handle);
 
                 tabState.nav = null; // The spacing changed; invalidate the cached doc.
                 wantFormat.Set();
@@ -722,7 +727,7 @@ namespace XPathVisualizer
             catch (System.Exception exc1)
             {
                 // maybe invalid XML...
-                this.lblStatus.Text = "Exception while loading: " + exc1.Message;  // ToString();
+                UpdateStatus("Exception while loading: " + exc1.Message);
             }
         }
 
@@ -797,7 +802,7 @@ namespace XPathVisualizer
                     tabState.xmlnsDefaultPrefix = k;
 
                     // unset checkbox for all others, like a radio button
-                    foreach (Control  c in this.pnlPrefixList.Controls)
+                    foreach (Control c in this.pnlPrefixList.Controls)
                     {
                         var chk2 = c as System.Windows.Forms.CheckBox;
                         if (chk2 != null && chk2 != sender)
@@ -851,7 +856,7 @@ namespace XPathVisualizer
                         // leftmost textbox.  It is readonly, holds the prefix name
                         var tb1 = new System.Windows.Forms.TextBox
                             {
-                                Anchor = (System.Windows.Forms.AnchorStyles) (System.Windows.Forms.AnchorStyles.Top |
+                                Anchor = (System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top |
                                      System.Windows.Forms.AnchorStyles.Left),
                                 Location = new System.Drawing.Point(this.tbPrefix.Location.X - offsetX,
                                                                     this.tbPrefix.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
@@ -859,7 +864,7 @@ namespace XPathVisualizer
                                 Text = k,
                                 ReadOnly = true,
                                 TabStop = false,
-                                };
+                            };
                         this.pnlPrefixList.Controls.Add(tb1);
 
                         // first label.  It's an equals sign, indicating the prefix assigned to the xml namespace
@@ -870,7 +875,7 @@ namespace XPathVisualizer
                                                                     this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
                                 Size = new System.Drawing.Size(24, 13),
                                 Text = ":=",
-                                };
+                            };
                         this.pnlPrefixList.Controls.Add(lbl1);
 
                         // second textbox.Holds the xml namespace
@@ -886,7 +891,7 @@ namespace XPathVisualizer
                                 Text = xmlNamespaces[k],
                                 ReadOnly = true,
                                 TabStop = false,
-                                };
+                            };
                         this.pnlPrefixList.Controls.Add(tb2);
 
                         // checkbox to select the default namespace
@@ -894,14 +899,14 @@ namespace XPathVisualizer
                             {
                                 Anchor = (System.Windows.Forms.AnchorStyles)
                                     (System.Windows.Forms.AnchorStyles.Top |
-                                     System.Windows.Forms.AnchorStyles.Right ),
+                                     System.Windows.Forms.AnchorStyles.Right),
                                 Location = new System.Drawing.Point(this.tbXmlns.Location.X - offsetX +
                                                                     this.tbXmlns.Size.Width - 14,
                                                                     this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
                                 Size = new System.Drawing.Size(14, this.tbXmlns.Size.Height),
                                 TabStop = true,
                                 Checked = (k == tabState.xmlnsDefaultPrefix)
-                                };
+                            };
                         chk1.Click += (src, e) => { ClickXmlns(src, k); };
                         this.toolTip1.SetToolTip(chk1, "use as default ns");
                         this.pnlPrefixList.Controls.Add(chk1);
@@ -919,7 +924,7 @@ namespace XPathVisualizer
                                 Text = "X",
                                 UseVisualStyleBackColor = true,
                                 TabStop = false,
-                                };
+                            };
                         btn1.Click += (src, e) => { RemovePrefix(k); };
                         this.toolTip1.SetToolTip(btn1, "remove this ns+prefix");
                         this.pnlPrefixList.Controls.Add(btn1);
@@ -942,7 +947,7 @@ namespace XPathVisualizer
 
         private void ExpandXmlPrefixPanel()
         {
-            int n = this.pnlPrefixList.Controls.Count/4;
+            int n = this.pnlPrefixList.Controls.Count / 4;
 
             this.pnlPrefixList.Visible = true;
             this.pnlInput.Visible = true;
@@ -996,7 +1001,7 @@ namespace XPathVisualizer
         {
             try
             {
-                System.Xml.XmlDocument doc= new System.Xml.XmlDocument();
+                System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
                 doc.LoadXml(richTextBox1.Text);
 
                 var builder = new System.Text.StringBuilder();
@@ -1004,15 +1009,15 @@ namespace XPathVisualizer
                     {
                         //OmitXmlDeclaration = true,
                         Indent = true,
-                        IndentChars= "  "
-                            };
+                        IndentChars = "  "
+                    };
 
                 using (var writer = new NoNamespaceXmlTextWriter(builder, settings))
                 {
                     doc.Save(writer);
                 }
                 richTextBox1.Text = builder.ToString();
-                tabState.nav= null; // invalidate the cached doc
+                tabState.nav = null; // invalidate the cached doc
                 wantFormat.Set();
                 tabState.matches = null;
                 DisableMatchButtons();
@@ -1064,7 +1069,7 @@ namespace XPathVisualizer
                 this.btn_NextMatch.Enabled = true;
                 this.btn_PrevMatch.Enabled = true;
                 //tabState.currentMatch = 0;
-                tabState.numVisibleLines = this.rtbe.NumberOfVisibleLines;
+                tabState.numVisibleLines = richTextBox1.NumberOfVisibleDisplayLines;
                 tabState.totalLinesInDoc = richTextBox1.Lines.Count();
                 this.matchPanel.Visible = true;
             }
@@ -1072,7 +1077,7 @@ namespace XPathVisualizer
         }
 
 
-        private void UpdateMatchCount ()
+        private void UpdateMatchCount()
         {
             if (tabState.matches == null) return;
             this.lblMatch.Text = String.Format("{0}/{1}",
@@ -1083,7 +1088,7 @@ namespace XPathVisualizer
         {
             if (tabState.matches == null) return;
             if (tabState.matches.Count == 0) return;
-            Tuple<int,int> position = tabState.matches[tabState.currentMatch];
+            Tuple<int, int> position = tabState.matches[tabState.currentMatch];
 
             Trace("scrollToPosition(match({0}) position({1}))",
                   tabState.currentMatch, position.V1);
@@ -1200,7 +1205,7 @@ namespace XPathVisualizer
                 Trace("DeleteSelection(total({0})", totalRemoved);
                 count++;
             }
-            this.lblStatus.Text = String.Format("{0} nodes removed.", count);
+            UpdateStatus(String.Format("{0} nodes removed.", count));
             tabState.nav = null;
             wantFormat.Set();
             tabState.currentMatch = 0;
@@ -1219,7 +1224,7 @@ namespace XPathVisualizer
             IntPtr mask = IntPtr.Zero;
             try
             {
-                mask = richTextBox1.BeginUpdate();
+                mask = richTextBox1.BeginUpdateAndSuspendEvents();
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
 
                 DeleteSelection();
@@ -1231,7 +1236,7 @@ namespace XPathVisualizer
             finally
             {
                 this.Cursor = System.Windows.Forms.Cursors.Default;
-                richTextBox1.EndUpdate(mask);
+                richTextBox1.EndUpdateAndResumeEvents(mask);
             }
 
         }
@@ -1254,18 +1259,18 @@ namespace XPathVisualizer
                 textExtracted += richTextBox1.SelectedText;
                 count++;
             }
-            this.lblStatus.Text = String.Format("{0} nodes extracted.", count);
+            UpdateStatus(String.Format("{0} nodes extracted.", count));
 
             return textExtracted;
         }
 
 
-        private String EnvelopeNodes (string t, SortedDictionary<string,string> xmlns)
+        private String EnvelopeNodes(string t, SortedDictionary<string, string> xmlns)
         {
             string nsDeclaration = "";
             foreach (string prefix in xmlns.Keys)
             {
-                nsDeclaration+= String.Format("xmlns:{0}='{1}'\n", prefix, xmlns[prefix]);
+                nsDeclaration += String.Format("xmlns:{0}='{1}'\n", prefix, xmlns[prefix]);
             }
             return "<root " + nsDeclaration + ">" + t + "</root>";
         }
@@ -1276,7 +1281,7 @@ namespace XPathVisualizer
             try
             {
                 isLoading = true;
-                var xmlns = new SortedDictionary<String, String> (tabState.xmlns);
+                var xmlns = new SortedDictionary<String, String>(tabState.xmlns);
                 string text = ExtractSelection();
                 if (text == null) return; // flash?
                 text = EnvelopeNodes(text, xmlns);
@@ -1286,6 +1291,7 @@ namespace XPathVisualizer
                 tabState.xmlns = xmlns;
                 IndentXml();
                 tabState.src = "";
+                tabState.okToSave = false;
                 richTextBox1.Select(0, 0);
                 wantFormat.Set();
                 DisableMatchButtons();
@@ -1317,18 +1323,18 @@ namespace XPathVisualizer
                             OverwritePrompt = true,
                             Title = "Where would you like to save the XML?",
                             Filter = "XML files|*.xml|All files (*.*)|*.*"
-                                };
+                        };
 
                     var result = dlg1.ShowDialog();
 
                     if (result == DialogResult.OK)
                     {
                         this.tbXmlDoc.Text = dlg1.FileName;
-                        File.WriteAllText(this.tbXmlDoc.Text,richTextBox1.Text);
+                        File.WriteAllText(this.tbXmlDoc.Text, richTextBox1.Text);
                         tabState.okToSave = true;
                     }
                 }
-                this.lblStatus.Text = "Saved.";
+                UpdateStatus("Saved.");
             }
             catch (System.Exception exc1)
             {
@@ -1349,12 +1355,12 @@ namespace XPathVisualizer
             {
                 contextMenuStrip2.Items.Clear();
                 int c = _xpathExpressionMruList.Count;
-                for (int i=0; i < c;  i++)
+                for (int i = 0; i < c; i++)
                 {
-                    string s = _xpathExpressionMruList[c-i-1].ToString();
+                    string s = _xpathExpressionMruList[c - i - 1].ToString();
                     var mi = new System.Windows.Forms.ToolStripMenuItem();
                     mi.Text = s;
-                    mi.Click += (src,evt) => { this.tbXpath.Text = (src as ToolStripMenuItem).Text; };
+                    mi.Click += (src, evt) => { this.tbXpath.Text = (src as ToolStripMenuItem).Text; };
                     contextMenuStrip2.Items.Add(mi);
                 }
                 contextMenuStrip2.Show(this.tbXpath, new Point(e.X, e.Y));
@@ -1363,8 +1369,17 @@ namespace XPathVisualizer
 
 
         /// <summary>
-        ///   Handle ctrl-S for save, ctrl-F for format.
+        ///   Handle ctrl-??? keys.
         /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     ctrl-S for save,
+        ///     ctrl-F for re-format
+        ///     ctrl-L for line numbers
+        ///     ctrl-N for new tab
+        ///     ctrl-E for extract selected
+        ///   </para>
+        /// </remarks>
         protected override bool ProcessDialogKey(Keys keyData)
         {
             // Get the actual integer value of the keystroke
@@ -1387,6 +1402,20 @@ namespace XPathVisualizer
                         return true; // handled
                     case Keys.F:
                         IndentXml();
+                        return true;
+                    case Keys.L:
+                        toggleLineNumbersToolStripMenuItem_Click(null, null);
+                        return true;
+                    case Keys.N:
+                        var tp = CreateNewTabPage();
+                        tp.Text = "  new  ";
+                        tabState.src = "";
+                        tabState.okToSave = false;
+                        DisableMatchButtons();
+                        PreloadXmlns();
+                        return true;
+                    case Keys.E:
+                        extractHighlightedToolStripMenuItem_Click(null, null);
                         return true;
                 }
             }
@@ -1419,7 +1448,7 @@ namespace XPathVisualizer
         }
 
 
-        private  XPathNavigator nav
+        private XPathNavigator nav
         {
             get
             {
@@ -1454,20 +1483,24 @@ namespace XPathVisualizer
 
         private void customTabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            _rtbe = null;  // reset the wrapper
-
             if (!isLoading && tabState != null)
             {
                 // When loading, the tab gets selected before any of the other data,
                 // like xpath and so on, is available.
                 // Subsbequently, the tab state holds real data.
-                richTextBox1 = tabPage.Controls[0] as RichTextBox;
+                richTextBox1 = tabPage.Controls[0] as Ionic.WinForms.RichTextBoxEx;
                 this.tbXpath.Text = tabState.xpath;
                 this.tbXmlDoc.Text = tabState.src;
+                this.lblStatus.Text = tabState.status;
                 DisplayXmlPrefixList();
                 EnableMatchButtons();
                 UpdateMatchCount();
             }
+        }
+
+        private void toggleLineNumbersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            richTextBox1.ShowLineNumbers = !richTextBox1.ShowLineNumbers;
         }
 
     }
@@ -1481,6 +1514,7 @@ namespace XPathVisualizer
         public List<Tuple<int, int>> matches { get; set; }
         public int currentMatch { get; set; }
         public String xpath { get; set; }
+        public String status { get; set; }
         public String xmlnsDefaultPrefix { get; set; }
         public XPathNavigator nav { get; set; }
         public bool okToSave { get; set; }
