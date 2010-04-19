@@ -9,15 +9,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XPathParser", "Parser\XPath
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{1B5BC0A8-839F-41A6-83CE-481A619E35BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomControls", "CustomControls\CustomControls.csproj", "{D7A1E8CB-769B-4EB0-87E0-3051990469D8}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 5
+		SccNumberOfProjects = 6
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs09.codeplex.com/
-		SccProjectUniqueName0 = MergedTool\\MergedTool.csproj
-		SccProjectName0 = MergedTool
-		SccLocalPath0 = MergedTool
-		SccLocalPath1 = .
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = MergedTool\\MergedTool.csproj
+		SccProjectName1 = MergedTool
+		SccLocalPath1 = MergedTool
 		SccProjectUniqueName2 = Tool\\XPathVisualizer.csproj
 		SccProjectName2 = Tool
 		SccLocalPath2 = Tool
@@ -27,6 +29,9 @@ Global
 		SccProjectUniqueName4 = Setup\\Setup.vdproj
 		SccProjectName4 = Setup
 		SccLocalPath4 = Setup
+		SccProjectUniqueName5 = CustomControls\\CustomControls.csproj
+		SccProjectName5 = CustomControls
+		SccLocalPath5 = CustomControls
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +54,10 @@ Global
 		{1B5BC0A8-839F-41A6-83CE-481A619E35BB}.Debug|Any CPU.Build.0 = Debug
 		{1B5BC0A8-839F-41A6-83CE-481A619E35BB}.Release|Any CPU.ActiveCfg = Release
 		{1B5BC0A8-839F-41A6-83CE-481A619E35BB}.Release|Any CPU.Build.0 = Release
+		{D7A1E8CB-769B-4EB0-87E0-3051990469D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7A1E8CB-769B-4EB0-87E0-3051990469D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7A1E8CB-769B-4EB0-87E0-3051990469D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7A1E8CB-769B-4EB0-87E0-3051990469D8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

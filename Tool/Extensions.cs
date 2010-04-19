@@ -9,7 +9,7 @@
 //
 // ------------------------------------------------------------------
 //
-// This code is licensed under the Microsoft Public License. 
+// This code is licensed under the Microsoft Public License.
 // See the file License.rtf or License.txt for the license details.
 // More info on: http://XPathVisualizer.codeplex.com
 //
@@ -33,7 +33,7 @@ namespace XPathVisualizer
     // takes the rtb.Text once, instead of every time through, which
     // provides a big performance advantage.  Also: it stores the last
     // search and starts the search from there, if appropriate.
-    internal class LineCalculator 
+    internal class LineCalculator
     {
         private int lastLine=Int32.MaxValue;
         private int lastC=-1;
@@ -57,7 +57,7 @@ namespace XPathVisualizer
             {
                 c = c2+1;
                 c2 = txt.IndexOf('\n', c);
-                
+
                 if (c2 >= 0)
                     lineCount++;
 
@@ -66,10 +66,10 @@ namespace XPathVisualizer
             return lineCount;
         }
 
-        
+
         public int GetCharIndexFromLine(int line)
         {
-            // The built-in RichTextBox.GetFirstCharIndexFromLine does not 
+            // The built-in RichTextBox.GetFirstCharIndexFromLine does not
             // work for me. Not sure why.
             line++;
             if (line <= 1) return 0;
@@ -84,7 +84,7 @@ namespace XPathVisualizer
             }
             if (cLine + 1 == line)
                 return c;
-        
+
 
             do
             {
@@ -98,14 +98,14 @@ namespace XPathVisualizer
 
             lastLine = line;
             lastC = c;
-            
+
             return c;
         }
     }
 
 
 
-    
+
     public static class Extensions
     {
         public static string XmlEscapeQuotes(this String s)
@@ -133,37 +133,6 @@ namespace XPathVisualizer
             }
             return s;
         }
-
-
-
-        private const int WM_SETREDRAW = 0x000B;
-        private const int WM_USER = 0x400;
-        private const int EM_GETEVENTMASK = (WM_USER + 59);
-        private const int EM_SETEVENTMASK = (WM_USER + 69);
-
-        [DllImport("user32", CharSet = CharSet.Auto)]
-        private extern static IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, IntPtr lParam);
-
-        public static IntPtr BeginUpdate(this System.Windows.Forms.RichTextBox rtb)
-        {
-            // Stop redrawing:
-            SendMessage(rtb.Handle, WM_SETREDRAW, 0, IntPtr.Zero);
-            // Stop sending of events:
-            IntPtr eventMask = SendMessage(rtb.Handle, EM_GETEVENTMASK, 0, IntPtr.Zero);
-
-            return eventMask;
-        }
-
-        public static void EndUpdate(this System.Windows.Forms.RichTextBox rtb, IntPtr eventMask)
-        {
-            // turn on events
-            SendMessage(rtb.Handle, EM_SETEVENTMASK, 0, eventMask);
-            // turn on redrawing
-            SendMessage(rtb.Handle, WM_SETREDRAW, 1, IntPtr.Zero);
-            rtb.Invalidate();
-        }
-
-
 
         public static List<String> ToList(this System.Windows.Forms.AutoCompleteStringCollection coll)
         {
