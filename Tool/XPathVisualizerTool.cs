@@ -296,6 +296,7 @@ namespace XPathVisualizer
                     }
                 }
                 DisplayXmlPrefixList();
+                UpdateStatus("OK.");
             }
             catch (System.Exception exc1)
             {
@@ -694,12 +695,13 @@ namespace XPathVisualizer
         /// </remarks>
         private void IndentXml()
         {
+            String origText = richTextBox1.Text;
             try
             {
+                richTextBox1.BeginUpdate();
                 System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
                 doc.XmlResolver = new Ionic.Xml.XhtmlResolver();
-                Ionic.User32.BeginUpdate(richTextBox1.Handle);
-                doc.LoadXml(richTextBox1.Text);
+                doc.LoadXml(origText);
                 var builder = new System.Text.StringBuilder();
                 var settings = new System.Xml.XmlWriterSettings
                     {
@@ -716,18 +718,23 @@ namespace XPathVisualizer
                 richTextBox1.SelectAll();
                 richTextBox1.SelectionColor = Color.Black;
                 richTextBox1.Select(0, 0); // top of file
-                Ionic.User32.EndUpdate(richTextBox1.Handle);
 
                 tabState.nav = null; // The spacing changed; invalidate the cached doc.
                 wantFormat.Set();
                 tabState.matches = null;
                 DisableMatchButtons();
                 PreloadXmlns();
+                UpdateStatus("Formatted.");
             }
             catch (System.Exception exc1)
             {
                 // maybe invalid XML...
+                richTextBox1.Text = origText;
                 UpdateStatus("Exception while loading: " + exc1.Message);
+            }
+            finally
+            {
+                richTextBox1.EndUpdate();
             }
         }
 
@@ -1247,19 +1254,38 @@ namespace XPathVisualizer
             if (tabState.matches == null) return null;
 
             string textExtracted = "";
-            Trace("ExtractSelection(count({0}))", tabState.matches.Count);
-            int count = 0;
-            foreach (var t in tabState.matches)
+            try
             {
-                // do the extraction
-                int start = t.V1;
-                int length = t.V2 - t.V1 + 1;
-                if (start < 0) continue;
-                richTextBox1.Select(start, length);
-                textExtracted += richTextBox1.SelectedText;
-                count++;
+                richTextBox1.BeginUpdateAndSaveState();
+                Trace("ExtractSelection(count({0}))", tabState.matches.Count);
+                int count = 0;
+                foreach (var m in tabState.matches)
+                {
+                    // do the extraction
+                    int start = m.V1;
+                    int length = m.V2 - m.V1 + 1;
+                    if (start < 0) continue;
+                    richTextBox1.Select(start, length);
+                    var t = richTextBox1.SelectedText;
+                    if (t.StartsWith("<")) // assume element node
+                        textExtracted += t;
+                    else if (t.IndexOf('=') > 0)
+                    {
+                        int ix = t.IndexOf('=');
+                        var attrname = t.Substring(0,ix);
+                        textExtracted += "<" + attrname + ">" +
+                            t.Substring(ix+1) +
+                            "</" + attrname + ">\n";
+                    }
+                    count++;
+                }
+
+                UpdateStatus(String.Format("{0} nodes extracted.", count));
             }
-            UpdateStatus(String.Format("{0} nodes extracted.", count));
+            finally
+            {
+                richTextBox1.EndUpdateAndRestoreState();
+            }
 
             return textExtracted;
         }
