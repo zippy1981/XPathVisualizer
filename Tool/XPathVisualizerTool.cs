@@ -1287,14 +1287,17 @@ namespace XPathVisualizer
                     var t = richTextBox1.SelectedText;
                     if (t.StartsWith("<")) // assume element node
                         textExtracted += t;
-                    else if (t.IndexOf('=') > 0)
+                    else if (t.IndexOf('=') > 0) // assume attr node
                     {
+                        // workitem 4285
                         int ix = t.IndexOf('=');
-                        var attrname = t.Substring(0,ix);
+                        var attrname = Regex.Replace(t.Substring(0,ix), "^[ \\\t]*([^ \\\t]+)[ \\\t]*$", "$1");
                         textExtracted += "<" + attrname + ">" +
-                            t.Substring(ix+1) +
+                            Regex.Replace(t.Substring(ix+1), "^[ \\\t]*([\\\"'])(.+)\\1[ \\\t]*$", "$2") +
                             "</" + attrname + ">\n";
                     }
+                    // else, could be text node, decl, comment, etc?  Want
+                    // to extract those?
                     count++;
                 }
 
