@@ -416,12 +416,12 @@ namespace XPathVisualizer
 
             string s = expr;
             s = Regex.Replace(s, "^(?!::)([^/:]+)(?=/)", prefix + ":$1");                             // beginning
-            s = Regex.Replace(s, "/([^/:\\*]+)(?=[/\\[])", "/" + prefix + ":$1");                        // segment
+            s = Regex.Replace(s, "/([^/:\\*\\(]+)(?=[/\\[])", "/" + prefix + ":$1");                  // segment
             s = Regex.Replace(s, "::([A-Za-z][^/:*]*)(?=/)", "::" + prefix + ":$1");                  // axis specifier
             s = Regex.Replace(s, "\\[([A-Za-z][^/:*\\(]*)(?=[\\[\\]])", "[" + prefix + ":$1");        // within predicate
-            s = Regex.Replace(s, "/([A-Za-z][^/:]*)(?!<::)$", "/"+ prefix+":$1");                     // end
+            s = Regex.Replace(s, "/([A-Za-z][^/:\\*\\(]*)(?!<::)$", "/"+ prefix+":$1");               // end
             s = Regex.Replace(s, "^([A-Za-z][^/:]*)$", prefix + ":$1");                               // edge case
-            s = Regex.Replace(s, "([-A-Za-z]+)\\(([^/:\\.,\\)]+)(?=[,\\)])", "$1(" + prefix + ":$2"); // xpath functions
+            s = Regex.Replace(s, "([A-Za-z][-A-Za-z]+)\\(([^/:\\.,\\(\\)]+)(?=[,\\)])", "$1(" + prefix + ":$2"); // xpath functions
 
             return s;
         }
@@ -457,6 +457,7 @@ namespace XPathVisualizer
             }
 
             IntPtr mask = IntPtr.Zero;
+            string elaboratedXpathExpression = null;
             try
             {
                 // reset highlighting
@@ -468,7 +469,7 @@ namespace XPathVisualizer
 
                 XmlNamespaceManager xmlns = GetXmlNamespaceManager();
 
-                var elaboratedXpathExpression = FixupXpathExpressionWithDefaultNamespace(xpathExpression);
+                elaboratedXpathExpression = FixupXpathExpressionWithDefaultNamespace(xpathExpression);
 
                 XPathNodeIterator selection = nav.Select(elaboratedXpathExpression, xmlns);
 
@@ -523,7 +524,7 @@ namespace XPathVisualizer
                 }
                 else
                 {
-                    MessageBox.Show(exc1.Message,
+                    MessageBox.Show(exc1.Message + "\nxpath: " + elaboratedXpathExpression,
                                     "Exception while evaluating XPath",
                                     MessageBoxButtons.OK,
                                     MessageBoxIcon.Exclamation);
@@ -1269,6 +1270,7 @@ namespace XPathVisualizer
 
         private String ExtractSelection()
         {
+            // This method is for workitem 4285
             if (tabState.matches == null) return null;
 
             string textExtracted = "";
@@ -1283,21 +1285,27 @@ namespace XPathVisualizer
                     int start = m.V1;
                     int length = m.V2 - m.V1 + 1;
                     if (start < 0) continue;
+                    Match match = null;
                     richTextBox1.Select(start, length);
                     var t = richTextBox1.SelectedText;
-                    if (t.StartsWith("<")) // assume element node
+                    if (t.StartsWith("<")) // assume element node, or decl, etc
                         textExtracted += t;
-                    else if (t.IndexOf('=') > 0) // assume attr node
+
+                    else if ((match = Regex.Match(t, "^[ \\\t]*([^ \\\t]+)[ \\\t]*=(.+)$")).Success) // attr node
                     {
-                        // workitem 4285
-                        int ix = t.IndexOf('=');
-                        var attrname = Regex.Replace(t.Substring(0,ix), "^[ \\\t]*([^ \\\t]+)[ \\\t]*$", "$1");
+                        //int ix = t.IndexOf('=');
+                        var a = match.Groups[1].Value;
+                        var attrname = Regex.Replace(a, "^[ \\\t]*([^ \\\t]+)[ \\\t]*$", "$1");
                         textExtracted += "<" + attrname + ">" +
-                            Regex.Replace(t.Substring(ix+1), "^[ \\\t]*([\\\"'])(.+)\\1[ \\\t]*$", "$2") +
+                            Regex.Replace(match.Groups[2].Value, "^[ \\\t]*([\\\"'])(.+)\\1[ \\\t]*$", "$2") +
                             "</" + attrname + ">\n";
                     }
-                    // else, could be text node, decl, comment, etc?  Want
-                    // to extract those?
+                    else
+                    {
+                        // could be a text node, decl, comment, etc.
+                        // Treat all as text strings.
+                        textExtracted += "<text>" + t + "</text>";
+                    }
                     count++;
                 }
 
