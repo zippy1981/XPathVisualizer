@@ -78,6 +78,7 @@ namespace Ionic.WinForms
         private int _savedSelectionEnd;
         private Pen _borderPen;
         private System.Drawing.StringFormat _stringDrawingFormat;
+        private System.Security.Cryptography.HashAlgorithm alg;   // used for comparing text values
 
         public RichTextBoxEx()
         {
@@ -89,31 +90,39 @@ namespace Ionic.WinForms
 
             lParam1= Marshal.AllocCoTaskMem( charFormat.cbSize );
 
-            _stringDrawingFormat = new System.Drawing.StringFormat
-                {
-                    Alignment = StringAlignment.Center,
-                    LineAlignment = StringAlignment.Center,
-                    Trimming = StringTrimming.None,
-                };
-
             // defaults
             NumberFont= new System.Drawing.Font("Consolas",
                                                 9.75F,
                                                 System.Drawing.FontStyle.Regular,
                                                 System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 
-            NumberColor = Color.FromName("Red");
+            NumberColor = Color.FromName("DarkGray");
+            NumberLineCounting = LineCounting.CRLF;
+            NumberAlignment = StringAlignment.Center;
             NumberBorder = SystemColors.ControlDark;
             NumberBorderThickness = 1;
-            NumberPadding = 4;
+            NumberPadding = 2;
             NumberBackground1 = SystemColors.ControlLight;
             NumberBackground2= SystemColors.Window;
+            SetStringDrawingFormat();
+
+            alg = System.Security.Cryptography.SHA1.Create();
         }
 
         ~RichTextBoxEx()
         {
             // Free the allocated memory
             Marshal.FreeCoTaskMem(lParam1);
+        }
+
+        private void SetStringDrawingFormat()
+        {
+            _stringDrawingFormat = new System.Drawing.StringFormat
+                {
+                    Alignment = StringAlignment.Center,
+                    LineAlignment = NumberAlignment,
+                    Trimming = StringTrimming.None,
+                };
         }
 
 
@@ -198,11 +207,21 @@ namespace Ionic.WinForms
             get
             {
                 if (_lnw > 0) return _lnw;
-                int ndigits = (CharIndexForTextLine.Length == 0)
-                    ? 1
-                    : (int)(1 + Math.Log((double)CharIndexForTextLine.Length, 10));
+                int ndigits = 0;
+                if (NumberLineCounting == LineCounting.CRLF)
+                {
+                    ndigits = (CharIndexForTextLine.Length == 0)
+                        ? 1
+                        : (int)(1 + Math.Log((double)CharIndexForTextLine.Length, 10));
+                }
+                else
+                {
+                    int n = GetDisplayLineCount();
+                    ndigits = (n == 0)
+                        ? 1
+                        : (int)(1 + Math.Log((double)n, 10));
+                }
                 var s = new String('0', ndigits);
-
                 var b = new Bitmap(400,400); // in pixels
                 var g = Graphics.FromImage(b);
                 SizeF size = g.MeasureString(s, NumberFont);
@@ -231,9 +250,14 @@ namespace Ionic.WinForms
 
         private void NeedRecomputeOfLineNumbers()
         {
+            //System.Console.WriteLine("Need Recompute of line numbers...");
             _CharIndexForTextLine = null;
             _Text2 = null;
             _lnw = -1;
+
+            if (_paintingDisabled) return;
+
+            User32.SendMessage(this.Handle, User32.Msgs.WM_PAINT, 0, 0);
         }
 
         private Font _NumberFont;
@@ -245,6 +269,32 @@ namespace Ionic.WinForms
                 if (_NumberFont == value) return;
                 _lnw = -1;
                 _NumberFont = value;
+                User32.SendMessage(this.Handle, User32.Msgs.WM_PAINT, 0, 0);
+            }
+        }
+
+        private LineCounting _NumberLineCounting;
+        public LineCounting NumberLineCounting
+        {
+            get { return  _NumberLineCounting; }
+            set
+            {
+                if (_NumberLineCounting == value) return;
+                _lnw = -1;
+                _NumberLineCounting = value;
+                User32.SendMessage(this.Handle, User32.Msgs.WM_PAINT, 0, 0);
+            }
+        }
+
+        private StringAlignment _NumberAlignment;
+        public StringAlignment NumberAlignment
+        {
+            get { return  _NumberAlignment; }
+            set
+            {
+                if (_NumberAlignment == value) return;
+                _NumberAlignment = value;
+                SetStringDrawingFormat();
                 User32.SendMessage(this.Handle, User32.Msgs.WM_PAINT, 0, 0);
             }
         }
@@ -326,6 +376,16 @@ namespace Ionic.WinForms
         }
 
 
+        private bool _paintingDisabled;
+        public void SuspendLineNumberPainting()
+        {
+            _paintingDisabled = true;
+        }
+        public void ResumeLineNumberPainting()
+        {
+            _paintingDisabled = false;
+        }
+
 
         private void NewBorderPen()
         {
@@ -336,7 +396,7 @@ namespace Ionic.WinForms
 
 
 
-        //private DateTime _lastMsgRecd = new DateTime(1901,1,1);
+        private DateTime _lastMsgRecd = new DateTime(1901,1,1);
 
         protected override void WndProc(ref Message m)
         {
@@ -345,6 +405,8 @@ namespace Ionic.WinForms
             {
                 case (int)User32.Msgs.WM_PAINT:
                     //System.Console.WriteLine("{0}", User32.Mnemonic(m.Msg));
+                    System.Console.Write(".");
+                    if (_paintingDisabled) return;
                     if (_lineNumbers)
                     {
                         base.WndProc(ref m);
@@ -396,12 +458,21 @@ namespace Ionic.WinForms
         int _lastWidth = 0;
         private void PaintLineNumbers()
         {
+            //System.Console.WriteLine(">> PaintLineNumbers");
             // To reduce flicker, double-buffer the output
+
+            if (_paintingDisabled) return;
+
             int w = LineNumberWidth;
             if (w!=_lastWidth)
             {
+                //System.Console.WriteLine("  WIDTH change {0} != {1}", _lastWidth, w);
                 SetLeftMargin(w + Margin.Left);
                 _lastWidth = w;
+                // Don't bother painting line numbers - the margin isn't wide enough currently.
+                // Ask for a new paint, and paint them next time round.
+                User32.SendMessage(this.Handle, User32.Msgs.WM_PAINT, 0, 0);
+                return;
             }
 
             Bitmap buffer = new Bitmap(w, this.Bounds.Height);
@@ -417,20 +488,31 @@ namespace Ionic.WinForms
 
             g.FillRectangle(backBrush, rect);
 
-            int n = NumberOfVisibleTextLines + 1;
-            int ix = FirstVisibleTextLine;
+            int n = (NumberLineCounting == LineCounting.CRLF)
+                ? NumberOfVisibleTextLines
+                : NumberOfVisibleDisplayLines;
+
+            int first = (NumberLineCounting == LineCounting.CRLF)
+                ? FirstVisibleTextLine
+                : FirstVisibleDisplayLine+1;
+
             int py = 0;
             int w2 = w - 2 - (int)NumberBorderThickness;
             LinearGradientBrush brush;
-            Pen dividerPen = new Pen(NumberBorder);
+            Pen dividerPen = new Pen(NumberColor);
 
             for (int i=0; i <= n; i++)
             {
-                int c = GetCharIndexForTextLine(ix);
+                int ix = first + i;
+                int c = (NumberLineCounting == LineCounting.CRLF)
+                    ? GetCharIndexForTextLine(ix)
+                    : GetCharIndexForDisplayLine(ix)-1;
+
                 var p = GetPosFromCharIndex(c+1);
+
                 Rectangle r4 = Rectangle.Empty;
 
-                if (i==n)
+                if (i==n) // last line?
                 {
                     if (this.Bounds.Height <= py) continue;
                     r4 = new Rectangle (1, py, w2, this.Bounds.Height-py);
@@ -456,10 +538,12 @@ namespace Ionic.WinForms
                     g.FillRectangle(brush, r4);
                 }
 
-                ix++;
+                if (NumberLineCounting == LineCounting.CRLF) ix++;
 
-                // slide up - to draw the number 1px higher in the box
-                rect.Offset(0, -1);
+                // conditionally slide down
+                if (NumberAlignment == StringAlignment.Near)
+                    rect.Offset(0, 3);
+
                 g.DrawString(ix.ToString(), NumberFont, forebrush, r4, _stringDrawingFormat);
                 py = p.Y;
             }
@@ -477,6 +561,8 @@ namespace Ionic.WinForms
             g1.Dispose();
             g.Dispose();
         }
+
+
 
         private int GetCharIndexFromPos(int x, int y)
         {
@@ -518,6 +604,11 @@ namespace Ionic.WinForms
         private int GetCharIndexForDisplayLine(int line)
         {
             return User32.SendMessage(this.Handle, (int)User32.Msgs.EM_LINEINDEX, line, 0);
+        }
+
+        private int GetDisplayLineCount()
+        {
+            return User32.SendMessage(this.Handle, (int)User32.Msgs.EM_GETLINECOUNT, 0, 0);
         }
 
 
@@ -635,6 +726,9 @@ namespace Ionic.WinForms
             }
         }
 
+
+        // The char index is expensive to compute.
+
         private int[] _CharIndexForTextLine;
         private int[] CharIndexForTextLine
         {
@@ -663,14 +757,31 @@ namespace Ionic.WinForms
             get
             {
                 if (_Text2 == null)
-                {
-                    _Text2 = Text;
-                }
+                    _Text2 = this.Text;
                 return _Text2;
             }
-
         }
+
+        private bool CompareHashes(byte[] a, byte[] b)
+        {
+            if (a.Length != b.Length) return false;
+            for (int i=0; i < a.Length; i++)
+            {
+                if (a[i]!=b[i]) return false;
+            }
+            return true;  // they are equal
+        }
+
+
+
+        public enum LineCounting
+        {
+            CRLF,
+            AsDisplayed
+        }
+
     }
+
 
 
     public static class Tuple

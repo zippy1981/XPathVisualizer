@@ -233,10 +233,30 @@ namespace XPathVisualizer
             //                     //XmlKnownDtds.Xhtml10)
             //                 };
 
+            Action<Action> InvokeActionProperly = (x) =>
+                {
+                    if (this.richTextBox1.InvokeRequired)
+                    {
+                        this.richTextBox1.Invoke(x);
+                        return;
+                    }
+                    x();
+                };
+
+            Action suspend = () =>
+                {
+                    this.richTextBox1.SuspendLineNumberPainting();
+                };
+            Action resume = () =>
+                {
+                    this.richTextBox1.ResumeLineNumberPainting();
+                };
+
             do
             {
                 try
                 {
+                    InvokeActionProperly(resume);
                     wantFormat.WaitOne();
                     wantFormat.Reset();
                     progressCount = 0;
@@ -254,8 +274,11 @@ namespace XPathVisualizer
                             continue;
                     }
 
-                    // Get the text ONCE.  In a RichTextBox, this is expensive, so we do it once,
-                    // until a change is detected in the richtextbox.
+                    InvokeActionProperly(suspend);
+
+                    // Get the text ONCE.  In a RichTextBox, this is
+                    // expensive, so we do it once, until a change is detected
+                    // in the richtextbox.
                     string txt = (this.richTextBox1.InvokeRequired)
                         ? (string)this.richTextBox1.Invoke((System.Func<string>)(() => this.richTextBox1.Text))
                         : this.richTextBox1.Text;

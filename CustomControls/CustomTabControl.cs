@@ -147,7 +147,6 @@ namespace Ionic.WinForms
         private Image CloseImageGray;
         private Image CloseImageHover;
         private Point ImageOffset;
-        private Point ImageHitArea;
         private MouseHoverState mhs;
         private int _hoverInterval;
 
@@ -168,7 +167,6 @@ namespace Ionic.WinForms
             _priorAlignment = TabAlignment.Left;
 
             ImageOffset = new System.Drawing.Point(16, 2);
-            ImageHitArea = new System.Drawing.Point(13, 2);
 
             // We are simulating a close button with the close images. The
             // image is a stylized X from the VS2008 image library.  There are
@@ -232,9 +230,10 @@ namespace Ionic.WinForms
         private bool PointIsOnCloseImage(Point p, int tabIndex)
         {
             Rectangle r = GetTabRect(tabIndex);
-            r.Offset(r.Width - ImageHitArea.X, ImageHitArea.Y);
-            r.Width = CloseImage.Width;
-            r.Height = CloseImage.Height;
+            // make the "hit area" 1px larger than the actual image
+            r.Offset(r.Width - ImageOffset.X-1, ImageOffset.Y-1);
+            r.Width = CloseImage.Width+2;
+            r.Height = CloseImage.Height+2;
             return r.Contains(p);
         }
 

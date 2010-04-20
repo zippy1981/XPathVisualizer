@@ -357,7 +357,7 @@
             this.richTextBox1.NumberBackground1 = System.Drawing.SystemColors.ControlLight;
             this.richTextBox1.NumberBackground2 = System.Drawing.SystemColors.Window;
             this.richTextBox1.NumberBorder = System.Drawing.SystemColors.ControlDark;
-            this.richTextBox1.NumberColor = System.Drawing.Color.Red;
+            this.richTextBox1.NumberColor = System.Drawing.Color.DarkGray;
             this.richTextBox1.ShowLineNumbers = true;
             this.richTextBox1.Size = new System.Drawing.Size(524, 166);
             this.richTextBox1.TabIndex = 80;
