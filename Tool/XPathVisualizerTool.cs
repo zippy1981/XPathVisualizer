@@ -152,6 +152,13 @@ namespace XPathVisualizer
             rtb.Size = new System.Drawing.Size(510, 166);
             rtb.TabIndex = 80;
             rtb.Text = "";
+            rtb.NumberColor = Color.FromName("DarkGray");
+            rtb.NumberBackground1 = System.Drawing.SystemColors.ControlLight;
+            rtb.NumberBackground2 = System.Drawing.SystemColors.Window;
+            rtb.NumberBorder = System.Drawing.SystemColors.ControlDark;
+            rtb.NumberColor = System.Drawing.SystemColors.ControlDark;
+            rtb.ShowLineNumbers = true;
+
             rtb.Leave += new System.EventHandler(this.richTextBox1_Leave);
             rtb.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.richTextBox1_KeyPress);
 
@@ -231,6 +238,8 @@ namespace XPathVisualizer
             tabState.nav = null;
             _lastRtbKeyPress = System.DateTime.Now;
             if (richTextBox1.Text.Length == 0) return;
+            DisableMatchButtons();
+            RemoveHighlighting();
             wantFormat.Set();
         }
 
@@ -406,15 +415,25 @@ namespace XPathVisualizer
             string prefix = tabState.xmlnsDefaultPrefix;
 
             string s = expr;
-            s = Regex.Replace(s, "^(?!::)([^/:]+)(?=/)", prefix + ":$1");                           // beginning
-            s = Regex.Replace(s, "/([^/:]+)(?=[/\\[])", "/" + prefix + ":$1");                        // segment
+            s = Regex.Replace(s, "^(?!::)([^/:]+)(?=/)", prefix + ":$1");                             // beginning
+            s = Regex.Replace(s, "/([^/:\\*]+)(?=[/\\[])", "/" + prefix + ":$1");                        // segment
             s = Regex.Replace(s, "::([A-Za-z][^/:*]*)(?=/)", "::" + prefix + ":$1");                  // axis specifier
             s = Regex.Replace(s, "\\[([A-Za-z][^/:*\\(]*)(?=[\\[\\]])", "[" + prefix + ":$1");        // within predicate
-            s = Regex.Replace(s, "/([A-Za-z][^/:]*)(?!<::)$", "/ns1:$1");                          // end
-            s = Regex.Replace(s, "^([A-Za-z][^/:]*)$", "ns1:$1");                                  // edge case
+            s = Regex.Replace(s, "/([A-Za-z][^/:]*)(?!<::)$", "/"+ prefix+":$1");                     // end
+            s = Regex.Replace(s, "^([A-Za-z][^/:]*)$", prefix + ":$1");                               // edge case
             s = Regex.Replace(s, "([-A-Za-z]+)\\(([^/:\\.,\\)]+)(?=[,\\)])", "$1(" + prefix + ":$2"); // xpath functions
 
             return s;
+        }
+
+
+        private void RemoveHighlighting()
+        {
+            richTextBox1.BeginUpdateAndSaveState();
+            richTextBox1.SelectAll();
+            richTextBox1.SelectionBackColor = Color.White;
+            richTextBox1.Update();
+            richTextBox1.EndUpdateAndRestoreState();
         }
 
 
@@ -441,9 +460,7 @@ namespace XPathVisualizer
             try
             {
                 // reset highlighting
-                richTextBox1.SelectAll();
-                richTextBox1.SelectionBackColor = Color.White;
-                richTextBox1.Update();
+                RemoveHighlighting();
 
                 mask = richTextBox1.BeginUpdateAndSuspendEvents();
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
@@ -1063,7 +1080,8 @@ namespace XPathVisualizer
         private void DisableMatchButtons()
         {
             this.matchPanel.Visible = false;
-            //matchPositions = null;
+            if (tabState != null)
+                tabState.matches = null;
             this.lblMatch.Text = "";
             this.btn_NextMatch.Enabled = false;
             this.btn_PrevMatch.Enabled = false;

@@ -3,7 +3,7 @@
 //
 // Wrapper for User32.dll methods, etc.
 //
-// Time-stamp: <2010-April-19 14:09:52>
+// Time-stamp: <2010-April-19 18:21:29>
 // ------------------------------------------------------------------
 //
 // Copyright (c) 2010 by Dino Chiesa
@@ -147,8 +147,39 @@ namespace Ionic
                 WM_CAPTURECHANGED      = 0x0215,
                 WM_MOVING              = 0x0216,
 
+                WM_IME_SETCONTEXT = 0x0281,
+                WM_IME_NOTIFY = 0x0282,
+                WM_IME_CONTROL = 0x0283,
+                WM_IME_COMPOSITIONFULL = 0x0284,
+                WM_IME_SELECT = 0x0285,
+                WM_IME_CHAR = 0x0286,
+                WM_IME_REQUEST = 0x0288,
+                WM_IME_KEYDOWN = 0x0290,
+                WM_IME_KEYUP = 0x0291,
                 WM_NCMOUSEHOVER        = 0x02A0,
                 WM_NCMOUSELEAVE        = 0x02A2,
+                WM_MOUSEHOVER = 0x02A1,
+                WM_MOUSELEAVE = 0x02A3,
+
+                WM_CUT                 = 0x0300,
+                WM_COPY                = 0x0301,
+                WM_PASTE               = 0x0302,
+                WM_CLEAR               = 0x0303,
+                WM_UNDO                = 0x0304,
+                WM_RENDERFORMAT        = 0x0305,
+                WM_RENDERALLFORMATS    = 0x0306,
+                WM_DESTROYCLIPBOARD    = 0x0307,
+                WM_DRAWCLIPBOARD       = 0x0308,
+                WM_PAINTCLIPBOARD      = 0x0309,
+                WM_VSCROLLCLIPBOARD    = 0x030A,
+                WM_SIZECLIPBOARD       = 0x030B,
+                WM_ASKCBFORMATNAME     = 0x030C,
+                WM_CHANGECBCHAIN       = 0x030D,
+                WM_HSCROLLCLIPBOARD    = 0x030E,
+                WM_QUERYNEWPALETTE     = 0x030F,
+                WM_PALETTEISCHANGING   = 0x0310,
+                WM_PALETTECHANGED      = 0x0311,
+                WM_HOTKEY              = 0x0312,
 
                 WM_USER                = 0x0400,
                 EM_SCROLLCARET         = (WM_USER + 49),
