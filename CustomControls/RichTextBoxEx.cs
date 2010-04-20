@@ -1,14 +1,22 @@
-﻿// RichTextBoxEx.cs
+// RichTextBoxEx.cs
 // ------------------------------------------------------------------
 //
 // An extended RichTextBox that provides a few extra capabilities:
 //
-//  1. line numbering (fast and easy).  One limitation is that
-//     it numbers lines according to the hard newlines in the text,
-//     not according to the way the lines break in the RTB.
-//  2. programmatic scrolling
-//  3. BeginUpdate/EndUpdate
-//  4. properties: FirstVisibleLine / NumberOfVisibleLines
+//  1. line numbering, fast and easy.  It numbers the lines "as
+//     displayed" or according to the hard newlines in the text.  The UI
+//     of the line numbers is configurable: color, font, width, leading
+//     zeros or not, etc.  One limitation: the line #'s are always
+//     displayed to the left.
+//
+//  2. Programmatic scrolling
+//
+//  3. BeginUpdate/EndUpdate and other bells and whistles.  Theres also
+//     BeginUpdateAndSateState()/EndUpdateAndRestoreState(), to keep the
+//     cursor in place across select/updates.
+//
+//  4. properties: FirstVisibleLine / NumberOfVisibleLines - in support of
+//     line numbering.
 //
 //
 // Copyright (c) 2010 Dino Chiesa.
@@ -38,7 +46,7 @@ using System.Drawing.Drawing2D;
 namespace Ionic.WinForms
 {
     /// <summary>
-    /// Defines methods for performing operations on RichTextBox.
+    ///   Defines methods for performing operations on RichTextBox.
     /// </summary>
     ///
     /// <remarks>
@@ -419,7 +427,7 @@ namespace Ionic.WinForms
             {
                 case (int)User32.Msgs.WM_PAINT:
                     //System.Console.WriteLine("{0}", User32.Mnemonic(m.Msg));
-                    System.Console.Write(".");
+                    //System.Console.Write(".");
                     if (_paintingDisabled) return;
                     if (_lineNumbers)
                     {
@@ -671,7 +679,7 @@ namespace Ionic.WinForms
         }
 
 
-        public int FirstVisibleDisplayLine
+        private int FirstVisibleDisplayLine
         {
             get
             {
@@ -686,7 +694,7 @@ namespace Ionic.WinForms
             }
         }
 
-        public int NumberOfVisibleDisplayLines
+        private int NumberOfVisibleDisplayLines
         {
             get
             {
@@ -699,15 +707,7 @@ namespace Ionic.WinForms
             }
         }
 
-        private int GetCharIndexForTextLine(int ix)
-        {
-            if (ix >= CharIndexForTextLine.Length) return 0;
-            if (ix < 0) return 0;
-            return CharIndexForTextLine[ix];
-        }
-
-
-        public int FirstVisibleTextLine
+        private int FirstVisibleTextLine
         {
             get
             {
@@ -720,7 +720,7 @@ namespace Ionic.WinForms
             }
         }
 
-        public int LastVisibleTextLine
+        private int LastVisibleTextLine
         {
             get
             {
@@ -733,13 +733,44 @@ namespace Ionic.WinForms
             }
         }
 
-        public int NumberOfVisibleTextLines
+        private int NumberOfVisibleTextLines
         {
             get
             {
                 return LastVisibleTextLine - FirstVisibleTextLine;
             }
         }
+
+
+        public int FirstVisibleLine
+        {
+            get
+            {
+                if (this.NumberLineCounting == LineCounting.CRLF)
+                    return FirstVisibleTextLine;
+                else
+                    return FirstVisibleDisplayLine;
+            }
+        }
+
+        public int NumberOfVisibleLines
+        {
+            get
+            {
+                if (this.NumberLineCounting == LineCounting.CRLF)
+                    return NumberOfVisibleTextLines;
+                else
+                    return NumberOfVisibleDisplayLines;
+            }
+        }
+
+        private int GetCharIndexForTextLine(int ix)
+        {
+            if (ix >= CharIndexForTextLine.Length) return 0;
+            if (ix < 0) return 0;
+            return CharIndexForTextLine[ix];
+        }
+
 
 
         // The char index is expensive to compute.
