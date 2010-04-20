@@ -201,32 +201,34 @@ namespace Ionic.WinForms
             Refresh();
         }
 
+        private String _sformat;
+        private int _ndigits;
         private int _lnw = -1;
         private int LineNumberWidth
         {
             get
             {
                 if (_lnw > 0) return _lnw;
-                int ndigits = 0;
                 if (NumberLineCounting == LineCounting.CRLF)
                 {
-                    ndigits = (CharIndexForTextLine.Length == 0)
+                    _ndigits = (CharIndexForTextLine.Length == 0)
                         ? 1
                         : (int)(1 + Math.Log((double)CharIndexForTextLine.Length, 10));
                 }
                 else
                 {
                     int n = GetDisplayLineCount();
-                    ndigits = (n == 0)
+                    _ndigits = (n == 0)
                         ? 1
                         : (int)(1 + Math.Log((double)n, 10));
                 }
-                var s = new String('0', ndigits);
+                var s = new String('0', _ndigits);
                 var b = new Bitmap(400,400); // in pixels
                 var g = Graphics.FromImage(b);
                 SizeF size = g.MeasureString(s, NumberFont);
                 g.Dispose();
                 _lnw = NumberPadding * 2 + 4 + (int) (size.Width + 0.5 + NumberBorderThickness);
+                _sformat = "{0:D" + _ndigits + "}";
                 return _lnw;
             }
         }
@@ -307,6 +309,18 @@ namespace Ionic.WinForms
             {
                 if (_NumberColor.ToArgb() == value.ToArgb()) return;
                 _NumberColor = value;
+                User32.SendMessage(this.Handle, User32.Msgs.WM_PAINT, 0, 0);
+            }
+        }
+
+        private bool _NumberLeadingZeroes;
+        public bool NumberLeadingZeroes
+        {
+            get { return _NumberLeadingZeroes; }
+            set
+            {
+                if (_NumberLeadingZeroes == value) return;
+                _NumberLeadingZeroes = value;
                 User32.SendMessage(this.Handle, User32.Msgs.WM_PAINT, 0, 0);
             }
         }
@@ -544,7 +558,8 @@ namespace Ionic.WinForms
                 if (NumberAlignment == StringAlignment.Near)
                     rect.Offset(0, 3);
 
-                g.DrawString(ix.ToString(), NumberFont, forebrush, r4, _stringDrawingFormat);
+                var s = (NumberLeadingZeroes) ? String.Format(_sformat, ix) : ix.ToString();
+                g.DrawString(s, NumberFont, forebrush, r4, _stringDrawingFormat);
                 py = p.Y;
             }
 
