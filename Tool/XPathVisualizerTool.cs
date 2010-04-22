@@ -86,6 +86,7 @@ namespace XPathVisualizer
             KickoffColorizer();
             DisableMatchButtons();
 
+            this.label3.BringToFront();
             this.progressBar1.Visible = false;
             UpdateStatus("Ready");
         }
@@ -178,6 +179,8 @@ namespace XPathVisualizer
 
             this.toolTip1.SetToolTip(richTextBox1, "");
             _lastRtbKeyPress = _originDateTime;
+
+            this.label3.SendToBack();
 
             return tabPage1;
         }
@@ -1095,7 +1098,7 @@ namespace XPathVisualizer
                 this.btn_NextMatch.Enabled = true;
                 this.btn_PrevMatch.Enabled = true;
                 //tabState.currentMatch = 0;
-                tabState.numVisibleLines = richTextBox1.NumberOfVisibleDisplayLines;
+                tabState.numVisibleLines = richTextBox1.NumberOfVisibleLines;
                 tabState.totalLinesInDoc = richTextBox1.Lines.Count();
                 this.matchPanel.Visible = true;
             }
@@ -1464,7 +1467,7 @@ namespace XPathVisualizer
                     case Keys.N:
                         var tp = CreateNewTabPage();
                         tp.Text = "  new  ";
-                        tabState.src = "";
+                        this.tbXmlDoc.Text = tabState.src = "";
                         tabState.okToSave = false;
                         DisableMatchButtons();
                         PreloadXmlns();
@@ -1538,7 +1541,14 @@ namespace XPathVisualizer
 
         private void customTabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (!isLoading && tabState != null)
+            if (tabState == null)
+            {
+                this.label3.BringToFront();
+                UpdateStatus("Ready.");
+                return;
+            }
+
+            if (!isLoading)
             {
                 // When loading, the tab gets selected before any of the other data,
                 // like xpath and so on, is available.
