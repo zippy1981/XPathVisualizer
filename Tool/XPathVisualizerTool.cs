@@ -1294,11 +1294,10 @@ namespace XPathVisualizer
                     if (t.StartsWith("<")) // assume element node, or decl, etc
                         textExtracted += t;
 
-                    else if ((match = Regex.Match(t, "^[ \\\t]*([^ \\\t]+)[ \\\t]*=(.+)$")).Success) // attr node
+                    else if ((match = Regex.Match(t, "^[ \\\t]*([^ \\\t=]+)[ \\\t]*=(.+)$")).Success) // attr node
                     {
-                        //int ix = t.IndexOf('=');
                         var a = match.Groups[1].Value;
-                        var attrname = Regex.Replace(a, "^[ \\\t]*([^ \\\t]+)[ \\\t]*$", "$1");
+                        var attrname = Regex.Replace(a, "^[ \\\t]*([^ \\\t=]+)[ \\\t]*$", "$1");
                         textExtracted += "<" + attrname + ">" +
                             Regex.Replace(match.Groups[2].Value, "^[ \\\t]*([\\\"'])(.+)\\1[ \\\t]*$", "$2") +
                             "</" + attrname + ">\n";
