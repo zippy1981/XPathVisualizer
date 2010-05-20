@@ -310,7 +310,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:XPathParser, Version=1.2.1.4, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:XPathParser, Version=1.2.1.7, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_2C8E355F9D03CFF483C0B3C894DE9C86"
@@ -372,7 +372,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.XPathVisualizer, Version=1.2.1.4, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Ionic.XPathVisualizer, Version=1.2.1.7, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_683FBD3D81D4C2554220EA03D87CBB65"
@@ -423,7 +423,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:CustomControls, Version=1.2.1.4, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:CustomControls, Version=1.2.1.7, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_8D7E827032F1F1F5E9F33D35C25738F8"
@@ -520,7 +520,7 @@
             }
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_C6DE19FE9A604C5382BFE0A0D0082690"
             {
-            "DefaultLocation" = "8:[ProgramFilesFolder][Manufacturer]\\XPathVisualizer 1.1"
+            "DefaultLocation" = "8:[ProgramFilesFolder][Manufacturer]\\XPathVisualizer 1.2"
             "Name" = "8:#1925"
             "AlwaysCreate" = "11:FALSE"
             "Condition" = "8:"
@@ -557,14 +557,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Ionic's XPath Visualizer v1.2"
-        "ProductCode" = "8:{520575BA-FEB4-465B-A42F-EA63FA0B18FF}"
-        "PackageCode" = "8:{AAC7F5A9-91E4-4250-B399-2B4ECCC9B30D}"
+        "ProductCode" = "8:{4EDD5211-6633-46F4-8FAD-E2A2F2ABBAB0}"
+        "PackageCode" = "8:{CC0680D6-0690-4A29-BABB-FF0F356D0B40}"
         "UpgradeCode" = "8:{F6792511-D075-4D05-A5ED-5CCE545BC9D2}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.2.105"
+        "ProductVersion" = "8:1.2.108"
         "Manufacturer" = "8:Dino Chiesa"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
