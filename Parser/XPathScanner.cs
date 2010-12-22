@@ -49,8 +49,8 @@ namespace CodePlex.XPathParser
         RBrace = '}',      // Used for AVTs
     }
 
-    
-    internal sealed class XPathScanner
+
+    public sealed class XPathScanner
     {
         private string xpathExpr;
         private int curIndex;
@@ -467,7 +467,7 @@ namespace CodePlex.XPathParser
             return true;
         }
 
-        static readonly string[] functionNames = new string[] { 
+        public static readonly string[] FunctionNames = new string[] {
             "node-name",
             "nilled",
             "data",
@@ -581,7 +581,7 @@ namespace CodePlex.XPathParser
 
         public void CheckFunction()
         {
-            foreach (string n in functionNames)
+            foreach (string n in FunctionNames)
             {
                 if (name.Equals(n)) return;
             }
@@ -770,14 +770,14 @@ namespace CodePlex.XPathParser
                             if (x[i] == Lexeme.LBracket) break;
                             if (x[i] == Lexeme.Eq) { foundEq = true; break; }
                         }
-                        if (!foundEq)                        
-                            list.Add(Lexeme.Eq);                        
+                        if (!foundEq)
+                            list.Add(Lexeme.Eq);
                     }
                     break;
             }
             return list;
         }
-        
+
         // XPath error messages
         // --------------------
 
