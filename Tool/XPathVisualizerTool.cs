@@ -688,7 +688,7 @@ namespace XPathVisualizer
                     }
                     else if (node.NodeType == XPathNodeType.Element)
                     {
-                        System.Diagnostics.Debugger.Break();
+                        //System.Diagnostics.Debugger.Break();
                         if (node.MoveToNext())
                         {
                             // The navigator moved to the succeeding
