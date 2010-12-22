@@ -87,10 +87,6 @@ namespace XPathVisualizer
             SetupAutocompletes();
             KickoffColorizer();
             DisableMatchButtons();
-
-            this.label3.BringToFront();
-            this.progressBar1.Visible = false;
-            UpdateStatus("Ready");
         }
 
         private void UpdateStatus(string s )
@@ -192,6 +188,7 @@ namespace XPathVisualizer
         private void btnLoadXml_Click(object sender, EventArgs e)
         {
             TabPage tp = null;
+            Trace("LoadXml_Click");
             try
             {
                 isLoading = true;
@@ -222,6 +219,7 @@ namespace XPathVisualizer
             }
             catch (Exception exc1)
             {
+                Trace("Exception while loading: {0}", exc1.Message);
                 richTextBox1.Text = "file read error:  " + exc1.ToString();
                 UpdateStatus("Cannot read that file.");
                 if (tabPage != null)
@@ -352,6 +350,24 @@ namespace XPathVisualizer
             this.FillFormFromRegistry();
             ClearTabs();
             CollapseXmlnsPrefixPanel();
+
+            // process command line
+            var args = Environment.GetCommandLineArgs();
+            if (args != null && args.Length > 1 && File.Exists(args[1]))
+            {
+                Trace("Command line args: '{0}' '{1}'", args[0], args[1]);
+                // open the specified file.
+                this.tbXmlDoc.Text= args[1];
+                btnLoadXml_Click(null, null);
+                this.label3.SendToBack();  // un-obscure the richtextbox
+                richTextBox1.Visible = true;
+            }
+            else
+            {
+                this.label3.BringToFront();
+                this.progressBar1.Visible = false;
+            }
+            UpdateStatus("Ready");
         }
 
 
