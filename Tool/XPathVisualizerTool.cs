@@ -644,7 +644,7 @@ namespace XPathVisualizer
                 if (ix >= 0)
                 {
                     int ix2 = 0;
-
+                    //System.Diagnostics.Debugger.Break();
                     if (node.NodeType == XPathNodeType.Comment)
                     {
                         ix2 = ix + node.Value.Length;
@@ -667,33 +667,53 @@ namespace XPathVisualizer
                             ix2++;
                         c = rtbText[ix2];
                         ix2++;
-                        while (rtbText[ix2] != c)
+                        while (rtbText[ix2] != c) // the matching quote
                             ix2++;
                     }
                     else if (node.NodeType == XPathNodeType.Element)
                     {
+                        System.Diagnostics.Debugger.Break();
                         if (node.MoveToNext())
                         {
-                            // The navigator moved to the succeeding element. Now backup
-                            // through the text to find the ending square bracket for *this* element.
+                            // The navigator moved to the succeeding
+                            // element. Now backup through the text to find
+                            // the ending square bracket for *this* element.
                             ix2 = lc.GetCharIndexFromLine(lineInfo.LineNumber - 1) +
                                 lineInfo.LinePosition - 1;
-                            string subs1 = rtbText.Substring(ix2, 1);
-                            while (subs1 != ">" && ix2 > ix)
+                            var c1 = rtbText[ix2];
+                            while (c1 != '>' && ix2 > ix)
                             {
                                 ix2--;
-                                subs1 = rtbText.Substring(ix2, 1);
+                                c1 = rtbText[ix2];
                             }
                         }
                         else
                         {
-                            // Manual Labor. Since there is no XPathNavigator.MoveToEndOfElement(),
-                            // we look for the EndElement in the text.  First, advance past the
-                            // original node name.  If the succeeding char is not / (meaning
-                            // an empty element), then look for the </NodeName> string.
+                            // There is no succeeding (sibling) element.
+                            //
+                            // Manual Labor. Since there is no
+                            // XPathNavigator.MoveToEndOfElement(), we look
+                            // for the EndElement in the text.  First,
+                            // advance past the original node name.  Then,
+                            // advance past any child attributes and values,
+                            // to either a / or a >.
+                            //
+
+                            //
+                            // If the succeeding char is not / (meaning an
+                            // empty element), then look for the </NodeName>
+                            // string.
+
+                            // BUG: this is naive; I think it will break if
+                            // there's a > or / inside an attribute value.
 
                             ix2 = ix + node.Name.Length + 1;
-                            //string subs1 = rtbText.Substring(ix2, 1);
+                            var c1 = rtbText[ix2];
+                            while (c1 != '>' && c1 != '/')
+                            {
+                                ix2++;
+                                c1 = rtbText[ix2];
+                            }
                             if (rtbText[ix2] == '/')
                             {
                                 // we're at the end-element
@@ -719,6 +739,7 @@ namespace XPathVisualizer
                     if (ix2 > ix)
                     {
                         // Record the location of the match within the doc.
+                        Trace("match({0},{1})", ix, ix2);
                         matchPositions.Add(Tuple.New(ix, ix2));
                     }
                 }
@@ -936,16 +957,6 @@ namespace XPathVisualizer
                         }
                         Trace("KeyPress in textbox Text='{0}'", tb.Text);
                     });
-                var tbLostFocus = new EventHandler( (src, e) => {
-                        // var tb = src as TextBox;
-                        // var chk = tb.Tag as CheckBox;
-                        // var item = chk.Tag as XmlnsInfo;
-                        // Trace("Textbox LostFocus Text='{0}'=>'{1}'",
-                        //       tb.Text, item.Prefix);
-                        // tb.Text = item.Prefix;
-                        // this.toolTip1.SetToolTip(tb, "");
-                        // tb.BackColor = System.Drawing.Color.White;
-                    });
                 var tbGotFocus = new EventHandler( (src, e) => {
                         var tb = src as TextBox;
                         Trace("Textbox GotFocus Text='{0}'", tb.Text);
@@ -998,6 +1009,7 @@ namespace XPathVisualizer
                         this.toolTip1.SetToolTip(tb, "click to modify");
                         tb.BackColor = System.Drawing.Color.White;
                     });
+
                 var buttonClicked = new EventHandler( (src, e) => {
                         var item = ((Button)src).Tag as XmlnsInfo;
                         RemovePrefix(item.Prefix);
@@ -1037,7 +1049,6 @@ namespace XPathVisualizer
                         tb1.Validating += tbXmlnsValidating;
                         tb1.KeyPress += keypressed;
                         tb1.GotFocus += tbGotFocus;
-                        tb1.LostFocus += tbLostFocus;
 
                         // the first label.  It's an equals sign, indicating
                         // the prefix assigned to the xml namespace.
@@ -1288,12 +1299,12 @@ namespace XPathVisualizer
             if (tabState.matches.Count == 0) return;
             Tuple<int, int> position = tabState.matches[tabState.currentMatch];
 
-            Trace("scrollToPosition(match({0}) position({1}))",
-                  tabState.currentMatch, position.V1);
+            Trace("scrollToCurrentMatch(curmatch({0}) position({1},{2}))",
+                  tabState.currentMatch, position.V1, position.V2);
 
             int startLine = richTextBox1.GetLineFromCharIndex(position.V1);
 
-            Trace("scrollToPosition::startLine({0}) numVisibleLines({1})",
+            Trace("scrollToCurrentMatch::startLine({0}) numVisibleLines({1})",
                   startLine, tabState.numVisibleLines);
 
             UpdateMatchCount();
@@ -1546,10 +1557,16 @@ namespace XPathVisualizer
                 }
                 else
                 {
+                    var saveFname = (new Func<string>( () => {
+                                if (String.IsNullOrEmpty(this.tbXmlDoc.Text))
+                                    return "new.xml";
+                                return this.tbXmlDoc.Text;
+                            }))();
+
                     var dlg1 = new SaveFileDialog
                         {
-                            FileName = System.IO.Path.GetFileName(this.tbXmlDoc.Text),
-                            InitialDirectory = System.IO.Path.GetDirectoryName(this.tbXmlDoc.Text),
+                            FileName = System.IO.Path.GetFileName(saveFname),
+                            InitialDirectory = System.IO.Path.GetDirectoryName(saveFname),
                             OverwritePrompt = true,
                             Title = "Where would you like to save the XML?",
                             Filter = "XML files|*.xml|All files (*.*)|*.*"
@@ -1650,7 +1667,7 @@ namespace XPathVisualizer
                 }
             }
 
-            // chain
+            // chain - handle cut and paste, etc
             return base.ProcessDialogKey(keyData);
         }
 

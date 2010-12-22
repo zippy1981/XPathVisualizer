@@ -145,13 +145,16 @@ namespace XPathVisualizer
             {
                 richTextBox1.BeginUpdateAndSaveState();
 
-                // get the text, and put it back.
-                // why? because it's possible to paste in RTF, which won't
-                // show up correctly. This strips any RTF formatting.
+                // get the text, and put it back.  why? because it's
+                // possible to paste in RTF, including fonts and
+                // formatting.  This won't show up correctly. This
+                // strips any RTF formatting.
                 string txt = this.richTextBox1.Text;
                 this.richTextBox1.Text = txt;
 
                 this.richTextBox1.SelectAll();
+                this.richTextBox1.SelectionFont = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+
                 this.richTextBox1.SelectionBackColor = Color.White;
 
                 richTextBox1.EndUpdateAndRestoreState();
@@ -434,8 +437,14 @@ namespace XPathVisualizer
                 }
                 catch (Exception exc1)
                 {
-                    Console.WriteLine("Exception: " + exc1.Message);
+                    // this can happen when editing an XML file, and the
+                    // xurrent state of the document is not valid xml.
                     NotifyStopFormatting(exc1.Message);
+
+                    // System.Windows.Forms.MessageBox.Show("Exception: " + exc1.Message,
+                    //                 "Exception while formatting",
+                    //                 System.Windows.Forms.MessageBoxButtons.OK,
+                    //                 System.Windows.Forms.MessageBoxIcon.Error);
                 }
                 finally
                 {
