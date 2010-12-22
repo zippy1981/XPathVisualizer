@@ -67,6 +67,8 @@ namespace XPathVisualizer
         private XPathParser<XElement> xpathParser = new XPathParser<XElement>();
         private bool isLoading;
         private int extractCount;
+        private int tn;
+        private bool isDisplayingXmlnsPanel;
 
         private XmlReaderSettings readerSettings = new XmlReaderSettings
             {
@@ -172,7 +174,7 @@ namespace XPathVisualizer
             tabPage1.TabIndex = 0;
             tabPage1.Text = "";
             tabPage1.UseVisualStyleBackColor = true;
-            tabPage1.Tag = new TabState { status = "" };
+            tabPage1.Tag = new TabState { status = "", tabNumber = tn++ };
 
             this.customTabControl1.Controls.Add(tabPage1);
             this.customTabControl1.SelectTab(tabPage1);
@@ -237,7 +239,6 @@ namespace XPathVisualizer
 
         private void richTextBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            //System.Console.WriteLine("KeyPress");
             tabState.nav = null;
             _lastRtbKeyPress = System.DateTime.Now;
             if (richTextBox1.Text.Length == 0) return;
@@ -254,7 +255,8 @@ namespace XPathVisualizer
             IntPtr mask = IntPtr.Zero;
             try
             {
-                //  in case it changes, I guess?
+                // In case the set of XML namespaces changes,
+                // must redisplay everything.
                 PreloadXmlns();
             }
             catch (Exception exc1)
@@ -270,12 +272,15 @@ namespace XPathVisualizer
         {
             try
             {
-                // start from scratch
+                // preserve the old table, to reuse prefixes in case
+                // they have been changed.
+                var oldns = new XmlnsTable(xmlNamespaces);
+
+                // start from scratch on this table
                 xmlNamespaces.Clear();
-                tabState.xmlnsDefaultPrefix = null;
                 int c = 1;
 
-                // get all xml namespace declarations
+                // get all xml-ns decls from the document
                 XPathNodeIterator list = nav.Select("//namespace::*[name() != 'xml'][not(../../namespace::*=.)]");
                 while (list.MoveNext())
                 {
@@ -284,7 +289,7 @@ namespace XPathVisualizer
                     {
                         string ns = nsNode.Value;
 
-                        if (!xmlNamespaces.Values.Contains(ns))
+                        if (!xmlNamespaces.ContainsNs(ns))
                         {
                             // get the prefix - it's either empty or not
                             string origPrefix = nsNode.LocalName;
@@ -292,22 +297,26 @@ namespace XPathVisualizer
                             // make sure the prefix is unique
                             int dupes = 0;
                             string actualPrefix = origPrefix;
-                            while (actualPrefix == "" || xmlNamespaces.Keys.Contains(actualPrefix))
+                            while (actualPrefix == "" || xmlNamespaces.ContainsPrefix(actualPrefix))
                             {
-                                actualPrefix = (origPrefix == "")
-                                    ? String.Format("ns{0}", c++)
-                                    : String.Format("{0}-{1}", origPrefix, dupes++);
+                                if (oldns.ContainsNs(ns) && actualPrefix == "")
+                                {
+                                    // reuse
+                                    actualPrefix = oldns.FindNs(ns).Prefix;
+                                }
+                                else
+                                {
+                                    actualPrefix = (origPrefix == "")
+                                        ? String.Format("ns{0}", c++)
+                                        : String.Format("{0}-{1}", origPrefix, dupes++);
+                                }
                             }
 
-                            if (origPrefix == "" && tabState.xmlnsDefaultPrefix == null)
-                                tabState.xmlnsDefaultPrefix = actualPrefix;
-
-                            xmlNamespaces.Add(actualPrefix, ns);
+                            xmlNamespaces.Add(new XmlnsInfo(actualPrefix, ns, origPrefix=="", (origPrefix == "" && xmlNamespaces.Default == null)));
                         }
-
                     }
                 }
-                DisplayXmlPrefixList();
+                DisplayXmlnsPrefixList();
                 UpdateStatus("OK.");
             }
             catch (System.Exception exc1)
@@ -328,6 +337,7 @@ namespace XPathVisualizer
             this.SaveFormToRegistry();
         }
 
+
         private void ClearTabs()
         {
             while (this.customTabControl1.TabCount > 0)
@@ -341,7 +351,7 @@ namespace XPathVisualizer
         {
             this.FillFormFromRegistry();
             ClearTabs();
-            CollapseXmlPrefixPanel();
+            CollapseXmlnsPrefixPanel();
         }
 
 
@@ -397,13 +407,13 @@ namespace XPathVisualizer
         private XmlNamespaceManager GetXmlNamespaceManager()
         {
             var xmlns = new XmlNamespaceManager(nav.NameTable);
-            foreach (string prefix in xmlNamespaces.Keys)
+            foreach (XmlnsInfo item in xmlNamespaces)
             {
                 // XPath 1.0 doesn't support "default" namespaces in xpath queries.
                 // see http://www.w3.org/TR/1999/REC-xpath-19991116/#node-tests
                 // if (prefix == _xmlnsDefaultPrefix)
                 //    xmlns.AddNamespace("", xmlNamespaces[prefix]);
-                xmlns.AddNamespace(prefix, xmlNamespaces[prefix]);
+                xmlns.AddNamespace(item.Prefix, item.Ns);
             }
             return xmlns;
         }
@@ -413,9 +423,10 @@ namespace XPathVisualizer
 
         string FixupXpathExpressionWithDefaultNamespace(string expr)
         {
-            if (tabState.xmlnsDefaultPrefix == null) return expr;
+            XmlnsInfo def = tabState.xmlns.Default;
+            if (def == null) return expr;
 
-            string prefix = tabState.xmlnsDefaultPrefix;
+            string prefix = def.Prefix;
 
             string s = expr;
             s = Regex.Replace(s, "^(?!::)([^/:]+)(?=/)", prefix + ":$1");                             // beginning
@@ -513,10 +524,20 @@ namespace XPathVisualizer
                 if (brokenPrefix != null)
                 {
                     int ix = this.tbXpath.Text.IndexOf(brokenPrefix);
-                    this.tbXpath.Select(ix, brokenPrefix.Length);
-                    this.tbXpath.BackColor = Color.FromArgb((Color.Red.A << 24) | 0xFFDEAD);
-                    this.tbXpath.Focus();
-                    UpdateStatus("Exception: " + exc1.Message);
+                    if (ix == -1)
+                    {
+                        MessageBox.Show(exc1.Message + "\nxpath: " + elaboratedXpathExpression,
+                                    "Exception while evaluating XPath",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                    }
+                    else
+                    {
+                        this.tbXpath.Select(ix, brokenPrefix.Length);
+                        this.tbXpath.BackColor = Color.FromArgb((Color.Red.A << 24) | 0xFFDEAD);
+                        this.tbXpath.Focus();
+                        UpdateStatus("Exception: " + exc1.Message);
+                    }
                 }
                 else if (BadExpression(exc1))
                 {
@@ -791,7 +812,7 @@ namespace XPathVisualizer
         {
             if (!String.IsNullOrEmpty(this.tbPrefix.Text) && !String.IsNullOrEmpty(this.tbXmlns.Text))
             {
-                if (xmlNamespaces.Keys.Contains(tbPrefix.Text))
+                if (xmlNamespaces.ContainsPrefix(tbPrefix.Text))
                 {
                     // Bzzt!
                     this.tbPrefix.SelectAll();
@@ -801,8 +822,8 @@ namespace XPathVisualizer
                 else
                 {
                     // add it to the list of prefixes, and display the list
-                    xmlNamespaces.Add(tbPrefix.Text, tbXmlns.Text);
-                    DisplayXmlPrefixList();
+                    xmlNamespaces.Add(new XmlnsInfo(tbPrefix.Text, tbXmlns.Text, true));
+                    DisplayXmlnsPrefixList();
                     this.tbPrefix.Text = "";
                     this.tbXmlns.Text = "";
                     this.tbPrefix.Focus();
@@ -811,23 +832,27 @@ namespace XPathVisualizer
             }
         }
 
+
         private void RemovePrefix(string k)
         {
-            if (xmlNamespaces.Keys.Contains(k))
+            if (xmlNamespaces.ContainsPrefix(k))
             {
-                xmlNamespaces.Remove(k);
-                DisplayXmlPrefixList();
+                Trace("RemovePrefix({0})", k);
+                xmlNamespaces.RemoveItemWithPrefix(k);
+                DisplayXmlnsPrefixList();
             }
         }
+
 
         private void ClickXmlns(object sender, string k)
         {
             var chk = sender as System.Windows.Forms.CheckBox;
+            xmlNamespaces.ClearDefault(); // always clear
             if (chk.Checked)
             {
-                if (xmlNamespaces.Keys.Contains(k))
+                if (xmlNamespaces.ContainsPrefix(k))
                 {
-                    tabState.xmlnsDefaultPrefix = k;
+                    xmlNamespaces.FindPrefix(k).IsDefault = true;
 
                     // unset checkbox for all others, like a radio button
                     foreach (Control c in this.pnlPrefixList.Controls)
@@ -839,10 +864,6 @@ namespace XPathVisualizer
                         }
                     }
                 }
-            }
-            else
-            {
-                tabState.xmlnsDefaultPrefix = null;
             }
         }
 
@@ -861,14 +882,128 @@ namespace XPathVisualizer
             }
         }
 
+        private void textBox1_Validating(object src,
+                                System.ComponentModel.CancelEventArgs e)
+        {
+            var tb = src as TextBox;
+            // check for leagl xmlns name
+            if (!Regex.IsMatch(tb.Text, "^([a-zA-Z][a-zA-Z0-9]*)?$"))
+                e.Cancel = true;
+        }
 
         private const int XmlNsPanelDeltaY = 20;
-        private void DisplayXmlPrefixList()
+        private void DisplayXmlnsPrefixList()
         {
+            // NB: the textbox1_Leave event can call PreloadXmlns, which
+            // can lead to infinite recursion if we're not careful.
+
+            if (isDisplayingXmlnsPanel) return; // prevent recursion
+
+            isDisplayingXmlnsPanel = true;
+            Trace("DisplayXmlnsPrefixList isExpanded({0})",
+                  (tabState!=null)
+                  ? tabState.xmlnsTableIsExpanded.ToString()
+                  : "no");
+
             int offsetX = 0;  // greater is further left
             int offsetY = 2;  // greater implies further up
             try
             {
+                var keypressed = new KeyPressEventHandler( (src,e) => {
+                        // If the ENTER key is pressed, the Handled
+                        // property is set to true, to indicate the
+                        // event is handled.
+                        var tb = src as TextBox;
+                        var chk = tb.Tag as CheckBox;
+                        var item = chk.Tag as XmlnsInfo;
+                        this.toolTip1.SetToolTip(tb, "<Enter> to accept");
+                        if (e.KeyChar == (char)Keys.Return)
+                        {
+                            Trace("<ENTER> in textbox Text='{0}'=>'{1}'",
+                                  item.Prefix, tb.Text );
+                            chk.Focus();
+                            e.Handled = true;
+                            return;
+                        }
+                        if (e.KeyChar == (char)Keys.Escape)
+                        {
+                            tb.Text = item.Prefix; // revert the textbox
+                            this.toolTip1.SetToolTip(tb, "click to modify");
+                            tb.BackColor = System.Drawing.Color.White;
+                            chk.Focus();
+                            e.Handled = true;
+                            return;
+                        }
+                        Trace("KeyPress in textbox Text='{0}'", tb.Text);
+                    });
+                var tbLostFocus = new EventHandler( (src, e) => {
+                        // var tb = src as TextBox;
+                        // var chk = tb.Tag as CheckBox;
+                        // var item = chk.Tag as XmlnsInfo;
+                        // Trace("Textbox LostFocus Text='{0}'=>'{1}'",
+                        //       tb.Text, item.Prefix);
+                        // tb.Text = item.Prefix;
+                        // this.toolTip1.SetToolTip(tb, "");
+                        // tb.BackColor = System.Drawing.Color.White;
+                    });
+                var tbGotFocus = new EventHandler( (src, e) => {
+                        var tb = src as TextBox;
+                        Trace("Textbox GotFocus Text='{0}'", tb.Text);
+                        var ttip = this.toolTip1.GetToolTip(tb);
+                        if (ttip != "duplicate prefix" &&
+                            ttip != "illegal prefix")
+                            this.toolTip1.SetToolTip(tb, "<Enter> to accept");
+                        tb.BackColor =
+                        System.Drawing.ColorTranslator.FromHtml("#FFF0F5"); // Light Pink
+                    });
+                var checkTicked = new EventHandler( (src, e) => {
+                        var item = ((CheckBox)src).Tag as XmlnsInfo;
+                        ClickXmlns(src, item.Prefix);
+                    });
+
+                var tbXmlnsValidating = new System.ComponentModel.CancelEventHandler( (src,e) => {
+                        var tb = src as TextBox;
+                        Trace("Textbox Validating Text='{0}'", tb.Text);
+                        // check for leagl xmlns name
+                        if (!Regex.IsMatch(tb.Text, "^[a-zA-Z][a-zA-Z0-9]*$"))
+                        {
+                            Trace("Textbox Validation failed (regex)");
+                            this.toolTip1.SetToolTip(tb, "illegal prefix");
+                            e.Cancel = true;
+                            return;
+                        }
+
+                        // check for duplicates
+                        var chk = tb.Tag as CheckBox;
+                        var item = chk.Tag as XmlnsInfo;
+                        var item2 = xmlNamespaces.FindPrefix(tb.Text);
+
+                        if (item2 == null)
+                        {
+                            Trace("  no existing ns with that prefix ({0})",
+                                  tb.Text);
+                        }
+                        else if (item.Ns != item2.Ns)
+                        {
+                            Trace("Textbox Validation failed (duplicate)");
+                            this.toolTip1.SetToolTip(tb, "duplicate prefix");
+                            e.Cancel = true;
+                            return;
+                        }
+
+                        Trace("Textbox Validated OK   Text='{0}'=>'{1}'",
+                              tb.Text, item.Prefix);
+
+                        item.Prefix = tb.Text; // update the prefix
+                        this.toolTip1.SetToolTip(tb, "click to modify");
+                        tb.BackColor = System.Drawing.Color.White;
+                    });
+                var buttonClicked = new EventHandler( (src, e) => {
+                        var item = ((Button)src).Tag as XmlnsInfo;
+                        RemovePrefix(item.Prefix);
+                    });
+
+
                 //this.BeginUpdate();
                 this.SuspendLayout();
                 this.pnlPrefixList.SuspendLayout();
@@ -876,91 +1011,101 @@ namespace XPathVisualizer
                 this.pnlPrefixList.Controls.Clear();
 
                 int count = 0;
-                if (xmlNamespaces.Keys.Count > 0)
+                if (xmlNamespaces.Count > 0)
                 {
-                    // add a set of controls to the panel for each key/value pair in the list
-                    foreach (var k in xmlNamespaces.Keys)
+                    // Add a set of controls to the panel for each
+                    // key/value pair in the list
+                    foreach (var item in xmlNamespaces)
                     {
-                        // leftmost textbox.  It is readonly, holds the prefix name
-                        var tb1 = new System.Windows.Forms.TextBox
+                        // the leftmost textbox.  It holds the prefix name,
+                        // and is conditionally readonly.  It is readonly if
+                        // the xmlns prefix has not been contrived.
+                        var tb1 = new TextBox
                             {
-                                Anchor = (System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top |
-                                     System.Windows.Forms.AnchorStyles.Left),
-                                Location = new System.Drawing.Point(this.tbPrefix.Location.X - offsetX,
+                                Anchor = (AnchorStyles)(AnchorStyles.Top |
+                                     AnchorStyles.Left),
+                                Location = new Point(this.tbPrefix.Location.X - offsetX,
                                                                     this.tbPrefix.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
-                                Size = new System.Drawing.Size(this.tbPrefix.Size.Width, this.tbPrefix.Size.Height),
-                                Text = k,
-                                ReadOnly = true,
+                                Size = new Size(this.tbPrefix.Size.Width, this.tbPrefix.Size.Height),
+                                Text = item.Prefix,
+                                ReadOnly = !item.IsContrivedPrefix,
+                                CausesValidation = true,
                                 TabStop = false,
                             };
                         this.pnlPrefixList.Controls.Add(tb1);
+                        this.toolTip1.SetToolTip(tb1, "click to modify");
+                        tb1.Validating += tbXmlnsValidating;
+                        tb1.KeyPress += keypressed;
+                        tb1.GotFocus += tbGotFocus;
+                        tb1.LostFocus += tbLostFocus;
 
-                        // first label.  It's an equals sign, indicating the prefix assigned to the xml namespace
-                        var lbl1 = new System.Windows.Forms.Label
+                        // the first label.  It's an equals sign, indicating
+                        // the prefix assigned to the xml namespace.
+                        var lbl1 = new Label
                             {
                                 AutoSize = true,
-                                Location = new System.Drawing.Point(this.tbXmlns.Location.X - offsetX - 14,
+                                Location = new Point(this.tbXmlns.Location.X - offsetX - 14,
                                                                     this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
-                                Size = new System.Drawing.Size(24, 13),
+                                Size = new Size(24, 13),
                                 Text = ":=",
                             };
                         this.pnlPrefixList.Controls.Add(lbl1);
 
                         // second textbox.Holds the xml namespace
-                        var tb2 = new System.Windows.Forms.TextBox
+                        var tb2 = new TextBox
                             {
-                                Anchor = (System.Windows.Forms.AnchorStyles)
-                                    (System.Windows.Forms.AnchorStyles.Top |
-                                     System.Windows.Forms.AnchorStyles.Left |
-                                     System.Windows.Forms.AnchorStyles.Right),
-                                Location = new System.Drawing.Point(this.tbXmlns.Location.X - offsetX,
-                                                                    this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
-                                Size = new System.Drawing.Size(this.tbXmlns.Size.Width - 18, this.tbXmlns.Size.Height),
-                                Text = xmlNamespaces[k],
+                                Anchor = (AnchorStyles)
+                                    (AnchorStyles.Top | AnchorStyles.Left |
+                                     AnchorStyles.Right),
+                                Location = new Point(this.tbXmlns.Location.X - offsetX,
+                                                     this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
+                                Size = new Size(this.tbXmlns.Size.Width - 18, this.tbXmlns.Size.Height),
+                                Text = item.Ns,
                                 ReadOnly = true,
                                 TabStop = false,
                             };
                         this.pnlPrefixList.Controls.Add(tb2);
 
                         // checkbox to select the default namespace
-                        var chk1 = new System.Windows.Forms.CheckBox
+                        var chk1 = new CheckBox
                             {
-                                Anchor = (System.Windows.Forms.AnchorStyles)
-                                    (System.Windows.Forms.AnchorStyles.Top |
-                                     System.Windows.Forms.AnchorStyles.Right),
-                                Location = new System.Drawing.Point(this.tbXmlns.Location.X - offsetX +
-                                                                    this.tbXmlns.Size.Width - 14,
-                                                                    this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
-                                Size = new System.Drawing.Size(14, this.tbXmlns.Size.Height),
+                                Anchor = (AnchorStyles)
+                                    (AnchorStyles.Top | AnchorStyles.Right),
+                                Location = new Point(this.tbXmlns.Location.X - offsetX +
+                                                     this.tbXmlns.Size.Width - 14,
+                                                     this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
+                                Size = new Size(14, this.tbXmlns.Size.Height),
                                 TabStop = true,
-                                Checked = (k == tabState.xmlnsDefaultPrefix)
+                                Checked = item.IsDefault
                             };
-                        chk1.Click += (src, e) => { ClickXmlns(src, k); };
-                        this.toolTip1.SetToolTip(chk1, "use as default ns");
+                        chk1.Tag = item;
+                        chk1.Click += checkTicked;
+                        this.toolTip1.SetToolTip(chk1, "checked: use as default ns\nin xpath queries");
                         this.pnlPrefixList.Controls.Add(chk1);
 
                         // button to delete the namespace and its prefix
-                        var btn1 = new System.Windows.Forms.Button
+                        var btn1 = new Button
                             {
-                                Anchor = (System.Windows.Forms.AnchorStyles)
-                                    (System.Windows.Forms.AnchorStyles.Top |
-                                     System.Windows.Forms.AnchorStyles.Right),
-                                Location = new System.Drawing.Point(this.btnAddNsPrefix.Location.X - offsetX,
-                                                                    this.btnAddNsPrefix.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
-                                Size = new System.Drawing.Size(this.btnAddNsPrefix.Size.Width,
-                                                               this.btnAddNsPrefix.Size.Height),
+                                Anchor = (AnchorStyles)
+                                    (AnchorStyles.Top | AnchorStyles.Right),
+                                Location = new Point(this.btnAddNsPrefix.Location.X - offsetX,
+                                                     this.btnAddNsPrefix.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
+                                Size = new Size(this.btnAddNsPrefix.Size.Width,
+                                                this.btnAddNsPrefix.Size.Height),
                                 Text = "X",
                                 UseVisualStyleBackColor = true,
                                 TabStop = false,
                             };
-                        btn1.Click += (src, e) => { RemovePrefix(k); };
+                        btn1.Tag = item;
+                        btn1.Click += buttonClicked;
                         this.toolTip1.SetToolTip(btn1, "remove this ns+prefix");
                         this.pnlPrefixList.Controls.Add(btn1);
+                        tb1.Tag = chk1; // associate checkbox to the textbox
                         count++;
                     }
                 }
 
-                CollapseXmlPrefixPanel();  // ExpandXmlPrefixPanel
+                ProperlyDisplayXmlnsPrefixPanel();
 
                 this.pnlPrefixList.ResumeLayout();
                 this.ResumeLayout();
@@ -970,10 +1115,20 @@ namespace XPathVisualizer
                 MessageBox.Show(String.Format("There was a problem ! [problem={0}]",
                                               exc1.Message), "Whoops!", MessageBoxButtons.OK);
             }
+            isDisplayingXmlnsPanel = false;
         }
 
 
-        private void ExpandXmlPrefixPanel()
+        private void ProperlyDisplayXmlnsPrefixPanel()
+        {
+            if ((tabState == null) || (!tabState.xmlnsTableIsExpanded))
+                CollapseXmlnsPrefixPanel();
+            else
+                ExpandXmlnsPrefixPanel();
+
+        }
+
+        private void ExpandXmlnsPrefixPanel()
         {
             int n = this.pnlPrefixList.Controls.Count / 4;
 
@@ -984,12 +1139,20 @@ namespace XPathVisualizer
             this.splitContainer3.Panel1MinSize = originalPanel1MinSize + (XmlNsPanelDeltaY * n);
             this.splitContainer3.SplitterDistance = this.splitContainer3.Panel1MinSize;
 
+            if (tabState != null)
+            {
+                tabState.xmlnsTableIsExpanded = true;
+                Trace("tabstate({0}).xmlnsTableIsExpanded: {1}",
+                      tabState.tabNumber, tabState.xmlnsTableIsExpanded);
+            }
+
             // We don't need to explicitly set the size of the groupbox.  Groupbox1
             // is docked at the bottom of SplitContainer3.Panel1, so it grows as we
             // move the splitter.
         }
 
-        private void CollapseXmlPrefixPanel()
+
+        private void CollapseXmlnsPrefixPanel()
         {
             this.pnlPrefixList.Visible = false;
             this.pnlInput.Visible = false;
@@ -997,15 +1160,21 @@ namespace XPathVisualizer
             this.toolTip1.SetToolTip(this.btnExpandCollapse, "Expand");
             this.splitContainer3.Panel1MinSize = originalPanel1MinSize - (XmlNsPanelDeltaY);
             this.splitContainer3.SplitterDistance = this.splitContainer3.Panel1MinSize;
+            if (tabState != null)
+            {
+                tabState.xmlnsTableIsExpanded = false;
+                Trace("tabstate({0}).xmlnsTableIsExpanded: {1}",
+                      tabState.tabNumber, tabState.xmlnsTableIsExpanded);
+            }
         }
 
 
         private void button1_Click(object sender, EventArgs e)
         {
             if (this.pnlPrefixList.Visible == true)
-                CollapseXmlPrefixPanel();
+                CollapseXmlnsPrefixPanel();
             else
-                ExpandXmlPrefixPanel();
+                ExpandXmlnsPrefixPanel();
         }
 
 
@@ -1322,15 +1491,21 @@ namespace XPathVisualizer
         }
 
 
-        private String EnvelopeNodes(string t, SortedDictionary<string, string> xmlns)
+
+        private String EnvelopeNodes(String t, XmlnsTable xmlns)
         {
             string nsDeclaration = "";
-            foreach (string prefix in xmlns.Keys)
+            foreach (var item in xmlns)
             {
-                nsDeclaration += String.Format("xmlns:{0}='{1}'\n", prefix, xmlns[prefix]);
+                nsDeclaration +=
+                String.Format(item.IsDefault
+                              ? "xmlns='{1}'\n"
+                              : "xmlns:{0}='{1}'\n",
+                              item.Prefix, item.Ns);
             }
             return "<root " + nsDeclaration + ">" + t + "</root>";
         }
+
 
         private void extractHighlightedToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1338,7 +1513,7 @@ namespace XPathVisualizer
             try
             {
                 isLoading = true;
-                var xmlns = new SortedDictionary<String, String>(tabState.xmlns);
+                var xmlns = new XmlnsTable(tabState.xmlns); // copy
                 string text = ExtractSelection();
                 if (text == null) return; // flash?
                 text = EnvelopeNodes(text, xmlns);
@@ -1359,8 +1534,6 @@ namespace XPathVisualizer
                 isLoading = false;
             }
         }
-
-
 
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1526,12 +1699,17 @@ namespace XPathVisualizer
         }
 
 
-        private SortedDictionary<String, String> xmlNamespaces
+        /// <summary>
+        ///   holds the hash of xmlns prefix to a Tuple containing the
+        ///   xmlns itself, as well as a bool indicating whether the
+        ///   prefix is contrived or literal.
+        ///   </summary>
+        private XmlnsTable xmlNamespaces
         {
             get
             {
                 if (tabState.xmlns == null)
-                    tabState.xmlns = new SortedDictionary<String, String>();
+                    tabState.xmlns = new XmlnsTable();
                 return tabState.xmlns;
             }
         }
@@ -1556,7 +1734,9 @@ namespace XPathVisualizer
                 this.tbXpath.Text = tabState.xpath;
                 this.tbXmlDoc.Text = tabState.src;
                 this.lblStatus.Text = tabState.status;
-                DisplayXmlPrefixList();
+                Trace("tabstate({0}).xmlnsTableIsExpanded: {1}",
+                      tabState.tabNumber, tabState.xmlnsTableIsExpanded);
+                DisplayXmlnsPrefixList();
                 EnableMatchButtons();
                 UpdateMatchCount();
             }
@@ -1566,24 +1746,132 @@ namespace XPathVisualizer
         {
             richTextBox1.ShowLineNumbers = !richTextBox1.ShowLineNumbers;
         }
-
     }
 
 
-    // Holds arbitrary state associated to the TabPage
+    /// <summary>
+    ///   Holds arbitrary state associated to the TabPage
+    /// </summary>
     internal class TabState
     {
-        public SortedDictionary<String, String> xmlns { get; set; }
-        public String src { get; set; }
+        public XmlnsTable xmlns              { get; set; }
+        public bool xmlnsTableIsExpanded     { get; set; }
+        public String src                    { get; set; }
+        public int tabNumber                 { get; set; }
         public List<Tuple<int, int>> matches { get; set; }
-        public int currentMatch { get; set; }
-        public String xpath { get; set; }
-        public String status { get; set; }
-        public String xmlnsDefaultPrefix { get; set; }
-        public XPathNavigator nav { get; set; }
-        public bool okToSave { get; set; }
+        public int currentMatch              { get; set; }
+        public String xpath                  { get; set; }
+        public String status                 { get; set; }
+        public XPathNavigator nav            { get; set; }
+        public bool okToSave                 { get; set; }
         public int numVisibleLines;
         public int totalLinesInDoc;
+    }
+
+    internal class XmlnsInfo
+    {
+        public string Prefix          { get;set; }
+        public string Ns              { get;set; }
+        public bool IsContrivedPrefix { get;set; }
+        public bool IsDefault         { get;set; }
+
+        public XmlnsInfo(string prefix, string ns, bool contrived) : this(prefix, ns, contrived, false) { }
+
+        public XmlnsInfo(string prefix, string ns, bool contrived, bool isDefault)
+        {
+            Prefix = prefix;
+            Ns = ns;
+            IsContrivedPrefix = contrived;
+            IsDefault = isDefault;
+        }
+
+        public  XmlnsInfo Clone()
+        {
+            var item = new XmlnsInfo(this.Prefix, this.Ns, this.IsContrivedPrefix, this.IsDefault);
+            return item;
+        }
+    }
+
+
+    internal class XmlnsTable : List<XmlnsInfo>
+    {
+        /// <summary>
+        ///    default ctor
+        /// </summary>
+        public XmlnsTable() { }
+
+        /// <summary>
+        /// a copy constructor
+        /// </summary>
+        public XmlnsTable(XmlnsTable list)
+        {
+            foreach (XmlnsInfo item in list)
+            {
+                this.Add(item.Clone());
+            }
+        }
+
+        public XmlnsInfo Default
+        {
+            get
+            {
+                foreach(XmlnsInfo v in this)
+                {
+                    if (v.IsDefault) return v;
+                }
+                return null;
+            }
+        }
+
+        public void ClearDefault()
+        {
+            foreach(XmlnsInfo v in this)
+            {
+                v.IsDefault = false;
+            }
+        }
+
+        public bool ContainsNs(String ns)
+        {
+            return (FindNs(ns)!= null);
+        }
+
+        public bool ContainsPrefix(String prefix)
+        {
+            return (FindPrefix(prefix)!= null);
+        }
+
+        public XmlnsInfo FindPrefix(String prefix)
+        {
+            foreach(XmlnsInfo v in this)
+            {
+                if (v.Prefix.Equals(prefix)) return v;
+            }
+            return null;
+        }
+
+        public XmlnsInfo FindNs(String ns)
+        {
+            foreach(XmlnsInfo v in this)
+            {
+                if (v.Ns.Equals(ns)) return v;
+            }
+            return null;
+        }
+
+
+        public void RemoveItemWithPrefix(string prefix)
+        {
+            var toRemove = new List<XmlnsInfo>();
+            foreach(XmlnsInfo v in this)
+            {
+                if (v.Prefix.Equals(prefix))
+                    toRemove.Add(v);
+            }
+
+            foreach (var item in toRemove)
+                this.Remove(item);
+        }
     }
 
 }

@@ -19,10 +19,8 @@
 using System;
 using System.Collections.Generic;
 
-
 namespace XPathVisualizer
 {
-
     public static class Extensions
     {
         public static string XmlEscapeQuotes(this String s)
