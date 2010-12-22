@@ -33,50 +33,8 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_2C8E355F9D03CFF483C0B3C894DE9C86"
-        "OwnerKey" = "8:_CC19FE8FD52F4CA2995A2967BDCB251D"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_2C8E355F9D03CFF483C0B3C894DE9C86"
-        "OwnerKey" = "8:_683FBD3D81D4C2554220EA03D87CBB65"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_5EF580833F54160D13DF32CB165B70AF"
-        "OwnerKey" = "8:_CC19FE8FD52F4CA2995A2967BDCB251D"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_5EF580833F54160D13DF32CB165B70AF"
-        "OwnerKey" = "8:_683FBD3D81D4C2554220EA03D87CBB65"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_683FBD3D81D4C2554220EA03D87CBB65"
-        "OwnerKey" = "8:_CC19FE8FD52F4CA2995A2967BDCB251D"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_896BE65C11EC45C2BCB49EED46056247"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_8D7E827032F1F1F5E9F33D35C25738F8"
-        "OwnerKey" = "8:_CC19FE8FD52F4CA2995A2967BDCB251D"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_8D7E827032F1F1F5E9F33D35C25738F8"
-        "OwnerKey" = "8:_683FBD3D81D4C2554220EA03D87CBB65"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -101,30 +59,6 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_CC19FE8FD52F4CA2995A2967BDCB251D"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_683FBD3D81D4C2554220EA03D87CBB65"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_5EF580833F54160D13DF32CB165B70AF"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_2C8E355F9D03CFF483C0B3C894DE9C86"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_8D7E827032F1F1F5E9F33D35C25738F8"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -306,99 +240,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_2C8E355F9D03CFF483C0B3C894DE9C86"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:XPathParser, Version=1.2.1.7, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_2C8E355F9D03CFF483C0B3C894DE9C86"
-                    {
-                    "Name" = "8:XPathParser.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:XPathParser.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_C6DE19FE9A604C5382BFE0A0D0082690"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:TRUE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_5EF580833F54160D13DF32CB165B70AF"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Xml.XhtmlResolver, Version=1.1.1.1, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_5EF580833F54160D13DF32CB165B70AF"
-                    {
-                    "Name" = "8:Ionic.Xml.XhtmlResolver.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:Ionic.Xml.XhtmlResolver.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_C6DE19FE9A604C5382BFE0A0D0082690"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_683FBD3D81D4C2554220EA03D87CBB65"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.XPathVisualizer, Version=1.2.1.7, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_683FBD3D81D4C2554220EA03D87CBB65"
-                    {
-                    "Name" = "8:Ionic.XPathVisualizer.exe"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:Ionic.XPathVisualizer.exe"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_C6DE19FE9A604C5382BFE0A0D0082690"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:TRUE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_896BE65C11EC45C2BCB49EED46056247"
             {
             "SourcePath" = "8:Uninstall.cmd"
@@ -417,37 +258,6 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_8D7E827032F1F1F5E9F33D35C25738F8"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:CustomControls, Version=1.2.1.7, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_8D7E827032F1F1F5E9F33D35C25738F8"
-                    {
-                    "Name" = "8:CustomControls.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:CustomControls.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_C6DE19FE9A604C5382BFE0A0D0082690"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_AE35A08DC4974B28A04563CC110D2FA5"
@@ -557,14 +367,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Ionic's XPath Visualizer v1.2"
-        "ProductCode" = "8:{4EDD5211-6633-46F4-8FAD-E2A2F2ABBAB0}"
-        "PackageCode" = "8:{CC0680D6-0690-4A29-BABB-FF0F356D0B40}"
+        "ProductCode" = "8:{A05B3B67-26FC-489A-ABB5-6023DC2FD5B1}"
+        "PackageCode" = "8:{7D37C225-0D1D-4951-BA0C-DA5F5991DE8C}"
         "UpgradeCode" = "8:{F6792511-D075-4D05-A5ED-5CCE545BC9D2}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.2.108"
+        "ProductVersion" = "8:1.2.109"
         "Manufacturer" = "8:Dino Chiesa"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
