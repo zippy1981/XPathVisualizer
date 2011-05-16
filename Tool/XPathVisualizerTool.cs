@@ -17,9 +17,12 @@
 //
 // ------------------------------------------------------------------
 //
-
+// Last saved: <2011-May-16 00:00:56>
+//
+//
 
 using System;
+using System.Reflection;
 using System.IO;
 using System.Xml;
 using System.Xml.XPath;
@@ -28,8 +31,10 @@ using System.Drawing;
 using System.Linq;                    // for the Contains extension
 using System.Xml.Linq;                // XElement
 using System.Windows.Forms;
+using System.Text;
 using System.Text.RegularExpressions; // Regex
 using CodePlex.XPathParser;
+using System.Runtime.InteropServices;
 
 namespace XPathVisualizer
 {
@@ -37,15 +42,16 @@ namespace XPathVisualizer
     {
         // Design notes:
         //
-        // The major portion of the UI is a CustomTabControl, each tab holds a
+        // A major portion of the UI is a CustomTabControl, each tab holds a
         // single control, a RichTextBox.  The CustomTabControl displays
         // good-looking Visual-Studio like tabs, except that each one has a
         // IE8-like "close" button.
         //
-        // richTextBox holds a reference to the currently-displayed
-        // RichTextBox.  At design time, it is the rtb in the single page, in
-        // the TabControl.  But, during form load, at runtime, the TabPage
-        // visible during design-time is removed from the TabControl.
+        // The local variable, richTextBox1, holds a reference to the
+        // currently-displayed RichTextBox.  At design time, it is the
+        // rtb in the single page, in the TabControl.  But, during form
+        // load, at runtime, the TabPage visible during design-time is
+        // removed from the TabControl.
         //
         // When the user loads a new XML document, a new RTB is created,
         // dynamically, and then richTextBox1 gets that reference. When the
@@ -58,12 +64,32 @@ namespace XPathVisualizer
         // highlighting. The _rtbe instance refers to richTextBox1, so _rtbe
         // gets reset to null when the selected tab changes.
         //
+        // tabState and tabPage are used like local variables, but like
+        // richTextBox1, they refer to the currently-displayed tab. The
+        // state attached to a tab is stored in TabPage.Tag, and it
+        // includes things like an xpathnavigator for the document, the
+        // source location for the displayed document (if any), and
+        // other things.
+        //
+        // There's a MRU list on the File... Menu, that presents the
+        // recent documents. Every time a file is opened the MRU list
+        // gets updated, and that file is put on top of the list. If you
+        // click on a file from the Recent list and a tab already holds
+        // that file, it isn't opened again; instead the tab holding
+        // that file gets activated.
+        //
+        // When the user changes the xpath, it's automatically evaluated
+        // against the document in the currently displayed tab.
+        //
 
+        private string fileToLoad;
         private int originalGroupBoxMinHeight;
         private int originalPanel1MinSize;
         private System.Threading.ManualResetEvent wantFormat = new System.Threading.ManualResetEvent(false);
         private DateTime _originDateTime = new System.DateTime(0);
         private System.DateTime _lastRtbKeyPress;
+        private System.DateTime _lastXpathChange;
+        private int _handlingXpathChangeEvents = 0;
         private XPathParser<XElement> xpathParser = new XPathParser<XElement>();
         private bool isLoading;
         private int extractCount;
@@ -71,11 +97,10 @@ namespace XPathVisualizer
         private bool isDisplayingXmlnsPanel;
 
         private XmlReaderSettings readerSettings = new XmlReaderSettings
-            {
-                ProhibitDtd = false,
-                XmlResolver = new Ionic.Xml.XhtmlResolver()
-            };
-
+        {
+            ProhibitDtd = false,
+            XmlResolver = new Ionic.Xml.XhtmlResolver()
+        };
 
         public XPathVisualizerTool()
         {
@@ -111,10 +136,6 @@ namespace XPathVisualizer
             //this.tbXpath.AutoCompleteMode = AutoCompleteMode.Suggest;
             //this.tbXpath.AutoCompleteSource = AutoCompleteSource.CustomSource;
             //this.tbXpath.AutoCompleteCustomSource = _xpathExpressionMruList;
-
-            // setup the autocomplete for the file
-            this.tbXmlDoc.AutoCompleteMode = AutoCompleteMode.Suggest;
-            this.tbXmlDoc.AutoCompleteSource = AutoCompleteSource.FileSystem;
         }
 
         private void FixupTitle()
@@ -122,7 +143,6 @@ namespace XPathVisualizer
             var a = System.Reflection.Assembly.GetExecutingAssembly();
             object[] attr = a.GetCustomAttributes(typeof(System.Reflection.AssemblyDescriptionAttribute), true);
             var desc = attr[0] as System.Reflection.AssemblyDescriptionAttribute;
-
             this.Text = desc.Description + " v" + a.GetName().Version.ToString();
         }
 
@@ -178,7 +198,7 @@ namespace XPathVisualizer
             this.toolTip1.SetToolTip(richTextBox1, "");
             _lastRtbKeyPress = _originDateTime;
 
-            this.label3.SendToBack();
+            //this.label3.SendToBack();
 
             return tabPage1;
         }
@@ -187,6 +207,7 @@ namespace XPathVisualizer
 
         private void btnLoadXml_Click(object sender, EventArgs e)
         {
+            if (fileToLoad == null) return;
             TabPage tp = null;
             Trace("LoadXml_Click");
             try
@@ -195,23 +216,25 @@ namespace XPathVisualizer
                 tp = CreateNewTabPage();
                 Ionic.User32.BeginUpdate(this.customTabControl1.Handle);
                 this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
-                if (this.tbXmlDoc.Text.StartsWith("http://") || this.tbXmlDoc.Text.StartsWith("https://"))
+                if (this.fileToLoad.StartsWith("http://") || this.fileToLoad.StartsWith("https://"))
                 {
                     this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
-                    richTextBox1.Text = GetPageMarkup(this.tbXmlDoc.Text);
+                    richTextBox1.Text = GetPageMarkup(this.fileToLoad);
                     tabState.okToSave = false;
-                    var segs = this.tbXmlDoc.Text.Split("/".ToCharArray());
+                    var segs = this.fileToLoad.Split("/".ToCharArray());
                     tp.Text = "  " + segs[segs.Length - 1] + "  ";
                     this.Cursor = System.Windows.Forms.Cursors.Default;
+                    _fileHistory.Store(fileToLoad);
                 }
                 else
                 {
-                    richTextBox1.Text = File.ReadAllText(this.tbXmlDoc.Text);
+                    richTextBox1.Text = File.ReadAllText(this.fileToLoad);
                     tabState.okToSave = true;
-                    tp.Text = "  " + Path.GetFileName(this.tbXmlDoc.Text) + "  ";
+                    tp.Text = "  " + Path.GetFileName(this.fileToLoad) + "  ";
+                    _fileHistory.Store(fileToLoad);
                 }
 
-                tabState.src = this.tbXmlDoc.Text;
+                tabState.src = this.fileToLoad;
                 richTextBox1.Select(0, 0);
                 wantFormat.Set();
                 DisableMatchButtons();
@@ -224,7 +247,6 @@ namespace XPathVisualizer
                 UpdateStatus("Cannot read that file.");
                 if (tabPage != null)
                     tabPage.Text = "  error  ";
-
             }
             finally
             {
@@ -233,6 +255,7 @@ namespace XPathVisualizer
                 Ionic.User32.EndUpdate(this.customTabControl1.Handle);
             }
         }
+
 
 
         private void richTextBox1_KeyPress(object sender, KeyPressEventArgs e)
@@ -357,67 +380,186 @@ namespace XPathVisualizer
             {
                 Trace("Command line args: '{0}' '{1}'", args[0], args[1]);
                 // open the specified file.
-                this.tbXmlDoc.Text= args[1];
+                this.fileToLoad= args[1];
                 btnLoadXml_Click(null, null);
-                this.label3.SendToBack();  // un-obscure the richtextbox
+                //this.label3.SendToBack();  // un-obscure the richtextbox
                 richTextBox1.Visible = true;
             }
             else
             {
-                this.label3.BringToFront();
+                //this.label3.BringToFront();
                 this.progressBar1.Visible = false;
             }
             UpdateStatus("Ready");
         }
 
 
-        private void btnBrowse_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog dlg = new OpenFileDialog();
-            dlg.InitialDirectory = System.IO.File.Exists(this.tbXmlDoc.Text)
-                ? System.IO.Path.GetDirectoryName(this.tbXmlDoc.Text)
-                : this.tbXmlDoc.Text;
-            dlg.Filter = "xml files|*.xml|All Files|*.*";
-            dlg.FilterIndex = 1;
-            dlg.RestoreDirectory = true;
 
-            if (dlg.ShowDialog() == DialogResult.OK)
+        private string GetDisplayNameForRecentFiles(string fullName)
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+            int maxDisplayLength = 40;      // maximum length of file name for display
+
+            // if file is in current directory, show only file name
+            FileInfo fileInfo = new FileInfo(fullName);
+
+            if ( fileInfo.DirectoryName == currentDirectory )
+                return GetShortDisplayNameForRecentFiles(fileInfo.Name, maxDisplayLength);
+
+            return GetShortDisplayNameForRecentFiles(fullName, maxDisplayLength);
+        }
+
+
+        [DllImport("shlwapi.dll", CharSet = CharSet.Auto)]
+        private static extern bool PathCompactPathEx(StringBuilder pszOut,
+                                                     string pszPath,
+                                                     int cchMax,
+                                                     int reserved);
+
+
+        private string GetShortDisplayNameForRecentFiles(string longName, int maxLen)
+        {
+            StringBuilder pszOut = new StringBuilder(maxLen + maxLen + 2);
+
+            if ( PathCompactPathEx(pszOut, longName, maxLen, 0) )
+                return pszOut.ToString();
+            return longName;
+        }
+
+
+
+        private void RecentFile_Clicked(object sender, EventArgs e)
+        {
+            var item = sender as ToolStripMenuItem;
+            if (item == null) return;
+            string fname = item.Tag as string;
+            if (fname == null) return;
+
+            var selection = from TabPage tp in customTabControl1.TabPages
+                where ((TabState)tp.Tag).src == fname
+                select tp;
+
+            if (selection.Count()!= 0)
             {
-                this.tbXmlDoc.Text = dlg.FileName;
-                if (System.IO.File.Exists(this.tbXmlDoc.Text))
-                    btnLoadXml_Click(sender, e);
+                // a tab for that file is already open
+                this.customTabControl1.SelectTab(selection.First());
+                return;
+            }
+
+            this.fileToLoad = fname;
+            if (System.IO.File.Exists(this.fileToLoad))
+                btnLoadXml_Click(sender, e);
+        }
+
+
+
+        private void tsmiFile_Show(object sender, EventArgs e)
+        {
+            tsmiOpenRecent.DropDownItems.Clear();
+            var mruList = _fileHistory.GetList();
+
+            // Disable the "open recent" menu item if MRU list is empty
+            if (mruList.Count == 0)
+            {
+                tsmiOpenRecent.Enabled = false;
+            }
+            else
+            {
+                tsmiOpenRecent.Enabled = true;
+
+                foreach (var fname in mruList)
+                {
+                    var item = new ToolStripMenuItem(GetDisplayNameForRecentFiles(fname));
+                    item.Tag = fname;
+                    item.Click += new EventHandler(this.RecentFile_Clicked);
+                    tsmiOpenRecent.DropDownItems.Add(item);
+                }
+            }
+
+            if (tabPage == null)
+            {
+                tsmiSaveAs.Enabled = false;
+                tsmiSave.Enabled = false;
+            }
+            else
+            {
+                tsmiSaveAs.Enabled = true;
+                tsmiSave.Enabled = (tabState != null) && (tabState.src != "");
             }
         }
 
+
+
+        // workitem 6517
+        private void CheckXpathSyntax()
+        {
+            if (this.tbXpath.InvokeRequired)
+            {
+                this.tbXpath.Invoke(new Action(this.CheckXpathSyntax));
+            }
+            else
+            {
+                int ss = this.tbXpath.SelectionStart;
+                int sl = this.tbXpath.SelectionLength;
+                // get the text.
+                string xpathExpr = this.tbXpath.Text;
+                // put it back.
+                // why? because it's possible the user has pasted in RTF, which won't
+                // show up correctly in that one-line RichTextBox. If we paste it here,
+                // it will be properly formatted.
+                this.tbXpath.Text = xpathExpr;
+                this.tbXpath.SelectAll();
+                this.tbXpath.SelectionColor = Color.Black;
+                this.tbXpath.SelectionFont = this.tbXpath.Font;
+                this.tbXpath.Select(ss, sl);
+                try
+                {
+                    XElement xe = xpathParser.Parse(xpathExpr, new XPathTreeBuilder());
+                    this.toolTip1.SetToolTip(this.tbXpath, "enter an XPath expression");
+
+                    // the parse succeeded, should we auto-evaluate?
+                    UpdateStatus("should we auto-evaluate? " + DateTime.Now.ToString("G"));
+
+                    btnEvalXpath_Click(null,null);
+                }
+                catch (XPathParserException exc1)
+                {
+                    this.tbXpath.Select(exc1.ErrorStart, exc1.ErrorEnd - exc1.ErrorStart);
+                    this.tbXpath.SelectionColor = Color.Red;
+                    this.tbXpath.Select(ss, sl);
+                    this.toolTip1.SetToolTip(this.tbXpath, exc1.Message);
+                    UpdateStatus("--");
+                }
+
+                _handlingXpathChangeEvents--;
+            }
+        }
+
+        // workitem 6517
+        private void MaybeAutoEvaluate(Object ignored)
+        {
+            _handlingXpathChangeEvents++;
+            System.Threading.Thread.Sleep(DELAY_IN_MILLISECONDS);
+            System.DateTime now = System.DateTime.Now;
+            var delta = now - _lastXpathChange;
+            if (delta < new System.TimeSpan(0, 0, 0, 0, DELAY_IN_MILLISECONDS))
+            {
+                _handlingXpathChangeEvents--;
+                return;  // still typing
+            }
+
+            CheckXpathSyntax();
+        }
 
 
         private void tbXpath_TextChanged(object sender, EventArgs e)
         {
-            int ss = this.tbXpath.SelectionStart;
-            int sl = this.tbXpath.SelectionLength;
-            // get the text.
-            string xpathExpr = this.tbXpath.Text;
-            // put it back.
-            // why? because it's possible to paste in RTF, which won't
-            // show up correctly in that one-line RichTextBox.
-            this.tbXpath.Text = xpathExpr;
-            this.tbXpath.SelectAll();
-            this.tbXpath.SelectionColor = Color.Black;
-            this.tbXpath.SelectionFont = this.Font;
-            this.tbXpath.Select(ss, sl);
-            try
-            {
-                XElement xe = xpathParser.Parse(xpathExpr, new XPathTreeBuilder());
-                this.toolTip1.SetToolTip(this.tbXpath, "enter an XPath expression");
-            }
-            catch (XPathParserException exc1)
-            {
-                this.tbXpath.Select(exc1.ErrorStart, exc1.ErrorEnd - exc1.ErrorStart);
-                this.tbXpath.SelectionColor = Color.Red;
-                this.tbXpath.Select(ss, sl);
-                this.toolTip1.SetToolTip(this.tbXpath, exc1.Message);
-            }
+            if (_handlingXpathChangeEvents > 0) return; // already looking
+            _lastXpathChange = System.DateTime.Now;
+
+            System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(MaybeAutoEvaluate));
         }
+
 
 
         private XmlNamespaceManager GetXmlNamespaceManager()
@@ -588,13 +730,11 @@ namespace XPathVisualizer
         private void RememberInMruList(System.Windows.Forms.AutoCompleteStringCollection list, string value)
         {
             if (list.Contains(value))
-            {
                 list.Remove(value);
-            }
+
             else if (list.Count >= _MaxMruListSize)
-            {
                 list.RemoveAt(0);
-            }
+
             list.Add(value);
         }
 
@@ -1205,12 +1345,12 @@ namespace XPathVisualizer
         }
 
 
-        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        private void tsmiReformat_Click(object sender, EventArgs e)
         {
             IndentXml();
         }
 
-        private void stripNamespacesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void tsmiStripNamespaces_Click(object sender, EventArgs e)
         {
             StripXmlNamespaces();
         }
@@ -1253,20 +1393,20 @@ namespace XPathVisualizer
             }
         }
 
-        private void copyAllToolStripMenuItem_Click(object sender, EventArgs e)
+        private void tsmiCopyAll_Click(object sender, EventArgs e)
         {
             string txt = richTextBox1.Text;
             Clipboard.SetDataObject(txt, true);
         }
 
-        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        private void tsmiCopy_Click(object sender, EventArgs e)
         {
             string txt = richTextBox1.SelectedText;
             Clipboard.SetDataObject(txt, true);
         }
 
 
-        private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
+        private void tsmiPaste_Click(object sender, EventArgs e)
         {
             string o = Clipboard.GetData(DataFormats.Text) as String;
             if (o != null)
@@ -1441,7 +1581,7 @@ namespace XPathVisualizer
 
 
 
-        private void removeSelectedToolStripMenuItem_Click(object sender, EventArgs e)
+        private void tsmiRemoveSelected_Click(object sender, EventArgs e)
         {
             if (tabState.matches == null) return;
             DisableMatchButtons();
@@ -1463,7 +1603,6 @@ namespace XPathVisualizer
                 this.Cursor = System.Windows.Forms.Cursors.Default;
                 richTextBox1.EndUpdateAndResumeEvents(mask);
             }
-
         }
 
 
@@ -1534,7 +1673,7 @@ namespace XPathVisualizer
         }
 
 
-        private void extractHighlightedToolStripMenuItem_Click(object sender, EventArgs e)
+        private void tsmiExtractHighlighted_Click(object sender, EventArgs e)
         {
             TabPage tp = null;
             try
@@ -1562,41 +1701,92 @@ namespace XPathVisualizer
             }
         }
 
+        private void tsmiOpen_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
 
-        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+            // use the file MRU to get the most recent file that has been opened
+            _fileHistory.ResetCursor();
+            var f = _fileHistory.GetNext();
+
+            if (f != null)
+            {
+                var d = System.IO.Path.GetDirectoryName(f);
+                if (System.IO.Directory.Exists(d))
+                    dlg.InitialDirectory = d;
+            }
+
+            dlg.Filter = "xml files|*.xml|All Files|*.*";
+            dlg.FilterIndex = 1;
+            dlg.RestoreDirectory = true;
+
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                this.fileToLoad = dlg.FileName;
+                if (System.IO.File.Exists(this.fileToLoad))
+                    btnLoadXml_Click(sender, e);
+            }
+        }
+
+
+        private void tsmiSave_Click(object sender, EventArgs e)
+        {
+            if (tabState.okToSave)
+            {
+                File.WriteAllText(this.fileToLoad, richTextBox1.Text);
+            }
+            else
+            {
+                tsmiSaveAs_Click(sender, e);
+            }
+        }
+
+
+        private void tsmiExit_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void tsmiNew_Click(object sender, EventArgs e)
+        {
+            var tp = CreateNewTabPage();
+            tp.Text = "  new  ";
+            tabState.src = "";
+            tabState.okToSave = false;
+            DisableMatchButtons();
+            PreloadXmlns();
+        }
+
+
+        private void tsmiSaveAs_Click(object sender, EventArgs e)
         {
             try
             {
-                if (tabState.okToSave)
-                {
-                    File.WriteAllText(this.tbXmlDoc.Text, richTextBox1.Text);
-                }
-                else
-                {
-                    var saveFname = (new Func<string>( () => {
-                                if (String.IsNullOrEmpty(this.tbXmlDoc.Text))
-                                    return "new.xml";
-                                return this.tbXmlDoc.Text;
-                            }))();
+                var saveFname = (String.IsNullOrEmpty(this.fileToLoad))
+                    ? "new.xml"
+                    : this.fileToLoad;
 
-                    var dlg1 = new SaveFileDialog
-                        {
-                            FileName = System.IO.Path.GetFileName(saveFname),
-                            InitialDirectory = System.IO.Path.GetDirectoryName(saveFname),
-                            OverwritePrompt = true,
-                            Title = "Where would you like to save the XML?",
-                            Filter = "XML files|*.xml|All files (*.*)|*.*"
-                        };
-
-                    var result = dlg1.ShowDialog();
-
-                    if (result == DialogResult.OK)
+                var dlg1 = new SaveFileDialog
                     {
-                        this.tbXmlDoc.Text = dlg1.FileName;
-                        File.WriteAllText(this.tbXmlDoc.Text, richTextBox1.Text);
-                        tabState.okToSave = true;
-                    }
+                        FileName = System.IO.Path.GetFileName(saveFname),
+                        InitialDirectory = System.IO.Path.GetDirectoryName(saveFname),
+                        OverwritePrompt = true,
+                        Title = "Where would you like to save the XML?",
+                        Filter = "XML files|*.xml|All files (*.*)|*.*"
+                    };
+
+                var result = dlg1.ShowDialog();
+
+                if (result == DialogResult.OK)
+                {
+                    this.fileToLoad = dlg1.FileName;
+                    File.WriteAllText(this.fileToLoad, richTextBox1.Text);
+                    tabState.okToSave = true;
+                    tabPage.Text = "  " + Path.GetFileName(this.fileToLoad) + "  ";
+                    tabState.src = fileToLoad;
+                    _fileHistory.Store(fileToLoad);
                 }
+
                 UpdateStatus("Saved.");
             }
             catch (System.Exception exc1)
@@ -1630,7 +1820,6 @@ namespace XPathVisualizer
             }
         }
 
-
         /// <summary>
         ///   Handle ctrl-??? keys.
         /// </summary>
@@ -1661,24 +1850,19 @@ namespace XPathVisualizer
                 switch (cleanKey)
                 {
                     case Keys.S:
-                        saveAsToolStripMenuItem_Click(null, null);
+                        tsmiSave_Click(null, null);
                         return true; // handled
                     case Keys.F:
                         IndentXml();
                         return true;
                     case Keys.L:
-                        toggleLineNumbersToolStripMenuItem_Click(null, null);
+                        tsmiLineNumbers_Click(null, null);
                         return true;
                     case Keys.N:
-                        var tp = CreateNewTabPage();
-                        tp.Text = "  new  ";
-                        this.tbXmlDoc.Text = tabState.src = "";
-                        tabState.okToSave = false;
-                        DisableMatchButtons();
-                        PreloadXmlns();
+                        tsmiNew_Click(null, null);
                         return true;
                     case Keys.E:
-                        extractHighlightedToolStripMenuItem_Click(null, null);
+                        tsmiExtractHighlighted_Click(null, null);
                         return true;
                 }
             }
@@ -1753,7 +1937,7 @@ namespace XPathVisualizer
         {
             if (tabState == null)
             {
-                this.label3.BringToFront();
+                //this.label3.BringToFront();
                 UpdateStatus("Ready.");
                 return;
             }
@@ -1765,7 +1949,7 @@ namespace XPathVisualizer
                 // Subsbequently, the tab state holds real data.
                 richTextBox1 = tabPage.Controls[0] as Ionic.WinForms.RichTextBoxEx;
                 this.tbXpath.Text = tabState.xpath;
-                this.tbXmlDoc.Text = tabState.src;
+                this.fileToLoad = tabState.src;
                 this.lblStatus.Text = tabState.status;
                 Trace("tabstate({0}).xmlnsTableIsExpanded: {1}",
                       tabState.tabNumber, tabState.xmlnsTableIsExpanded);
@@ -1775,15 +1959,45 @@ namespace XPathVisualizer
             }
         }
 
-        private void toggleLineNumbersToolStripMenuItem_Click(object sender, EventArgs e)
+        private void tsmiLineNumbers_Click(object sender, EventArgs e)
         {
             richTextBox1.ShowLineNumbers = !richTextBox1.ShowLineNumbers;
         }
+
+        private void tsmiBasicHelp_Click(object sender, EventArgs e)
+        {
+            var bh = new BasicHelp();
+            bh.AppTitle = "Ionic's XPathVisualizer";
+            bh.AppDescription = "A tool for visualizing Xpath queries";
+            bh.ShowDialog(this);
+        }
+
+        private void tsmiAbout_Click(object sender, EventArgs e)
+        {
+            AboutBox ab = new AboutBox();
+            ab.AppTitle = "Ionic's XPathVisualizer";
+            ab.AppDescription = "A tool for visualizing Xpath queries";
+
+            string assemblyCopyright =
+                ((AssemblyCopyrightAttribute)
+                 Assembly.GetExecutingAssembly().GetCustomAttributes
+                 (typeof(AssemblyCopyrightAttribute), false)[0]).Copyright;
+
+            var a = System.Reflection.Assembly.GetExecutingAssembly();
+            string version = a.GetName().Version.ToString();
+
+            ab.AppVersion = version;
+            ab.AppCopyright = assemblyCopyright;
+            ab.AppMoreInfo = "";
+            ab.AppDetailsButton = true;
+            ab.ShowDialog(this);
+        }
+
     }
 
 
     /// <summary>
-    ///   Holds arbitrary state associated to the TabPage
+    ///   Holds arbitrary state associated to each TabPage
     /// </summary>
     internal class TabState
     {

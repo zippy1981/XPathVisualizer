@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -74,6 +74,22 @@
     <Compile Include="Program.cs" />
     <Compile Include="NoNamespaceXmlTextWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="BasicHelp.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BasicHelp.designer.cs">
+      <DependentUpon>AboutBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AboutBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutBox.designer.cs">
+      <DependentUpon>AboutBox.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="AboutBox.resx">
+      <DependentUpon>AboutBox.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="XPathVisualizerTool.resx">
       <DependentUpon>XPathVisualizerTool.cs</DependentUpon>
     </EmbeddedResource>
@@ -82,6 +98,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Help.rtf" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
@@ -119,4 +136,36 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+
+   <!-- This ItemGroup includes every .cs source file in the directory,           -->
+   <!-- except for the one indicated by OriginalSourceFile.  In flymake, that     -->
+   <!-- property indicates the currently edited file. So the result is that the   -->
+   <!-- ItemGroup CSFile will include all files, including the _flymake.cs clone, -->
+   <!-- but not including the original file.  Which is what we want.              -->
+   <ItemGroup>
+     <CSFile Include="@(Compile)" Exclude="$(FlymakeExclude)" />
+   </ItemGroup>
+
+   <!-- Stuff the FlymakeExclude property into an ItemGroup.                  -->
+   <!-- We do this so we can get at the metadata, which is available only         -->
+   <!-- through an item within an ItemGroup.  We want the root filename, which    -->
+   <!-- we use to name the output netmodule.                                      -->
+   <ItemGroup>
+     <ExcludedCSFile Include="$(FlymakeExclude)" />
+   </ItemGroup>
+
+   <Target Name="CheckSyntax"
+           DependsOnTargets="ResolveAssemblyReferences"
+           >
+     <!-- Run the Visual C# compilation on the specified set of .cs files. -->
+     <CSC
+        Sources="@(CSFile)"
+        References="@(ReferencePath)"
+        TargetType="module"
+        Toolpath="$(MSBuildToolsPath)"
+        OutputAssembly="%(ExcludedCSFile.Filename)_flymake.netmodule"
+        Nologo="true"
+        />
+   </Target>
+
 </Project>
