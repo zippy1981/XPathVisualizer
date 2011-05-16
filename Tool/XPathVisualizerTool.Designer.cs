@@ -35,6 +35,7 @@
             this.tsmiNew = new System.Windows.Forms.ToolStripMenuItem();
             this.separator1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiOpen = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiGet = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiOpenRecent = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSave = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSaveAs = new System.Windows.Forms.ToolStripMenuItem();
@@ -111,6 +112,7 @@
             this.tsmiNew,
             this.separator1,
             this.tsmiOpen,
+            this.tsmiGet,
             this.tsmiOpenRecent,
             this.tsmiSave,
             this.tsmiSaveAs,
@@ -119,7 +121,7 @@
             this.tsmiFile.Name = "tsmiFile";
             this.tsmiFile.Size = new System.Drawing.Size(37, 20);
             this.tsmiFile.Text = "&File";
-            this.tsmiFile.DropDownOpening += new System.EventHandler(this.tsmiFile_Show);
+            this.tsmiFile.DropDownOpening += new System.EventHandler(this.tsmiFile_Opening);
             //
             // tsmiNew
             //
@@ -139,6 +141,13 @@
             this.tsmiOpen.Size = new System.Drawing.Size(142, 22);
             this.tsmiOpen.Text = "&Open...";
             this.tsmiOpen.Click += new System.EventHandler(this.tsmiOpen_Click);
+            //
+            // tsmiGet
+            //
+            this.tsmiGet.Name = "tsmiGet";
+            this.tsmiGet.Size = new System.Drawing.Size(142, 22);
+            this.tsmiGet.Text = "&Get...";
+            this.tsmiGet.Click += new System.EventHandler(this.tsmiGet_Click);
             //
             // tsmiOpenRecent
             //
@@ -186,6 +195,7 @@
             this.tsmiEdit.Name = "tsmiEdit";
             this.tsmiEdit.Size = new System.Drawing.Size(39, 20);
             this.tsmiEdit.Text = "&Edit";
+            this.tsmiEdit.DropDownOpening += new System.EventHandler(this.tsmiEdit_Opening);
             //
             // tsmiHelp
             //
@@ -656,6 +666,7 @@
         internal System.Windows.Forms.ToolStripMenuItem tsmiNew;
         internal System.Windows.Forms.ToolStripSeparator separator1;
         internal System.Windows.Forms.ToolStripMenuItem tsmiOpen;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiGet;
         internal System.Windows.Forms.ToolStripMenuItem tsmiOpenRecent;
         internal System.Windows.Forms.ToolStripMenuItem tsmiSave;
         internal System.Windows.Forms.ToolStripMenuItem tsmiSaveAs;
@@ -688,7 +699,9 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiPaste;
         private System.Windows.Forms.FlowLayoutPanel matchPanel;
         private System.Windows.Forms.Label lblMatch;
+        private System.Windows.Forms.ToolStripMenuItem tsmiLineNumbers;
         private System.Windows.Forms.ToolStripMenuItem tsmiStripNamespaces;
+        private System.Windows.Forms.ToolStripMenuItem tsmiExtractHighlighted;
         private System.Windows.Forms.ToolStripMenuItem tsmiRemoveSelected;
         private System.Windows.Forms.Button btnExpandCollapse;
         private System.Windows.Forms.ImageList imageList1;
@@ -698,8 +711,6 @@
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
         private Ionic.WinForms.CustomTabControl customTabControl1;
         private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.ToolStripMenuItem tsmiExtractHighlighted;
-        private System.Windows.Forms.ToolStripMenuItem tsmiLineNumbers;
         //private System.Windows.Forms.Label label3;
     }
 }

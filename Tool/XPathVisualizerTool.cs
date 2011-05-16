@@ -17,7 +17,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last saved: <2011-May-16 00:00:56>
+// Last saved: <2011-May-16 10:00:37>
 //
 //
 
@@ -395,35 +395,53 @@ namespace XPathVisualizer
 
 
 
+
+        [DllImport("shlwapi.dll", CharSet = CharSet.Auto)]
+        private static extern bool
+            PathCompactPathEx(StringBuilder pszOut,
+                              string pszPath,
+                              int cchMax,
+                              int reserved);
+
+
+        private string GetShortDisplayNameForRecentFiles(string longName, int maxLen)
+        {
+            var sb1 = new StringBuilder(maxLen + maxLen + 2);
+
+            // if (longName.StartsWith("http"))
+            // {
+            //     if (longName.Length <= maxLen)
+            //     {
+            //         return longName;
+            //     }
+            //
+            //     sb1.Append(longName.Substring(0, maxLen-3))
+            //         .Append("...");
+            //     return sb1.ToString();
+            // }
+            // else
+            {
+                if ( PathCompactPathEx(sb1, longName, maxLen, 0) )
+                    return sb1.ToString();
+                return longName;
+            }
+        }
+
         private string GetDisplayNameForRecentFiles(string fullName)
         {
             var currentDirectory = Directory.GetCurrentDirectory();
             int maxDisplayLength = 40;      // maximum length of file name for display
 
-            // if file is in current directory, show only file name
-            FileInfo fileInfo = new FileInfo(fullName);
+            if (!fullName.StartsWith("http"))
+            {
+                // if file is in current directory, show only file name
+                FileInfo fileInfo = new FileInfo(fullName);
 
-            if ( fileInfo.DirectoryName == currentDirectory )
-                return GetShortDisplayNameForRecentFiles(fileInfo.Name, maxDisplayLength);
+                if ( fileInfo.DirectoryName == currentDirectory )
+                    return GetShortDisplayNameForRecentFiles(fileInfo.Name, maxDisplayLength);
+            }
 
             return GetShortDisplayNameForRecentFiles(fullName, maxDisplayLength);
-        }
-
-
-        [DllImport("shlwapi.dll", CharSet = CharSet.Auto)]
-        private static extern bool PathCompactPathEx(StringBuilder pszOut,
-                                                     string pszPath,
-                                                     int cchMax,
-                                                     int reserved);
-
-
-        private string GetShortDisplayNameForRecentFiles(string longName, int maxLen)
-        {
-            StringBuilder pszOut = new StringBuilder(maxLen + maxLen + 2);
-
-            if ( PathCompactPathEx(pszOut, longName, maxLen, 0) )
-                return pszOut.ToString();
-            return longName;
         }
 
 
@@ -447,13 +465,49 @@ namespace XPathVisualizer
             }
 
             this.fileToLoad = fname;
-            if (System.IO.File.Exists(this.fileToLoad))
+            if (fileToLoad.StartsWith("http"))
+                btnLoadXml_Click(sender, e);
+            else if (System.IO.File.Exists(this.fileToLoad))
                 btnLoadXml_Click(sender, e);
         }
 
 
+        private void tsmiEdit_Opening(object sender, EventArgs e)
+        {
+            if (tabState == null)
+            {
+                tsmiReformat.Enabled = false;
+                tsmiExtractHighlighted.Enabled = false;
+                tsmiRemoveSelected.Enabled = false;
+                tsmiStripNamespaces.Enabled = false;
+                tsmiCopy.Enabled = false;
+                tsmiCopyAll.Enabled = false;
+                tsmiPaste.Enabled = false;
+            }
+            else if (tabState.matches == null || tabState.matches.Count == 0)
+            {
+                tsmiReformat.Enabled = true;
+                tsmiExtractHighlighted.Enabled = false;
+                tsmiRemoveSelected.Enabled = false;
+                tsmiStripNamespaces.Enabled = true;
+                tsmiCopy.Enabled = true;
+                tsmiCopyAll.Enabled = true;
+                tsmiPaste.Enabled = true;
+            }
+            else
+            {
+                tsmiReformat.Enabled = true;
+                tsmiExtractHighlighted.Enabled = true;
+                tsmiRemoveSelected.Enabled = true;
+                tsmiStripNamespaces.Enabled = true;
+                tsmiCopy.Enabled = true;
+                tsmiCopyAll.Enabled = true;
+                tsmiPaste.Enabled = true;
+            }
+        }
 
-        private void tsmiFile_Show(object sender, EventArgs e)
+
+        private void tsmiFile_Opening(object sender, EventArgs e)
         {
             tsmiOpenRecent.DropDownItems.Clear();
             var mruList = _fileHistory.GetList();
@@ -517,9 +571,7 @@ namespace XPathVisualizer
                     XElement xe = xpathParser.Parse(xpathExpr, new XPathTreeBuilder());
                     this.toolTip1.SetToolTip(this.tbXpath, "enter an XPath expression");
 
-                    // the parse succeeded, should we auto-evaluate?
-                    UpdateStatus("should we auto-evaluate? " + DateTime.Now.ToString("G"));
-
+                    // the parse succeeded, auto-evaluate.
                     btnEvalXpath_Click(null,null);
                 }
                 catch (XPathParserException exc1)
@@ -1728,6 +1780,76 @@ namespace XPathVisualizer
             }
         }
 
+        private void tsmiGet_Click(object sender, EventArgs e)
+        {
+            var getUrl = new Func<String>( () => {
+                    // prompt for the url here
+                    var f = new System.Windows.Forms.Form();
+                    var btnOK = new System.Windows.Forms.Button();
+                    var btnCancel = new System.Windows.Forms.Button();
+                    var label = new System.Windows.Forms.Label();
+                    var txt = new System.Windows.Forms.TextBox();
+                    //
+                    // tooltip
+                    //
+                    var tooltip = new System.Windows.Forms.ToolTip();
+                    tooltip.AutoPopDelay = 2400;
+                    tooltip.InitialDelay = 500;
+                    tooltip.ReshowDelay = 500;
+                    label.Text = "URL:";
+                    label.AutoSize = true;
+                    label.Location = new System.Drawing.Point(4, 6);
+                    txt.Text = "";
+                    txt.TabIndex = 11;
+                    txt.Multiline = false;
+                    txt.AutoCompleteMode = AutoCompleteMode.Suggest;
+                    txt.AutoCompleteSource = AutoCompleteSource.HistoryList;
+                    txt.Location = new System.Drawing.Point(54, 8);
+                    txt.Size = new System.Drawing.Size(368, 28);
+                    tooltip.SetToolTip(txt, "The URL to retrieve via HTTP GET");
+                    btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+                    btnCancel.Location = new System.Drawing.Point(354, 54);
+                    btnCancel.Name = "btnCancel";
+                    btnCancel.Size = new System.Drawing.Size(68, 23);
+                    btnCancel.TabIndex = 71;
+                    btnCancel.Text = "&Cancel";
+                    btnCancel.UseVisualStyleBackColor = true;
+                    btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
+                    btnOK.Location = new System.Drawing.Point(278, 54);
+                    btnOK.Name = "btnOK";
+                    btnOK.Size = new System.Drawing.Size(68, 23);
+                    btnOK.TabIndex = 61;
+                    btnOK.Text = "&OK";
+                    btnOK.UseVisualStyleBackColor = true;
+                    f.Controls.Add(label);
+                    f.Controls.Add(txt);
+                    f.Controls.Add(btnOK);
+                    f.Controls.Add(btnCancel);
+                    f.Name = "HttpGet";
+                    f.Text = "XPathVisualizer: Retrieve which URL?";
+                    f.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+                    f.MinimumSize = new System.Drawing.Size(442, 118);
+                    f.MaximumSize = new System.Drawing.Size(442, 118);
+                    var result = f.ShowDialog();
+
+                    if (result == DialogResult.OK)
+                    {
+                        if (!String.IsNullOrEmpty(txt.Text))
+                            return txt.Text;
+                    }
+                    return null;
+                });
+
+            var url = getUrl();
+
+            if (url != null)
+            {
+                this.fileToLoad = url;
+                btnLoadXml_Click(sender, e);
+            }
+        }
+
+
 
         private void tsmiSave_Click(object sender, EventArgs e)
         {
@@ -1762,16 +1884,28 @@ namespace XPathVisualizer
         {
             try
             {
-                var saveFname = (String.IsNullOrEmpty(this.fileToLoad))
-                    ? "new.xml"
-                    : this.fileToLoad;
+                var getBaseName = new Func<String>( () => {
+                        if (String.IsNullOrEmpty(this.fileToLoad))
+                            return "new.xml";
+                        if (this.fileToLoad.StartsWith("http"))
+                        {
+                            int ix = fileToLoad.LastIndexOf("/");
+                            var b = fileToLoad.Substring(ix);
+                            if (b.EndsWith(".xml"))
+                                return b;
+                            return b + ".xml";
+                        }
+                        return this.fileToLoad;
+                    });
+
+                var saveFname = getBaseName();
 
                 var dlg1 = new SaveFileDialog
                     {
                         FileName = System.IO.Path.GetFileName(saveFname),
                         InitialDirectory = System.IO.Path.GetDirectoryName(saveFname),
                         OverwritePrompt = true,
-                        Title = "Where would you like to save the XML?",
+                        Title = "XPath Visualizer: Where would you like to save the XML?",
                         Filter = "XML files|*.xml|All files (*.*)|*.*"
                     };
 
@@ -1825,11 +1959,14 @@ namespace XPathVisualizer
         /// </summary>
         /// <remarks>
         ///   <para>
+        ///     ctrl-O for open,
+        ///     ctrl-G for http get,
         ///     ctrl-S for save,
         ///     ctrl-F for re-format
         ///     ctrl-L for line numbers
         ///     ctrl-N for new tab
         ///     ctrl-E for extract selected
+        ///     ctrl-R for remove selected
         ///   </para>
         /// </remarks>
         protected override bool ProcessDialogKey(Keys keyData)
@@ -1849,6 +1986,12 @@ namespace XPathVisualizer
                 Keys cleanKey = (Keys)(keyCode & 0xFFFF);
                 switch (cleanKey)
                 {
+                    case Keys.O:
+                        tsmiOpen_Click(null, null);
+                        return true;
+                    case Keys.G:
+                        tsmiGet_Click(null, null);
+                        return true;
                     case Keys.S:
                         tsmiSave_Click(null, null);
                         return true; // handled
@@ -1863,6 +2006,9 @@ namespace XPathVisualizer
                         return true;
                     case Keys.E:
                         tsmiExtractHighlighted_Click(null, null);
+                        return true;
+                    case Keys.R:
+                        tsmiRemoveSelected_Click(null, null);
                         return true;
                 }
             }
