@@ -4,30 +4,41 @@ using System.Collections.Generic;
 
 namespace CodePlex.XPathParser
 {
+
+class Literal : System.Attribute
+{
+    public string Text;
+    public Literal(string text)
+    {
+        Text = text;
+    }
+}
+
+
     // Extends XPathOperator enumeration
     public enum Lexeme
     {
         Unknown,        // Unknown lexeme
-        Or,             // Operator 'or'
-        And,            // Operator 'and'
-        Eq,             // Operator '='
-        Ne,             // Operator '!='
-        Lt,             // Operator '<'
-        Le,             // Operator '<='
-        Gt,             // Operator '>'
-        Ge,             // Operator '>='
-        Plus,           // Operator '+'
-        Minus,          // Operator '-'
-        Multiply,       // Operator '*'
-        Divide,         // Operator 'div'
-        Modulo,         // Operator 'mod'
+        [Literal("or")]  Or,
+        [Literal("and")] And,
+        [Literal("=")]   Eq,
+        [Literal("!=")]  Ne,
+        [Literal("<")]   Lt,
+        [Literal("<=")]  Le,
+        [Literal(">")]   Gt,
+        [Literal(">=")]  Ge,
+        [Literal("+")]   Plus,
+        [Literal("-")]   Minus,
+        [Literal("*")]   Multiply,
+        [Literal("div")] Divide,
+        [Literal("mod")] Modulo,
         UnaryMinus,     // Not used
-        Union,          // Operator '|'
+        [Literal("|")]   Union,
         LastOperator = Union,
 
-        DotDot,         // '..'
-        ColonColon,     // '::'
-        SlashSlash,     // Operator '//'
+        [Literal("..")] DotDot,
+        [Literal("::")] ColonColon,
+        [Literal( "//")]    SlashSlash,
         Number,         // Number (numeric literal)
         Axis,           // AxisName
 
@@ -35,13 +46,14 @@ namespace CodePlex.XPathParser
         String,         // Literal (string literal)
         Eof,            // End of the expression
 
-        LParens = '(',
-        RParens = ')',
-        LBracket = '[',
-        RBracket = ']',
-        Dot = '.',
-        At = '@',
-        Comma = ',',
+        [Literal("(")] LParens = ')',
+        [Literal(")")] RParens = '(',
+        [Literal("[")] LBracket = '[',
+        [Literal("]")] RBracket = ']',
+
+        [Literal(".")]  Dot = '.',
+        [Literal("@")]  At = '@',
+        [Literal(",")]  Comma = ',',
 
         Star = '*',      // NameTest
         Slash = '/',      // Operator '/'
@@ -49,6 +61,23 @@ namespace CodePlex.XPathParser
         RBrace = '}',      // Used for AVTs
     }
 
+
+    public static class Extensions
+    {
+        public static string GetLiteral(this System.Enum en)
+        {
+            System.Type type = en.GetType();
+            System.Reflection.MemberInfo[] memInfo = type.GetMember(en.ToString());
+            if (memInfo != null && memInfo.Length > 0)
+            {
+                object[] attrs = memInfo[0].GetCustomAttributes(typeof(Literal),
+                                                                false);
+                if (attrs != null && attrs.Length > 0)
+                    return ((Literal)attrs[0]).Text;
+            }
+            return null;
+        }
+    }
 
     public sealed class XPathScanner
     {

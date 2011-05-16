@@ -30,6 +30,22 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(XPathVisualizerTool));
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.tsmiFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiNew = new System.Windows.Forms.ToolStripMenuItem();
+            this.separator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiOpen = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiOpenRecent = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSave = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSaveAs = new System.Windows.Forms.ToolStripMenuItem();
+            this.separator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiExit = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiEdit = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiHelp = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiBasicHelp = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiAbout = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiFind = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiFindAndReplace = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.btnExpandCollapse = new System.Windows.Forms.Button();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
@@ -39,13 +55,8 @@
             this.tbPrefix = new System.Windows.Forms.TextBox();
             this.btnAddNsPrefix = new System.Windows.Forms.Button();
             this.pnlPrefixList = new System.Windows.Forms.Panel();
-            this.btnEvalXpath = new System.Windows.Forms.Button();
-            this.btnLoadXml = new System.Windows.Forms.Button();
             this.tbXpath = new System.Windows.Forms.RichTextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.btnBrowse = new System.Windows.Forms.Button();
-            this.tbXmlDoc = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.matchPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.btn_NextMatch = new Ionic.WinForms.RepeatButton();
             this.lblMatch = new System.Windows.Forms.Label();
@@ -54,22 +65,21 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.richTextBox1 = new Ionic.WinForms.RichTextBoxEx();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toggleLineNumbersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.stripNamespacesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.extractHighlightedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.removeSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.copyAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.pasteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiReformat = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiLineNumbers = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiStripNamespaces = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiExtractHighlighted = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiRemoveSelected = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCopy = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCopyAll = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiPaste = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.progressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.linkToCodeplex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.label3 = new System.Windows.Forms.Label();
+            //this.label3 = new System.Windows.Forms.Label();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
@@ -80,7 +90,137 @@
             this.tabPage1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
+            //
+            // menuStrip1
+            //
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiFile,
+            this.tsmiEdit,
+            this.tsmiHelp});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(657, 24);
+            this.menuStrip1.TabIndex = 0;
+            this.menuStrip1.Text = "menuStrip1";
+            //
+            // tsmiFile
+            //
+            this.tsmiFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiNew,
+            this.separator1,
+            this.tsmiOpen,
+            this.tsmiOpenRecent,
+            this.tsmiSave,
+            this.tsmiSaveAs,
+            this.separator2,
+            this.tsmiExit});
+            this.tsmiFile.Name = "tsmiFile";
+            this.tsmiFile.Size = new System.Drawing.Size(37, 20);
+            this.tsmiFile.Text = "&File";
+            this.tsmiFile.DropDownOpening += new System.EventHandler(this.tsmiFile_Show);
+            //
+            // tsmiNew
+            //
+            this.tsmiNew.Name = "tsmiNew";
+            this.tsmiNew.Size = new System.Drawing.Size(142, 22);
+            this.tsmiNew.Text = "&New";
+            this.tsmiNew.Click += new System.EventHandler(this.tsmiNew_Click);
+            //
+            // separator1
+            //
+            this.separator1.Name = "separator1";
+            this.separator1.Size = new System.Drawing.Size(139, 6);
+            //
+            // tsmiOpen
+            //
+            this.tsmiOpen.Name = "tsmiOpen";
+            this.tsmiOpen.Size = new System.Drawing.Size(142, 22);
+            this.tsmiOpen.Text = "&Open...";
+            this.tsmiOpen.Click += new System.EventHandler(this.tsmiOpen_Click);
+            //
+            // tsmiOpenRecent
+            //
+            this.tsmiOpenRecent.Name = "tsmiOpenRecent";
+            this.tsmiOpenRecent.Size = new System.Drawing.Size(142, 22);
+            this.tsmiOpenRecent.Text = "Open &Recent";
+            //
+            // tsmiSave
+            //
+            this.tsmiSave.Name = "tsmiSave";
+            this.tsmiSave.Size = new System.Drawing.Size(142, 22);
+            this.tsmiSave.Text = "&Save";
+            this.tsmiSave.Click += new System.EventHandler(this.tsmiSave_Click);
+            //
+            // tsmiSaveAs
+            //
+            this.tsmiSaveAs.Name = "tsmiSaveAs";
+            this.tsmiSaveAs.Size = new System.Drawing.Size(142, 22);
+            this.tsmiSaveAs.Text = "Save &As...";
+            this.tsmiSaveAs.Click += new System.EventHandler(this.tsmiSaveAs_Click);
+            //
+            // separator2
+            //
+            this.separator2.Name = "separator2";
+            this.separator2.Size = new System.Drawing.Size(139, 6);
+            //
+            // tsmiExit
+            //
+            this.tsmiExit.Name = "tsmiExit";
+            this.tsmiExit.Size = new System.Drawing.Size(142, 22);
+            this.tsmiExit.Text = "E&xit";
+            this.tsmiExit.Click += new System.EventHandler(this.tsmiExit_Click);
+            //
+            // tsmiEdit
+            //
+            this.tsmiEdit.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiReformat,
+            this.tsmiLineNumbers,
+            this.tsmiStripNamespaces,
+            this.tsmiExtractHighlighted,
+            this.tsmiRemoveSelected,
+            this.tsmiCopy,
+            this.tsmiCopyAll,
+            this.tsmiPaste});
+            this.tsmiEdit.Name = "tsmiEdit";
+            this.tsmiEdit.Size = new System.Drawing.Size(39, 20);
+            this.tsmiEdit.Text = "&Edit";
+            //
+            // tsmiHelp
+            //
+            this.tsmiHelp.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+                    this.tsmiBasicHelp,
+                    this.tsmiAbout});
+            this.tsmiHelp.Name = "tsmiHelp";
+            this.tsmiHelp.Size = new System.Drawing.Size(39, 20);
+            this.tsmiHelp.Text = "Help";
+            //
+            // tsmiAbout
+            //
+            this.tsmiAbout.Name = "tsmiAbout";
+            this.tsmiAbout.Size = new System.Drawing.Size(39, 20);
+            this.tsmiAbout.Text = "About XPathVisualizer";
+            this.tsmiAbout.Click += new System.EventHandler(this.tsmiAbout_Click);
+            //
+            // tsmiBasicHelp
+            //
+            this.tsmiBasicHelp.Name = "tsmiBasicHelp";
+            this.tsmiBasicHelp.Size = new System.Drawing.Size(39, 20);
+            this.tsmiBasicHelp.Text = "Basic Help";
+            this.tsmiBasicHelp.Click += new System.EventHandler(this.tsmiBasicHelp_Click);
+            //
+            // tsmiFind
+            //
+            this.tsmiFind.Name = "tsmiFind";
+            this.tsmiFind.Size = new System.Drawing.Size(39, 20);
+            this.tsmiFind.Text = "Find";
+            //
+            // tsmiFindAndReplace
+            //
+            this.tsmiFindAndReplace.Name = "tsmiFindAndReplace";
+            this.tsmiFindAndReplace.Size = new System.Drawing.Size(39, 20);
+            this.tsmiFindAndReplace.Text = "Find && Replace";
             //
             // splitContainer3
             //
@@ -94,21 +234,16 @@
             //
             this.splitContainer3.Panel1.Controls.Add(this.btnExpandCollapse);
             this.splitContainer3.Panel1.Controls.Add(this.groupBox1);
-            this.splitContainer3.Panel1.Controls.Add(this.btnEvalXpath);
-            this.splitContainer3.Panel1.Controls.Add(this.btnLoadXml);
             this.splitContainer3.Panel1.Controls.Add(this.tbXpath);
             this.splitContainer3.Panel1.Controls.Add(this.label2);
-            this.splitContainer3.Panel1.Controls.Add(this.btnBrowse);
-            this.splitContainer3.Panel1.Controls.Add(this.tbXmlDoc);
-            this.splitContainer3.Panel1.Controls.Add(this.label1);
-            this.splitContainer3.Panel1MinSize = 114;
+            this.splitContainer3.Panel1MinSize = 74;
             //
             // splitContainer3.Panel2
             //
             this.splitContainer3.Panel2.Controls.Add(this.matchPanel);
             this.splitContainer3.Panel2.Controls.Add(this.customTabControl1);
             this.splitContainer3.Size = new System.Drawing.Size(538, 354);
-            this.splitContainer3.SplitterDistance = 152;
+            this.splitContainer3.SplitterDistance = 92;
             this.splitContainer3.SplitterWidth = 6;
             this.splitContainer3.TabIndex = 0;
             //
@@ -119,7 +254,7 @@
             this.btnExpandCollapse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnExpandCollapse.ImageIndex = 0;
             this.btnExpandCollapse.ImageList = this.imageList1;
-            this.btnExpandCollapse.Location = new System.Drawing.Point(148, 68);
+            this.btnExpandCollapse.Location = new System.Drawing.Point(148, 30);
             this.btnExpandCollapse.Name = "btnExpandCollapse";
             this.btnExpandCollapse.Size = new System.Drawing.Size(12, 12);
             this.btnExpandCollapse.TabIndex = 61;
@@ -143,10 +278,10 @@
             this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox1.Controls.Add(this.pnlInput);
             this.groupBox1.Controls.Add(this.pnlPrefixList);
-            this.groupBox1.Location = new System.Drawing.Point(12, 67);
+            this.groupBox1.Location = new System.Drawing.Point(12, 29);
             this.groupBox1.MinimumSize = new System.Drawing.Size(0, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(517, 86);
+            this.groupBox1.Size = new System.Drawing.Size(516, 58);
             this.groupBox1.TabIndex = 48;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "namespaces and prefixes";
@@ -206,42 +341,23 @@
             this.pnlPrefixList.Size = new System.Drawing.Size(513, 38);
             this.pnlPrefixList.TabIndex = 51;
             //
-            // btnEvalXpath
-            //
-            this.btnEvalXpath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnEvalXpath.Location = new System.Drawing.Point(486, 41);
-            this.btnEvalXpath.Name = "btnEvalXpath";
-            this.btnEvalXpath.Size = new System.Drawing.Size(40, 23);
-            this.btnEvalXpath.TabIndex = 45;
-            this.btnEvalXpath.Text = "Eval";
-            this.toolTip1.SetToolTip(this.btnEvalXpath, "evaluate the expression");
-            this.btnEvalXpath.UseVisualStyleBackColor = true;
-            this.btnEvalXpath.Click += new System.EventHandler(this.btnEvalXpath_Click);
-            //
-            // btnLoadXml
-            //
-            this.btnLoadXml.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnLoadXml.Location = new System.Drawing.Point(486, 12);
-            this.btnLoadXml.Name = "btnLoadXml";
-            this.btnLoadXml.Size = new System.Drawing.Size(40, 23);
-            this.btnLoadXml.TabIndex = 30;
-            this.btnLoadXml.Text = "Load";
-            this.toolTip1.SetToolTip(this.btnLoadXml, "load the document");
-            this.btnLoadXml.UseVisualStyleBackColor = true;
-            this.btnLoadXml.Click += new System.EventHandler(this.btnLoadXml_Click);
-            //
             // tbXpath
             //
             this.tbXpath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.tbXpath.BackColor = System.Drawing.SystemColors.Window;
+            this.tbXpath.Font = new System.Drawing.Font("Consolas",
+                                                        11F,
+                                                        System.Drawing.FontStyle.Regular,
+                                                        System.Drawing.GraphicsUnit.Point,
+                                                        ((byte)(0)));
             this.tbXpath.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tbXpath.DetectUrls = false;
-            this.tbXpath.Location = new System.Drawing.Point(108, 42);
+            this.tbXpath.Location = new System.Drawing.Point(108, 4);
             this.tbXpath.Multiline = false;
             this.tbXpath.Name = "tbXpath";
             this.tbXpath.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
-            this.tbXpath.Size = new System.Drawing.Size(372, 20);
+            this.tbXpath.Size = new System.Drawing.Size(418, 22);
             this.tbXpath.TabIndex = 40;
             this.tbXpath.Text = "";
             this.toolTip1.SetToolTip(this.tbXpath, "enter an XPath expression");
@@ -252,42 +368,11 @@
             // label2
             //
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 46);
+            this.label2.Location = new System.Drawing.Point(12, 8);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(90, 13);
             this.label2.TabIndex = 1;
             this.label2.Text = "XPath Expression";
-            //
-            // btnBrowse
-            //
-            this.btnBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowse.Location = new System.Drawing.Point(451, 10);
-            this.btnBrowse.Name = "btnBrowse";
-            this.btnBrowse.Size = new System.Drawing.Size(29, 26);
-            this.btnBrowse.TabIndex = 20;
-            this.btnBrowse.Text = "...";
-            this.toolTip1.SetToolTip(this.btnBrowse, "browse the filesystem...");
-            this.btnBrowse.UseVisualStyleBackColor = true;
-            this.btnBrowse.Click += new System.EventHandler(this.btnBrowse_Click);
-            //
-            // tbXmlDoc
-            //
-            this.tbXmlDoc.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbXmlDoc.Location = new System.Drawing.Point(108, 13);
-            this.tbXmlDoc.Name = "tbXmlDoc";
-            this.tbXmlDoc.Size = new System.Drawing.Size(337, 20);
-            this.tbXmlDoc.TabIndex = 10;
-            this.toolTip1.SetToolTip(this.tbXmlDoc, "a file path or URL to load from");
-            //
-            // label1
-            //
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 16);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(52, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "XML Doc";
             //
             // matchPanel
             //
@@ -360,7 +445,7 @@
             this.customTabControl1.Name = "customTabControl1";
             this.customTabControl1.Padding = new System.Drawing.Point(18, 0);
             this.customTabControl1.SelectedIndex = 0;
-            this.customTabControl1.Size = new System.Drawing.Size(538, 195);
+            this.customTabControl1.Size = new System.Drawing.Size(538, 252);
             this.customTabControl1.TabIndex = 86;
             this.customTabControl1.TabStop = false;
             this.customTabControl1.SelectedIndexChanged += new System.EventHandler(this.customTabControl1_SelectedIndexChanged);
@@ -404,81 +489,76 @@
             //
             // contextMenuStrip1
             //
-            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItem1,
-            this.toggleLineNumbersToolStripMenuItem,
-            this.stripNamespacesToolStripMenuItem,
-            this.extractHighlightedToolStripMenuItem,
-            this.removeSelectedToolStripMenuItem,
-            this.copyToolStripMenuItem,
-            this.copyAllToolStripMenuItem,
-            this.pasteToolStripMenuItem,
-            this.saveAsToolStripMenuItem});
+            // this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            //         this.tsmiReformat,
+            // this.tsmiLineNumbers,
+            // this.tsmiStripNamespaces,
+            // this.tsmiExtractHighlighted,
+            // this.tsmiRemoveSelected,
+            // this.tsmiCopy,
+            // this.tsmiCopyAll,
+            // this.tsmiPaste
+            //     });
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(189, 202);
             //
-            // toolStripMenuItem1
+            // tsmiReformat
             //
-            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(188, 22);
-            this.toolStripMenuItem1.Text = "Reformat";
-            this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
+            this.tsmiReformat.Name = "tsmiReformat";
+            this.tsmiReformat.Size = new System.Drawing.Size(188, 22);
+            this.tsmiReformat.Text = "Reformat";
+            this.tsmiReformat.Click += new System.EventHandler(this.tsmiReformat_Click);
             //
-            // toggleLineNumbersToolStripMenuItem
+            // tsmiLineNumbers
             //
-            this.toggleLineNumbersToolStripMenuItem.Name = "toggleLineNumbersToolStripMenuItem";
-            this.toggleLineNumbersToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
-            this.toggleLineNumbersToolStripMenuItem.Text = "Toggle Line Numbers";
-            this.toggleLineNumbersToolStripMenuItem.Click += new System.EventHandler(this.toggleLineNumbersToolStripMenuItem_Click);
+            this.tsmiLineNumbers.Name = "tsmiLineNumbers";
+            this.tsmiLineNumbers.Size = new System.Drawing.Size(188, 22);
+            this.tsmiLineNumbers.Text = "Line Numbers";
+            this.tsmiLineNumbers.CheckOnClick = true;
+            this.tsmiLineNumbers.Checked = true;
+            this.tsmiLineNumbers.Click += new System.EventHandler(this.tsmiLineNumbers_Click);
             //
-            // stripNamespacesToolStripMenuItem
+            // tsmiStripNamespaces
             //
-            this.stripNamespacesToolStripMenuItem.Name = "stripNamespacesToolStripMenuItem";
-            this.stripNamespacesToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
-            this.stripNamespacesToolStripMenuItem.Text = "Strip Namespaces";
-            this.stripNamespacesToolStripMenuItem.Click += new System.EventHandler(this.stripNamespacesToolStripMenuItem_Click);
+            this.tsmiStripNamespaces.Name = "tsmiStripNamespaces";
+            this.tsmiStripNamespaces.Size = new System.Drawing.Size(188, 22);
+            this.tsmiStripNamespaces.Text = "Strip Namespaces";
+            this.tsmiStripNamespaces.Click += new System.EventHandler(this.tsmiStripNamespaces_Click);
             //
-            // extractHighlightedToolStripMenuItem
+            // tsmiExtractHighlighted
             //
-            this.extractHighlightedToolStripMenuItem.Name = "extractHighlightedToolStripMenuItem";
-            this.extractHighlightedToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
-            this.extractHighlightedToolStripMenuItem.Text = "Extract highlighted";
-            this.extractHighlightedToolStripMenuItem.Click += new System.EventHandler(this.extractHighlightedToolStripMenuItem_Click);
+            this.tsmiExtractHighlighted.Name = "tsmiExtractHighlighted";
+            this.tsmiExtractHighlighted.Size = new System.Drawing.Size(188, 22);
+            this.tsmiExtractHighlighted.Text = "Extract highlighted";
+            this.tsmiExtractHighlighted.Click += new System.EventHandler(this.tsmiExtractHighlighted_Click);
             //
-            // removeSelectedToolStripMenuItem
+            // tsmiRemoveSelected
             //
-            this.removeSelectedToolStripMenuItem.Name = "removeSelectedToolStripMenuItem";
-            this.removeSelectedToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
-            this.removeSelectedToolStripMenuItem.Text = "Remove highlighted";
-            this.removeSelectedToolStripMenuItem.Click += new System.EventHandler(this.removeSelectedToolStripMenuItem_Click);
+            this.tsmiRemoveSelected.Name = "tsmiRemoveSelected";
+            this.tsmiRemoveSelected.Size = new System.Drawing.Size(188, 22);
+            this.tsmiRemoveSelected.Text = "Remove highlighted";
+            this.tsmiRemoveSelected.Click += new System.EventHandler(this.tsmiRemoveSelected_Click);
             //
-            // copyToolStripMenuItem
+            // tsmiCopy
             //
-            this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
-            this.copyToolStripMenuItem.Text = "Copy";
-            this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
+            this.tsmiCopy.Name = "tsmiCopy";
+            this.tsmiCopy.Size = new System.Drawing.Size(188, 22);
+            this.tsmiCopy.Text = "Copy";
+            this.tsmiCopy.Click += new System.EventHandler(this.tsmiCopy_Click);
             //
-            // copyAllToolStripMenuItem
+            // tsmiCopyAll
             //
-            this.copyAllToolStripMenuItem.Name = "copyAllToolStripMenuItem";
-            this.copyAllToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
-            this.copyAllToolStripMenuItem.Text = "Copy All";
-            this.copyAllToolStripMenuItem.Click += new System.EventHandler(this.copyAllToolStripMenuItem_Click);
+            this.tsmiCopyAll.Name = "tsmiCopyAll";
+            this.tsmiCopyAll.Size = new System.Drawing.Size(188, 22);
+            this.tsmiCopyAll.Text = "Copy All";
+            this.tsmiCopyAll.Click += new System.EventHandler(this.tsmiCopyAll_Click);
             //
-            // pasteToolStripMenuItem
+            // tsmiPaste
             //
-            this.pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
-            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
-            this.pasteToolStripMenuItem.Text = "Paste";
-            this.pasteToolStripMenuItem.Click += new System.EventHandler(this.pasteToolStripMenuItem_Click);
-            //
-            // saveAsToolStripMenuItem
-            //
-            this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
-            this.saveAsToolStripMenuItem.Text = "Save As...";
-            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
+            this.tsmiPaste.Name = "tsmiPaste";
+            this.tsmiPaste.Size = new System.Drawing.Size(188, 22);
+            this.tsmiPaste.Text = "Paste";
+            this.tsmiPaste.Click += new System.EventHandler(this.tsmiPaste_Click);
             //
             // statusStrip1
             //
@@ -518,17 +598,17 @@
             //
             this.contextMenuStrip2.Name = "contextMenuStrip2";
             this.contextMenuStrip2.Size = new System.Drawing.Size(61, 4);
-            //
-            // label3
-            //
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.ForeColor = System.Drawing.SystemColors.ControlDark;
-            this.label3.Location = new System.Drawing.Point(18, 131);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(478, 31);
-            this.label3.TabIndex = 81;
-            this.label3.Text = "ctrl-N to create a new, blank document";
+            // //
+            // // label3
+            // //
+            // this.label3.AutoSize = true;
+            // this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            // this.label3.ForeColor = System.Drawing.SystemColors.ControlDark;
+            // this.label3.Location = new System.Drawing.Point(18, 131);
+            // this.label3.Name = "label3";
+            // this.label3.Size = new System.Drawing.Size(478, 31);
+            // this.label3.TabIndex = 81;
+            // this.label3.Text = "ctrl-N to create a new, blank document";
             //
             // XPathVisualizerTool
             //
@@ -537,7 +617,8 @@
             this.ClientSize = new System.Drawing.Size(538, 376);
             this.Controls.Add(this.splitContainer3);
             this.Controls.Add(this.statusStrip1);
-            this.Controls.Add(this.label3);
+            //this.Controls.Add(this.label3);
+            this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
             this.MinimumSize = new System.Drawing.Size(440, 320);
@@ -562,20 +643,32 @@
             this.contextMenuStrip1.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion
 
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox tbXmlDoc;
+        internal System.Windows.Forms.MenuStrip menuStrip1;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiFile;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiNew;
+        internal System.Windows.Forms.ToolStripSeparator separator1;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiOpen;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiOpenRecent;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiSave;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiSaveAs;
+        internal System.Windows.Forms.ToolStripSeparator separator2;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiExit;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiEdit;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiFind;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiAbout;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiBasicHelp;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiHelp;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiFindAndReplace;
         private System.Windows.Forms.SplitContainer splitContainer3;
-        private System.Windows.Forms.Button btnLoadXml;
-        private System.Windows.Forms.Button btnBrowse;
         private Ionic.WinForms.RichTextBoxEx richTextBox1;
-        private System.Windows.Forms.Button btnEvalXpath;
         private System.Windows.Forms.RichTextBox tbXpath;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.StatusStrip statusStrip1;
@@ -589,15 +682,14 @@
         private System.Windows.Forms.ToolStripStatusLabel linkToCodeplex;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem copyAllToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem pasteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tsmiReformat;
+        private System.Windows.Forms.ToolStripMenuItem tsmiCopyAll;
+        private System.Windows.Forms.ToolStripMenuItem tsmiCopy;
+        private System.Windows.Forms.ToolStripMenuItem tsmiPaste;
         private System.Windows.Forms.FlowLayoutPanel matchPanel;
         private System.Windows.Forms.Label lblMatch;
-        private System.Windows.Forms.ToolStripMenuItem stripNamespacesToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem removeSelectedToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tsmiStripNamespaces;
+        private System.Windows.Forms.ToolStripMenuItem tsmiRemoveSelected;
         private System.Windows.Forms.Button btnExpandCollapse;
         private System.Windows.Forms.ImageList imageList1;
         private System.Windows.Forms.Panel pnlInput;
@@ -606,9 +698,9 @@
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
         private Ionic.WinForms.CustomTabControl customTabControl1;
         private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.ToolStripMenuItem extractHighlightedToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toggleLineNumbersToolStripMenuItem;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ToolStripMenuItem tsmiExtractHighlighted;
+        private System.Windows.Forms.ToolStripMenuItem tsmiLineNumbers;
+        //private System.Windows.Forms.Label label3;
     }
 }
 
