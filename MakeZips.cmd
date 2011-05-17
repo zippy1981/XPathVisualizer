@@ -14,14 +14,14 @@ goto START
 :START
 setlocal
 
-set zipit=c:\dinoch\bin\zipit.exe
+set zipit=c:\users\dino\bin\zipit.exe
 set stamp=%DATE% %TIME%
 set stamp=%stamp:/=-%
 set stamp=%stamp: =-%
 set stamp=%stamp::=%
 
 :: get the version
-for /f "delims==" %%I in ('type Tool\Properties\AssemblyInfo.cs ^| c:\utils\grep AssemblyVersion ^| c:\utils\sed -e "s/^.*(.\(.*\).).*/\1/"') do set longversion=%%I
+for /f "delims==" %%I in ('type Tool\Properties\AssemblyInfo.cs ^| c:\bin\grep AssemblyVersion ^| c:\bin\sed -e "s/^.*(.\(.*\).).*/\1/"') do set longversion=%%I
 
 set version=%longversion:~0,3%
 echo version is %version%
@@ -42,7 +42,8 @@ call :MakeMsiForConfig
 
 set config=Release
 call :MakeMsiForConfig
-copy Setup\%config%\XPathVisualizer-v%version%.msi %rdir%
+
+copy wix\bin\%config%\XPathVisualizer-v%version%.msi %rdir%
 
 call :MakeBinZip
 call :MakeSourceZip
@@ -60,16 +61,6 @@ goto ALL_DONE
 
 c:\.net3.5\msbuild.exe XPathVisualizer.sln /p:Configuration=%config%
 
-
-  echo.
-  echo +++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  echo.
-  echo Making the MSI...
-  echo.
-
-  c:\vs2008\Common7\ide\devenv.exe XpathVisualizer.sln /build %config% /project "Setup"
-  c:\dinoch\dev\dotnet\AwaitFile -v -t 50 Setup\%config%\XPathVisualizer-v%version%.msi
-
 goto :EOF
 -------------------------------------------------------
 
@@ -86,7 +77,7 @@ goto :EOF
   echo.
 
 set binzip=%rdir%\XpathVisualizer-v%longversion%-bin.zip
-%zipit%  %binzip%  -s Readme.txt "This is the binary distribution for Ionic's XPathVisualizer v%version%. Packed %stamp%."  -D MergedTool\bin\Release  XPathVisualizer.exe
+%zipit%  %binzip%  -s Readme.txt "This is the binary distribution for Ionic's XPathVisualizer v%version%. Packed %stamp%."  License.rtf -D MergedTool\bin\Release  XPathVisualizer.exe
 
   goto :EOF
 -------------------------------------------------------
