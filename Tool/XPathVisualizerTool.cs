@@ -17,7 +17,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last saved: <2011-May-16 10:00:37>
+// Last saved: <2011-May-16 12:08:29>
 //
 //
 
@@ -59,10 +59,11 @@ namespace XPathVisualizer
         // currently-selected tab.
         //
         // There's a RichTextBoxExtras class, which wraps RTB and provides
-        // some additional capabilities, most notably, suppression of redraw,
-        // which allows smoother UI experience during the progressive syntax
-        // highlighting. The _rtbe instance refers to richTextBox1, so _rtbe
-        // gets reset to null when the selected tab changes.
+        // some additional capabilities, most notably, suppression of
+        // redraw, which allows smoother UI experience during the
+        // progressive background syntax highlighting. The _rtbe instance
+        // refers to richTextBox1, so _rtbe gets reset to null when the
+        // selected tab changes.
         //
         // tabState and tabPage are used like local variables, but like
         // richTextBox1, they refer to the currently-displayed tab. The
@@ -114,8 +115,9 @@ namespace XPathVisualizer
             DisableMatchButtons();
         }
 
-        private void UpdateStatus(string s )
+        private void UpdateStatus(string format, params object[] args)
         {
+            var s = String.Format(format, args);
             this.lblStatus.Text = s;
             if (tabState != null)
                 tabState.status = s;
@@ -239,6 +241,9 @@ namespace XPathVisualizer
                 wantFormat.Set();
                 DisableMatchButtons();
                 PreloadXmlns();
+
+                // auto-evaluate any xpath that is present
+                tbXpath_TextChanged(null, null);
             }
             catch (Exception exc1)
             {
@@ -270,7 +275,6 @@ namespace XPathVisualizer
 
 
 
-
         private void richTextBox1_Leave(object sender, EventArgs e)
         {
             IntPtr mask = IntPtr.Zero;
@@ -282,11 +286,9 @@ namespace XPathVisualizer
             }
             catch (Exception exc1)
             {
-                UpdateStatus(String.Format("Cannot process that XML. ({0})", exc1.Message));
+                UpdateStatus("Cannot process that XML. ({0})", exc1.Message);
             }
         }
-
-
 
 
         private void PreloadXmlns()
@@ -571,8 +573,8 @@ namespace XPathVisualizer
                     XElement xe = xpathParser.Parse(xpathExpr, new XPathTreeBuilder());
                     this.toolTip1.SetToolTip(this.tbXpath, "enter an XPath expression");
 
-                    // the parse succeeded, auto-evaluate.
-                    btnEvalXpath_Click(null,null);
+                    // the parse succeeded, evaluate it
+                    EvalXpath();
                 }
                 catch (XPathParserException exc1)
                 {
@@ -661,7 +663,7 @@ namespace XPathVisualizer
         }
 
 
-        private void btnEvalXpath_Click(object sender, EventArgs e)
+        private void EvalXpath()
         {
             List<Tuple<int, int>> matches = null;
 
@@ -716,17 +718,17 @@ namespace XPathVisualizer
                     this.toolTip1.SetToolTip(richTextBox1, s);
 
                     if (elaboratedXpathExpression.Length < 64)
-                        UpdateStatus(String.Format("{0}: {1} {2} selected",
-                                                   elaboratedXpathExpression,
-                                                   selection.Count, (selection.Count == 1) ? "node" : "nodes"));
+                        UpdateStatus("{0}: {1} {2} selected",
+                                     elaboratedXpathExpression,
+                                     selection.Count, (selection.Count == 1) ? "node" : "nodes");
                     else
-                        UpdateStatus(String.Format("{0} {1} selected",
-                                                   selection.Count, (selection.Count == 1) ? "node" : "nodes"));
+                        UpdateStatus("{0} {1} selected",
+                                     selection.Count, (selection.Count == 1) ? "node" : "nodes");
                     matches = HighlightSelection(selection, xmlns);
-                }
 
-                // remember the successful xpath queries
-                RememberInMruList(_xpathExpressionMruList, xpathExpression);
+                    // remember the successful xpath queries
+                    RememberInMruList(_xpathExpressionMruList, xpathExpression);
+                }
             }
             catch (Exception exc1)
             {
@@ -1011,10 +1013,14 @@ namespace XPathVisualizer
 
 
 
-        private void linkToCodeplex_Click(object sender, EventArgs e)
+        private void labelAsHyperlink_Click(object sender, EventArgs e)
         {
-            if (sender as ToolStripStatusLabel != null)
-                System.Diagnostics.Process.Start((sender as ToolStripStatusLabel).Text);
+            ToolStripStatusLabel lbl = sender as ToolStripStatusLabel;
+            if (lbl == null) return;
+            var t= lbl.Text;
+            if (!t.StartsWith("http:/") && !t.StartsWith("https:/"))
+                t = "http://" + t;
+            System.Diagnostics.Process.Start(t);
         }
 
 
@@ -1561,7 +1567,7 @@ namespace XPathVisualizer
         {
             if (e.KeyCode == Keys.Enter)
             {
-                this.btnEvalXpath_Click(sender, null);
+                EvalXpath();
                 e.Handled = true;
             }
             else if (e.Control && e.KeyCode == Keys.N)
@@ -1622,7 +1628,7 @@ namespace XPathVisualizer
                 Trace("DeleteSelection(total({0})", totalRemoved);
                 count++;
             }
-            UpdateStatus(String.Format("{0} nodes removed.", count));
+            UpdateStatus("{0} nodes removed.", count);
             tabState.nav = null;
             wantFormat.Set();
             tabState.currentMatch = 0;
@@ -1698,7 +1704,7 @@ namespace XPathVisualizer
                     count++;
                 }
 
-                UpdateStatus(String.Format("{0} nodes extracted.", count));
+                UpdateStatus("{0} nodes extracted.", count);
             }
             finally
             {
@@ -1856,6 +1862,9 @@ namespace XPathVisualizer
             if (tabState.okToSave)
             {
                 File.WriteAllText(this.fileToLoad, richTextBox1.Text);
+                UpdateStatus("Saved {0} lines to {1}",
+                             this.richTextBox1.Lines.Length,
+                             GetShortDisplayNameForRecentFiles(fileToLoad, 45));
             }
             else
             {
@@ -1920,8 +1929,9 @@ namespace XPathVisualizer
                     tabState.src = fileToLoad;
                     _fileHistory.Store(fileToLoad);
                 }
-
-                UpdateStatus("Saved.");
+                UpdateStatus("Saved {0} lines to {1}",
+                             this.richTextBox1.Lines.Length,
+                             GetShortDisplayNameForRecentFiles(fileToLoad, 45));
             }
             catch (System.Exception exc1)
             {
@@ -2078,6 +2088,11 @@ namespace XPathVisualizer
         }
 
 
+        private void customTabControl1_BeforeCloseTab(object sender, Ionic.WinForms.BeforeCloseTabEventArgs e)
+        {
+            DisableMatchButtons();
+        }
+
 
         private void customTabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -2096,7 +2111,7 @@ namespace XPathVisualizer
                 richTextBox1 = tabPage.Controls[0] as Ionic.WinForms.RichTextBoxEx;
                 this.tbXpath.Text = tabState.xpath;
                 this.fileToLoad = tabState.src;
-                this.lblStatus.Text = tabState.status;
+                this.lblStatus.Text = tabState.status; // most recent
                 Trace("tabstate({0}).xmlnsTableIsExpanded: {1}",
                       tabState.tabNumber, tabState.xmlnsTableIsExpanded);
                 DisplayXmlnsPrefixList();

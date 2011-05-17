@@ -85,6 +85,11 @@ namespace XPathVisualizer
             if (!String.IsNullOrEmpty(this.tbXmlns.Text))
                 AppCuKey.SetValue(_rvn_Xmlns, this.tbXmlns.Text);
 
+            AppCuKey.SetValue(_rvn_LastRun, System.DateTime.Now.ToString("yyyy MMM dd HH:mm:ss"));
+            int x = (Int32)AppCuKey.GetValue(_rvn_Runs, 0);
+            x++;
+            AppCuKey.SetValue(_rvn_Runs, x);
+
             // store the size of the form
             int w = 0, h = 0, left = 0, top = 0;
             if (this.Bounds.Width < this.MinimumSize.Width || this.Bounds.Height < this.MinimumSize.Height)
@@ -112,7 +117,7 @@ namespace XPathVisualizer
             // AppCuKey.SetValue(_rvn_Splitter, this.splitContainer3.SplitterDistance.ToString());
 
             // the Xpath expression MRU list
-            var converted = _xpathExpressionMruList.ToList().ConvertAll(x => x.XmlEscapeIexcl());
+            var converted = _xpathExpressionMruList.ToList().ConvertAll(z => z.XmlEscapeIexcl());
             string history = String.Join("¡", converted.ToArray());
             AppCuKey.SetValue(_rvn_History, history);
 
@@ -219,7 +224,6 @@ namespace XPathVisualizer
             set { _appCuKey = null; }
         }
 
-
         private Microsoft.Win32.RegistryKey _appCuKey;
         private static string _AppRegyPath = "Software\\Dino Chiesa\\XPathVisualizer";
         private string _rvn_XPathExpression = "XPathExpression";
@@ -227,6 +231,8 @@ namespace XPathVisualizer
         private string _rvn_Xmlns = "Xmlns";
         private string _rvn_Geometry = "Geometry";
         private string _rvn_History = "History";
+        private string _rvn_LastRun = "LastRun";
+        private string _rvn_Runs = "Runs";
         private readonly int _MaxMruListSize = 14;
         //private Ionic.Utils.MruList<String> _xpathExpressionMruList;
         private System.Windows.Forms.AutoCompleteStringCollection _xpathExpressionMruList;
