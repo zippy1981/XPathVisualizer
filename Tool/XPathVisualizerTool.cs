@@ -17,7 +17,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last saved: <2011-May-16 12:08:29>
+// Last saved: <2011-May-17 15:12:48>
 //
 //
 
@@ -478,7 +478,7 @@ namespace XPathVisualizer
         {
             if (tabState == null)
             {
-                tsmiReformat.Enabled = false;
+                tsmiReindent.Enabled = false;
                 tsmiExtractHighlighted.Enabled = false;
                 tsmiRemoveSelected.Enabled = false;
                 tsmiStripNamespaces.Enabled = false;
@@ -488,7 +488,7 @@ namespace XPathVisualizer
             }
             else if (tabState.matches == null || tabState.matches.Count == 0)
             {
-                tsmiReformat.Enabled = true;
+                tsmiReindent.Enabled = true;
                 tsmiExtractHighlighted.Enabled = false;
                 tsmiRemoveSelected.Enabled = false;
                 tsmiStripNamespaces.Enabled = true;
@@ -498,7 +498,7 @@ namespace XPathVisualizer
             }
             else
             {
-                tsmiReformat.Enabled = true;
+                tsmiReindent.Enabled = true;
                 tsmiExtractHighlighted.Enabled = true;
                 tsmiRemoveSelected.Enabled = true;
                 tsmiStripNamespaces.Enabled = true;
@@ -1403,7 +1403,7 @@ namespace XPathVisualizer
         }
 
 
-        private void tsmiReformat_Click(object sender, EventArgs e)
+        private void tsmiReindent_Click(object sender, EventArgs e)
         {
             IndentXml();
         }

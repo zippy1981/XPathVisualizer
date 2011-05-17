@@ -66,7 +66,7 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.richTextBox1 = new Ionic.WinForms.RichTextBoxEx();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.tsmiReformat = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiReindent = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiLineNumbers = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiStripNamespaces = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiExtractHighlighted = new System.Windows.Forms.ToolStripMenuItem();
@@ -80,7 +80,6 @@
             this.linkToCodeplex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            //this.label3 = new System.Windows.Forms.Label();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
@@ -128,6 +127,7 @@
             this.tsmiNew.Name = "tsmiNew";
             this.tsmiNew.Size = new System.Drawing.Size(142, 22);
             this.tsmiNew.Text = "&New";
+            this.tsmiNew.Image = ((System.Drawing.Bitmap)(resources.GetObject("tsmiNew.Image")));
             this.tsmiNew.Click += new System.EventHandler(this.tsmiNew_Click);
             //
             // separator1
@@ -140,6 +140,7 @@
             this.tsmiOpen.Name = "tsmiOpen";
             this.tsmiOpen.Size = new System.Drawing.Size(142, 22);
             this.tsmiOpen.Text = "&Open...";
+            this.tsmiOpen.Image = ((System.Drawing.Bitmap)(resources.GetObject("tsmiOpen.Image")));
             this.tsmiOpen.Click += new System.EventHandler(this.tsmiOpen_Click);
             //
             // tsmiGet
@@ -147,6 +148,7 @@
             this.tsmiGet.Name = "tsmiGet";
             this.tsmiGet.Size = new System.Drawing.Size(142, 22);
             this.tsmiGet.Text = "&Get...";
+            this.tsmiGet.Image = ((System.Drawing.Bitmap)(resources.GetObject("tsmiGet.Image")));
             this.tsmiGet.Click += new System.EventHandler(this.tsmiGet_Click);
             //
             // tsmiOpenRecent
@@ -154,12 +156,14 @@
             this.tsmiOpenRecent.Name = "tsmiOpenRecent";
             this.tsmiOpenRecent.Size = new System.Drawing.Size(142, 22);
             this.tsmiOpenRecent.Text = "Open &Recent";
+            this.tsmiOpenRecent.Image = ((System.Drawing.Bitmap)(resources.GetObject("tsmiOpen.Image")));
             //
             // tsmiSave
             //
             this.tsmiSave.Name = "tsmiSave";
             this.tsmiSave.Size = new System.Drawing.Size(142, 22);
             this.tsmiSave.Text = "&Save";
+            this.tsmiSave.Image = ((System.Drawing.Bitmap)(resources.GetObject("tsmiSave.Image")));
             this.tsmiSave.Click += new System.EventHandler(this.tsmiSave_Click);
             //
             // tsmiSaveAs
@@ -167,6 +171,7 @@
             this.tsmiSaveAs.Name = "tsmiSaveAs";
             this.tsmiSaveAs.Size = new System.Drawing.Size(142, 22);
             this.tsmiSaveAs.Text = "Save &As...";
+            //this.tsmiSaveAs.Image = ((System.Drawing.Bitmap)(resources.GetObject("tsmiSaveAs.Image")));
             this.tsmiSaveAs.Click += new System.EventHandler(this.tsmiSaveAs_Click);
             //
             // separator2
@@ -179,12 +184,13 @@
             this.tsmiExit.Name = "tsmiExit";
             this.tsmiExit.Size = new System.Drawing.Size(142, 22);
             this.tsmiExit.Text = "E&xit";
+            this.tsmiExit.Image = ((System.Drawing.Bitmap)(resources.GetObject("tsmiExit.Image")));
             this.tsmiExit.Click += new System.EventHandler(this.tsmiExit_Click);
             //
             // tsmiEdit
             //
             this.tsmiEdit.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiReformat,
+            this.tsmiReindent,
             this.tsmiLineNumbers,
             this.tsmiStripNamespaces,
             this.tsmiExtractHighlighted,
@@ -211,6 +217,7 @@
             this.tsmiAbout.Name = "tsmiAbout";
             this.tsmiAbout.Size = new System.Drawing.Size(39, 20);
             this.tsmiAbout.Text = "About XPathVisualizer";
+            this.tsmiAbout.Image = ((System.Drawing.Bitmap)(resources.GetObject("tsmiAbout.Image")));
             this.tsmiAbout.Click += new System.EventHandler(this.tsmiAbout_Click);
             //
             // tsmiBasicHelp
@@ -218,6 +225,7 @@
             this.tsmiBasicHelp.Name = "tsmiBasicHelp";
             this.tsmiBasicHelp.Size = new System.Drawing.Size(39, 20);
             this.tsmiBasicHelp.Text = "Basic Help";
+            this.tsmiBasicHelp.Image = ((System.Drawing.Bitmap)(resources.GetObject("tsmiBasicHelp.Image")));
             this.tsmiBasicHelp.Click += new System.EventHandler(this.tsmiBasicHelp_Click);
             //
             // tsmiFind
@@ -410,7 +418,8 @@
             this.btn_NextMatch.Name = "btn_NextMatch";
             this.btn_NextMatch.Size = new System.Drawing.Size(22, 23);
             this.btn_NextMatch.TabIndex = 81;
-            this.btn_NextMatch.Text = ">";
+            //this.btn_NextMatch.Text = ">";
+            this.btn_NextMatch.Image = ((System.Drawing.Bitmap)(resources.GetObject("btn_NextMatch.Image")));
             this.toolTip1.SetToolTip(this.btn_NextMatch, "next match");
             this.btn_NextMatch.UseVisualStyleBackColor = true;
             this.btn_NextMatch.Click += new System.EventHandler(this.btn_NextMatch_Click);
@@ -439,7 +448,8 @@
             this.btn_PrevMatch.Name = "btn_PrevMatch";
             this.btn_PrevMatch.Size = new System.Drawing.Size(22, 23);
             this.btn_PrevMatch.TabIndex = 82;
-            this.btn_PrevMatch.Text = "<";
+            //this.btn_PrevMatch.Text = "<";
+            this.btn_PrevMatch.Image = ((System.Drawing.Bitmap)(resources.GetObject("btn_PrevMatch.Image")));
             this.toolTip1.SetToolTip(this.btn_PrevMatch, "previous match");
             this.btn_PrevMatch.UseVisualStyleBackColor = true;
             this.btn_PrevMatch.Click += new System.EventHandler(this.btn_PrevMatch_Click);
@@ -501,7 +511,7 @@
             // contextMenuStrip1
             //
             // this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            //         this.tsmiReformat,
+            //         this.tsmiReindent,
             // this.tsmiLineNumbers,
             // this.tsmiStripNamespaces,
             // this.tsmiExtractHighlighted,
@@ -513,12 +523,13 @@
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(189, 202);
             //
-            // tsmiReformat
+            // tsmiReindent
             //
-            this.tsmiReformat.Name = "tsmiReformat";
-            this.tsmiReformat.Size = new System.Drawing.Size(188, 22);
-            this.tsmiReformat.Text = "Reformat";
-            this.tsmiReformat.Click += new System.EventHandler(this.tsmiReformat_Click);
+            this.tsmiReindent.Name = "tsmiReindent";
+            this.tsmiReindent.Size = new System.Drawing.Size(188, 22);
+            this.tsmiReindent.Text = "Reindent";
+            this.tsmiReindent.Image = ((System.Drawing.Bitmap)(resources.GetObject("tsmiReindent.Image")));
+            this.tsmiReindent.Click += new System.EventHandler(this.tsmiReindent_Click);
             //
             // tsmiLineNumbers
             //
@@ -694,7 +705,7 @@
         private System.Windows.Forms.ToolStripStatusLabel linkToCodeplex;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem tsmiReformat;
+        private System.Windows.Forms.ToolStripMenuItem tsmiReindent;
         private System.Windows.Forms.ToolStripMenuItem tsmiCopyAll;
         private System.Windows.Forms.ToolStripMenuItem tsmiCopy;
         private System.Windows.Forms.ToolStripMenuItem tsmiPaste;
