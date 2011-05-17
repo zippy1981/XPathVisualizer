@@ -459,6 +459,7 @@
             this.customTabControl1.TabIndex = 86;
             this.customTabControl1.TabStop = false;
             this.customTabControl1.SelectedIndexChanged += new System.EventHandler(this.customTabControl1_SelectedIndexChanged);
+            this.customTabControl1.BeforeCloseTab += new System.EventHandler<Ionic.WinForms.BeforeCloseTabEventArgs>(this.customTabControl1_BeforeCloseTab);
             //
             // tabPage1
             //
@@ -601,8 +602,8 @@
             this.linkToCodeplex.LinkBehavior = System.Windows.Forms.LinkBehavior.AlwaysUnderline;
             this.linkToCodeplex.Name = "linkToCodeplex";
             this.linkToCodeplex.Size = new System.Drawing.Size(199, 17);
-            this.linkToCodeplex.Text = "http://XPathVisualizer.codeplex.com";
-            this.linkToCodeplex.Click += new System.EventHandler(this.linkToCodeplex_Click);
+            this.linkToCodeplex.Text = "XPathVisualizer.codeplex.com";
+            this.linkToCodeplex.Click += new System.EventHandler(this.labelAsHyperlink_Click);
             //
             // contextMenuStrip2
             //
