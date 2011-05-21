@@ -17,7 +17,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last saved: <2011-May-17 15:12:48>
+// Last saved: <2011-May-21 14:26:19>
 //
 //
 
@@ -96,6 +96,10 @@ namespace XPathVisualizer
         private int extractCount;
         private int tn;
         private bool isDisplayingXmlnsPanel;
+        private Color kindaPink = Color.FromArgb(Color.Red.A, 0xFF, 0x99, 0x99);
+        private Color badXpathColor = Color.FromArgb((Color.Red.A << 24) | 0xFFDEAD);
+        private Color matchingEltColor = Color.FromArgb(Color.Red.A, 0x98, 0xFb, 0x98);
+
 
         private XmlReaderSettings readerSettings = new XmlReaderSettings
         {
@@ -558,7 +562,7 @@ namespace XPathVisualizer
                 int ss = this.tbXpath.SelectionStart;
                 int sl = this.tbXpath.SelectionLength;
                 // get the text.
-                string xpathExpr = this.tbXpath.Text;
+                string xpathExpr = this.tbXpath.Text.Trim();
                 // put it back.
                 // why? because it's possible the user has pasted in RTF, which won't
                 // show up correctly in that one-line RichTextBox. If we paste it here,
@@ -746,7 +750,7 @@ namespace XPathVisualizer
                     else
                     {
                         this.tbXpath.Select(ix, brokenPrefix.Length);
-                        this.tbXpath.BackColor = Color.FromArgb((Color.Red.A << 24) | 0xFFDEAD);
+                        this.tbXpath.BackColor = this.badXpathColor;
                         this.tbXpath.Focus();
                         UpdateStatus("Exception: " + exc1.Message);
                     }
@@ -754,7 +758,7 @@ namespace XPathVisualizer
                 else if (BadExpression(exc1))
                 {
                     this.tbXpath.SelectAll();
-                    this.tbXpath.BackColor = Color.FromArgb((Color.Red.A << 24) | 0xFFDEAD);
+                    this.tbXpath.BackColor = this.badXpathColor;
                     this.tbXpath.Focus();
                     UpdateStatus("Exception: " + exc1.Message);
                 }
@@ -777,7 +781,7 @@ namespace XPathVisualizer
             tabState.xpath = this.tbXpath.Text;
             tabState.currentMatch = 0;
             EnableMatchButtons();
-            scrollToCurrentMatch();
+            scrollToCurrentMatch(-1);
         }
 
 
@@ -814,8 +818,7 @@ namespace XPathVisualizer
             {
                 // do the highlight
                 richTextBox1.Select(t.V1, t.V2 - t.V1 + 1);
-                richTextBox1.SelectionBackColor =
-                    Color.FromArgb(Color.Red.A, 0x98, 0xFb, 0x98);
+                richTextBox1.SelectionBackColor = this.matchingEltColor;
             }
             return mp;
         }
@@ -1090,7 +1093,7 @@ namespace XPathVisualizer
                     xmlNamespaces.FindPrefix(k).IsDefault = true;
 
                     // unset checkbox for all others, like a radio button
-                    foreach (Control c in this.pnlPrefixList.Controls)
+                    foreach (Control c in this.groupBox1.Controls)
                     {
                         var chk2 = c as System.Windows.Forms.CheckBox;
                         if (chk2 != null && chk2 != sender)
@@ -1140,8 +1143,8 @@ namespace XPathVisualizer
                   ? tabState.xmlnsTableIsExpanded.ToString()
                   : "no");
 
-            int offsetX = 0;  // greater is further left
-            int offsetY = 2;  // greater implies further up
+            int offsetX = 2;  // greater is further right
+            int offsetY = 16 + this.tbXmlns.Size.Height;  // greater implies further down
             try
             {
                 var keypressed = new KeyPressEventHandler( (src,e) => {
@@ -1232,9 +1235,10 @@ namespace XPathVisualizer
 
                 //this.BeginUpdate();
                 this.SuspendLayout();
-                this.pnlPrefixList.SuspendLayout();
+                this.groupBox1.SuspendLayout();
 
-                this.pnlPrefixList.Controls.Clear();
+                this.groupBox1.Controls.Clear();
+                this.groupBox1.Controls.Add(this.pnlInput);
 
                 int count = 0;
                 if (xmlNamespaces.Count > 0)
@@ -1250,15 +1254,15 @@ namespace XPathVisualizer
                             {
                                 Anchor = (AnchorStyles)(AnchorStyles.Top |
                                      AnchorStyles.Left),
-                                Location = new Point(this.tbPrefix.Location.X - offsetX,
-                                                                    this.tbPrefix.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
+                                Location = new Point(this.tbPrefix.Location.X + offsetX,
+                                                                    this.tbPrefix.Location.Y + offsetY + (count * XmlNsPanelDeltaY)),
                                 Size = new Size(this.tbPrefix.Size.Width, this.tbPrefix.Size.Height),
                                 Text = item.Prefix,
                                 ReadOnly = !item.IsContrivedPrefix,
                                 CausesValidation = true,
                                 TabStop = false,
                             };
-                        this.pnlPrefixList.Controls.Add(tb1);
+                        this.groupBox1.Controls.Add(tb1);
                         this.toolTip1.SetToolTip(tb1, "click to modify");
                         tb1.Validating += tbXmlnsValidating;
                         tb1.KeyPress += keypressed;
@@ -1269,12 +1273,12 @@ namespace XPathVisualizer
                         var lbl1 = new Label
                             {
                                 AutoSize = true,
-                                Location = new Point(this.tbXmlns.Location.X - offsetX - 14,
-                                                                    this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
+                                Location = new Point(this.tbXmlns.Location.X + offsetX - 14,
+                                                                    this.tbXmlns.Location.Y + offsetY + (count * XmlNsPanelDeltaY)),
                                 Size = new Size(24, 13),
                                 Text = ":=",
                             };
-                        this.pnlPrefixList.Controls.Add(lbl1);
+                        this.groupBox1.Controls.Add(lbl1);
 
                         // second textbox.Holds the xml namespace
                         var tb2 = new TextBox
@@ -1282,23 +1286,23 @@ namespace XPathVisualizer
                                 Anchor = (AnchorStyles)
                                     (AnchorStyles.Top | AnchorStyles.Left |
                                      AnchorStyles.Right),
-                                Location = new Point(this.tbXmlns.Location.X - offsetX,
-                                                     this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
+                                Location = new Point(this.tbXmlns.Location.X + offsetX,
+                                                     this.tbXmlns.Location.Y + offsetY + (count * XmlNsPanelDeltaY)),
                                 Size = new Size(this.tbXmlns.Size.Width - 18, this.tbXmlns.Size.Height),
                                 Text = item.Ns,
                                 ReadOnly = true,
                                 TabStop = false,
                             };
-                        this.pnlPrefixList.Controls.Add(tb2);
+                        this.groupBox1.Controls.Add(tb2);
 
                         // checkbox to select the default namespace
                         var chk1 = new CheckBox
                             {
                                 Anchor = (AnchorStyles)
                                     (AnchorStyles.Top | AnchorStyles.Right),
-                                Location = new Point(this.tbXmlns.Location.X - offsetX +
+                                Location = new Point(this.tbXmlns.Location.X + offsetX +
                                                      this.tbXmlns.Size.Width - 14,
-                                                     this.tbXmlns.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
+                                                     this.tbXmlns.Location.Y + offsetY + (count * XmlNsPanelDeltaY)),
                                 Size = new Size(14, this.tbXmlns.Size.Height),
                                 TabStop = true,
                                 Checked = item.IsDefault
@@ -1306,15 +1310,15 @@ namespace XPathVisualizer
                         chk1.Tag = item;
                         chk1.Click += checkTicked;
                         this.toolTip1.SetToolTip(chk1, "checked: use as default ns\nin xpath queries");
-                        this.pnlPrefixList.Controls.Add(chk1);
+                        this.groupBox1.Controls.Add(chk1);
 
                         // button to delete the namespace and its prefix
                         var btn1 = new Button
                             {
                                 Anchor = (AnchorStyles)
                                     (AnchorStyles.Top | AnchorStyles.Right),
-                                Location = new Point(this.btnAddNsPrefix.Location.X - offsetX,
-                                                     this.btnAddNsPrefix.Location.Y - offsetY + (count * XmlNsPanelDeltaY)),
+                                Location = new Point(this.btnAddNsPrefix.Location.X + offsetX,
+                                                     this.btnAddNsPrefix.Location.Y + offsetY + (count * XmlNsPanelDeltaY)),
                                 Size = new Size(this.btnAddNsPrefix.Size.Width,
                                                 this.btnAddNsPrefix.Size.Height),
                                 Text = "X",
@@ -1324,7 +1328,7 @@ namespace XPathVisualizer
                         btn1.Tag = item;
                         btn1.Click += buttonClicked;
                         this.toolTip1.SetToolTip(btn1, "remove this ns+prefix");
-                        this.pnlPrefixList.Controls.Add(btn1);
+                        this.groupBox1.Controls.Add(btn1);
                         tb1.Tag = chk1; // associate checkbox to the textbox
                         count++;
                     }
@@ -1332,7 +1336,7 @@ namespace XPathVisualizer
 
                 ProperlyDisplayXmlnsPrefixPanel();
 
-                this.pnlPrefixList.ResumeLayout();
+                this.groupBox1.ResumeLayout();
                 this.ResumeLayout();
             }
             catch (Exception exc1)
@@ -1355,13 +1359,22 @@ namespace XPathVisualizer
 
         private void ExpandXmlnsPrefixPanel()
         {
-            int n = this.pnlPrefixList.Controls.Count / 4;
+            int n = (this.groupBox1.Controls.Count -1 )/ 4;
+            int offsetY = 2;  // greater implies larger panel
 
-            this.pnlPrefixList.Visible = true;
-            this.pnlInput.Visible = true;
+            //this.pnlPrefixList.Visible = true;
+                    foreach (Control c in this.groupBox1.Controls)
+                    {
+                        c.Visible = true;
+                    }
+
+                    //this.pnlInput.Visible = true;
             btnExpandCollapse.ImageIndex = 0;
             this.toolTip1.SetToolTip(this.btnExpandCollapse, "Collapse");
-            this.splitContainer3.Panel1MinSize = originalPanel1MinSize + (XmlNsPanelDeltaY * n);
+            //this.splitContainer3.Panel1MinSize = originalPanel1MinSize + (XmlNsPanelDeltaY * n) + offsetY;
+            //var sz = this.pnlPrefixList.Size;
+            //this.pnlPrefixList.Size = new Size(sz.Width, 2 + (XmlNsPanelDeltaY * n) + offsetY);
+            this.splitContainer3.Panel1MinSize = 70 + (XmlNsPanelDeltaY * n) + offsetY;
             this.splitContainer3.SplitterDistance = this.splitContainer3.Panel1MinSize;
 
             if (tabState != null)
@@ -1379,8 +1392,13 @@ namespace XPathVisualizer
 
         private void CollapseXmlnsPrefixPanel()
         {
-            this.pnlPrefixList.Visible = false;
-            this.pnlInput.Visible = false;
+            //this.pnlPrefixList.Visible = false;
+            foreach (Control c in this.groupBox1.Controls)
+            {
+                c.Visible = false;
+            }
+
+            //this.pnlInput.Visible = false;
             btnExpandCollapse.ImageIndex = 1;
             this.toolTip1.SetToolTip(this.btnExpandCollapse, "Expand");
             this.splitContainer3.Panel1MinSize = originalPanel1MinSize - (XmlNsPanelDeltaY);
@@ -1396,7 +1414,7 @@ namespace XPathVisualizer
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (this.pnlPrefixList.Visible == true)
+            if (this.pnlInput.Visible == true)
                 CollapseXmlnsPrefixPanel();
             else
                 ExpandXmlnsPrefixPanel();
@@ -1507,7 +1525,7 @@ namespace XPathVisualizer
                                                tabState.currentMatch + 1, tabState.matches.Count);
         }
 
-        private void scrollToCurrentMatch()
+        private void scrollToCurrentMatch(int prior)
         {
             if (tabState.matches == null) return;
             if (tabState.matches.Count == 0) return;
@@ -1522,6 +1540,15 @@ namespace XPathVisualizer
                   startLine, tabState.numVisibleLines);
 
             UpdateMatchCount();
+
+            if (prior >= 0)
+            {
+                Tuple<int, int> p2 = tabState.matches[prior];
+                richTextBox1.Select(p2.V1, p2.V2 - p2.V1 + 1);
+                richTextBox1.SelectionBackColor = this.matchingEltColor;
+            }
+            richTextBox1.Select(position.V1, position.V2 - position.V1 + 1);
+            richTextBox1.SelectionBackColor = this.kindaPink;
 
             // If the start line is in the middle of the doc...
             //if (startLine > totalLinesInDoc)
@@ -1546,20 +1573,22 @@ namespace XPathVisualizer
         private void btn_NextMatch_Click(object sender, EventArgs e)
         {
             if (tabState.matches == null) return;
+            int p = tabState.currentMatch;
             tabState.currentMatch++;
             if (tabState.currentMatch == tabState.matches.Count)
                 tabState.currentMatch = 0;
-            scrollToCurrentMatch();
+            scrollToCurrentMatch(p);
         }
 
         private void btn_PrevMatch_Click(object sender, EventArgs e)
         {
             if (tabState.matches == null) return;
+            int p = tabState.currentMatch;
             tabState.currentMatch--;
             if (tabState.currentMatch < 0)
                 tabState.currentMatch = tabState.matches.Count - 1;
             Trace("currentMatch = {0}", tabState.currentMatch);
-            scrollToCurrentMatch();
+            scrollToCurrentMatch(p);
         }
 
 
