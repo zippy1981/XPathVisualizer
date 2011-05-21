@@ -55,7 +55,6 @@
             this.tbXmlns = new System.Windows.Forms.TextBox();
             this.tbPrefix = new System.Windows.Forms.TextBox();
             this.btnAddNsPrefix = new System.Windows.Forms.Button();
-            this.pnlPrefixList = new System.Windows.Forms.Panel();
             this.tbXpath = new System.Windows.Forms.RichTextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.matchPanel = new System.Windows.Forms.FlowLayoutPanel();
@@ -254,7 +253,8 @@
             this.splitContainer3.Panel1.Controls.Add(this.groupBox1);
             this.splitContainer3.Panel1.Controls.Add(this.tbXpath);
             this.splitContainer3.Panel1.Controls.Add(this.label2);
-            this.splitContainer3.Panel1MinSize = 74;
+            this.splitContainer3.Panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.splitContainer3.Panel1MinSize = 70;
             //
             // splitContainer3.Panel2
             //
@@ -295,11 +295,10 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox1.Controls.Add(this.pnlInput);
-            this.groupBox1.Controls.Add(this.pnlPrefixList);
             this.groupBox1.Location = new System.Drawing.Point(12, 29);
             this.groupBox1.MinimumSize = new System.Drawing.Size(0, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(516, 58);
+            this.groupBox1.Size = new System.Drawing.Size(516, 62);
             this.groupBox1.TabIndex = 48;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "namespaces and prefixes";
@@ -348,16 +347,6 @@
             this.toolTip1.SetToolTip(this.btnAddNsPrefix, "add the specified namespace+prefix");
             this.btnAddNsPrefix.UseVisualStyleBackColor = true;
             this.btnAddNsPrefix.Click += new System.EventHandler(this.btnAddNsPrefix_Click);
-            //
-            // pnlPrefixList
-            //
-            this.pnlPrefixList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.pnlPrefixList.Location = new System.Drawing.Point(2, 42);
-            this.pnlPrefixList.Name = "pnlPrefixList";
-            this.pnlPrefixList.Size = new System.Drawing.Size(513, 38);
-            this.pnlPrefixList.TabIndex = 51;
             //
             // tbXpath
             //
@@ -700,7 +689,6 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.TextBox tbXmlns;
         private System.Windows.Forms.TextBox tbPrefix;
-        private System.Windows.Forms.Panel pnlPrefixList;
         private System.Windows.Forms.ToolStripProgressBar progressBar1;
         private System.Windows.Forms.ToolStripStatusLabel linkToCodeplex;
         private System.Windows.Forms.ToolTip toolTip1;
