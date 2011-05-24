@@ -17,7 +17,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last saved: <2011-May-21 14:26:19>
+// Last saved: <2011-May-24 18:02:18>
 //
 //
 
@@ -866,7 +866,19 @@ namespace XPathVisualizer
 
                     else if (node.NodeType == XPathNodeType.Text)
                     {
-                        string s = node.Value.XmlEscapeQuotes();
+                        //string s = node.Value.XmlEscapeQuotes();
+                        //
+                        // workitem 6714
+                        //
+                        // why?  XmlEscapeQuotes just replaces " with
+                        // &quot; which screws up the length. Why would
+                        // I want to do that?  The only reason: if I am
+                        // RE-escaping, in other words if there are
+                        // already quotes in the original string. Hmmmm...
+                        // Would the node.Value not show that?  I would think so.
+                        // The upshot is, I don't know why I would call XmlEscapeQuotes().
+                        // It seems to break on my test case.
+                        string s = node.Value;
                         ix2 = ix + s.Length;
                         ix++;
                     }
