@@ -17,7 +17,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last saved: <2011-May-24 18:02:18>
+// Last saved: <2011-May-25 11:32:43>
 //
 //
 
@@ -94,6 +94,9 @@ namespace XPathVisualizer
         private XPathParser<XElement> xpathParser = new XPathParser<XElement>();
         private bool isLoading;
         private int extractCount;
+        private int _intTicks;
+        private bool _lastEventWasAlt;
+        private bool aMainMenuItemIsDropped;
         private int tn;
         private bool isDisplayingXmlnsPanel;
         private Color kindaPink = Color.FromArgb(Color.Red.A, 0xFF, 0x99, 0x99);
@@ -117,6 +120,7 @@ namespace XPathVisualizer
             SetupAutocompletes();
             KickoffColorizer();
             DisableMatchButtons();
+            SetupAutoHide();
         }
 
         private void UpdateStatus(string format, params object[] args)
@@ -168,7 +172,6 @@ namespace XPathVisualizer
             var rtb = new Ionic.WinForms.RichTextBoxEx();
 
             rtb.BackColor = System.Drawing.SystemColors.Window;
-            rtb.ContextMenuStrip = this.contextMenuStrip1;
             rtb.DetectUrls = false;
             rtb.Dock = System.Windows.Forms.DockStyle.Fill;
             rtb.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -1623,21 +1626,59 @@ namespace XPathVisualizer
             }
         }
 
-        private void form_KeyDown(object sender, KeyEventArgs e)
+        //private void form_KeyDown(object sender, KeyEventArgs e)
+        protected override void OnKeyDown(KeyEventArgs e)
         {
             // Because Form.KeyPreview is true, this method gets invoked before
             // the KeyDown event is passed to the control with focus.  This way we
             // can handle keydown events on a form-wide basis.
             if (e.Control && e.KeyCode == Keys.N)
             {
-                btn_NextMatch_Click(sender, null);
+                btn_NextMatch_Click(this, null);
                 e.Handled = true;
             }
             else if (e.Control && e.KeyCode == Keys.P)
             {
-                btn_PrevMatch_Click(sender, null);
+                btn_PrevMatch_Click(this, null);
                 e.Handled = true;
             }
+            // workitem 6720
+            else if (e.Alt && e.KeyCode == Keys.F4)
+            {
+                // do nothing - normal handling (form exit)
+            }
+            else if (e.Alt && e.KeyCode == Keys.F)
+            {
+            }
+            else if (e.Alt && e.KeyCode == Keys.E)
+            {
+            }
+            else if (e.Alt && e.KeyCode == Keys.H)
+            {
+            }
+            else if (e.Alt)
+            {
+                // if the menu has just changed state, do not change back.
+                // force a bit of a delay.
+                if (this._lastEventWasAlt && this._intTicks <= 1)
+                    return;
+
+                this._intTicks = 0;
+                // toggle
+                if (menuStrip1.Visible)
+                {
+                    menuStrip1.Visible = false;
+                    this._lastEventWasAlt = false;
+                }
+                else
+                {
+                    menuStrip1.Visible = true;
+                    this._lastEventWasAlt = true;
+                }
+                e.Handled = true;
+                return;
+            }
+            _lastEventWasAlt = false;
         }
 
 
@@ -1991,7 +2032,7 @@ namespace XPathVisualizer
         {
             if (e.Button == MouseButtons.Right)
             {
-                contextMenuStrip2.Items.Clear();
+                mnuXpathMru.Items.Clear();
                 int c = _xpathExpressionMruList.Count;
                 for (int i = 0; i < c; i++)
                 {
@@ -1999,9 +2040,9 @@ namespace XPathVisualizer
                     var mi = new System.Windows.Forms.ToolStripMenuItem();
                     mi.Text = s;
                     mi.Click += (src, evt) => { this.tbXpath.Text = (src as ToolStripMenuItem).Text; };
-                    contextMenuStrip2.Items.Add(mi);
+                    mnuXpathMru.Items.Add(mi);
                 }
-                contextMenuStrip2.Show(this.tbXpath, new Point(e.X, e.Y));
+                mnuXpathMru.Show(this.tbXpath, new Point(e.X, e.Y));
             }
         }
 
@@ -2194,6 +2235,82 @@ namespace XPathVisualizer
             ab.AppDetailsButton = true;
             ab.ShowDialog(this);
         }
+
+#region Menu Auto Hide
+        // workitem 6720 - auto-hide of menu
+        private void SetupAutoHide()
+        {
+            this.menuStrip1.Visible = false;
+            this.timerMenu.Enabled = true; // receive ticks
+            this.aMainMenuItemIsDropped = false;
+            this._lastEventWasAlt = false;
+            this._intTicks = 0;
+        }
+
+        private void menuStrip1_MenuActivate(object sender, EventArgs e)
+        {
+            // reset the count, so we know when to hide the menu
+            this._intTicks = 0;
+        }
+
+        private void AnyDropDownOpened(object sender, EventArgs e)
+        {
+            this.aMainMenuItemIsDropped = true;
+        }
+        private void AnyDropDownClosed(object sender, EventArgs e)
+        {
+            this.aMainMenuItemIsDropped = false;
+        }
+
+        private void menuStrip1_MenuDeactivate(object sender, EventArgs e)
+        {
+            SetupAutoHide();
+        }
+
+        private void timerMenu_Tick(object sender, EventArgs e)
+        {
+            if (menuStrip1.Visible)
+            {
+                // if any of the popdown menus are visible, don'suppress autohide
+                if (aMainMenuItemIsDropped)
+                    return;
+
+                Point ptCursor = PointToClient(MousePosition);
+                // If the cursor on the menu, or as much as 2 pixels
+                // below the menu
+                if (ptCursor.Y <= (menuStrip1.Size.Height + 2))
+                    return;
+
+                if (this._intTicks >= 13)
+                {
+                    menuStrip1.Visible = false; // hide
+                    this._intTicks = 0;  // reset counter
+                }
+                else
+                {
+                    this._intTicks++;
+                }
+            }
+            else
+            {
+                // Retrieve the current mouse position relative to the form
+                Point ptCursor = PointToClient(MousePosition);
+                // If the cursor is within the menu area
+                if ((ptCursor.Y <= menuStrip1.Size.Height) & (ptCursor.Y > 0))
+                {
+                    if (this._intTicks >= 2)
+                    {
+                        menuStrip1.Visible = true;
+                        this._intTicks = 0;
+                    }
+                    else
+                    {
+                        this._intTicks++;
+                    }
+                }
+            }
+        }
+        #endregion
 
     }
 

@@ -62,9 +62,9 @@
             this.lblMatch = new System.Windows.Forms.Label();
             this.btn_PrevMatch = new Ionic.WinForms.RepeatButton();
             this.customTabControl1 = new Ionic.WinForms.CustomTabControl();
+            this.timerMenu = new System.Windows.Forms.Timer();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.richTextBox1 = new Ionic.WinForms.RichTextBoxEx();
-            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiReindent = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiLineNumbers = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiStripNamespaces = new System.Windows.Forms.ToolStripMenuItem();
@@ -78,7 +78,7 @@
             this.progressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.linkToCodeplex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.mnuXpathMru = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
@@ -87,7 +87,6 @@
             this.matchPanel.SuspendLayout();
             this.customTabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
-            this.contextMenuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -103,6 +102,8 @@
             this.menuStrip1.Size = new System.Drawing.Size(657, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
+            this.menuStrip1.MenuActivate += new System.EventHandler(this.menuStrip1_MenuActivate);
+            this.menuStrip1.MenuDeactivate += new System.EventHandler(this.menuStrip1_MenuDeactivate);
             //
             // tsmiFile
             //
@@ -120,6 +121,7 @@
             this.tsmiFile.Size = new System.Drawing.Size(37, 20);
             this.tsmiFile.Text = "&File";
             this.tsmiFile.DropDownOpening += new System.EventHandler(this.tsmiFile_Opening);
+            this.tsmiFile.DropDownOpened += new System.EventHandler(this.AnyDropDownOpened);
             //
             // tsmiNew
             //
@@ -201,6 +203,7 @@
             this.tsmiEdit.Size = new System.Drawing.Size(39, 20);
             this.tsmiEdit.Text = "&Edit";
             this.tsmiEdit.DropDownOpening += new System.EventHandler(this.tsmiEdit_Opening);
+            this.tsmiEdit.DropDownOpened += new System.EventHandler(this.AnyDropDownOpened);
             //
             // tsmiHelp
             //
@@ -209,6 +212,7 @@
                     this.tsmiAbout});
             this.tsmiHelp.Name = "tsmiHelp";
             this.tsmiHelp.Size = new System.Drawing.Size(39, 20);
+            this.tsmiHelp.DropDownOpened += new System.EventHandler(this.AnyDropDownOpened);
             this.tsmiHelp.Text = "Help";
             //
             // tsmiAbout
@@ -471,10 +475,15 @@
             this.tabPage1.Text = "tabPage1   ";
             this.tabPage1.UseVisualStyleBackColor = true;
             //
+            // timerMenu
+            //
+            this.timerMenu.Enabled = false;
+            this.timerMenu.Interval = 100;
+            this.timerMenu.Tick += new System.EventHandler(this.timerMenu_Tick);
+            //
             // richTextBox1
             //
             this.richTextBox1.BackColor = System.Drawing.SystemColors.Window;
-            this.richTextBox1.ContextMenuStrip = this.contextMenuStrip1;
             this.richTextBox1.DetectUrls = false;
             this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.richTextBox1.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -496,21 +505,6 @@
             this.richTextBox1.Text = "";
             this.richTextBox1.Leave += new System.EventHandler(this.richTextBox1_Leave);
             this.richTextBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.richTextBox1_KeyPress);
-            //
-            // contextMenuStrip1
-            //
-            // this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            //         this.tsmiReindent,
-            // this.tsmiLineNumbers,
-            // this.tsmiStripNamespaces,
-            // this.tsmiExtractHighlighted,
-            // this.tsmiRemoveSelected,
-            // this.tsmiCopy,
-            // this.tsmiCopyAll,
-            // this.tsmiPaste
-            //     });
-            this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(189, 202);
             //
             // tsmiReindent
             //
@@ -605,21 +599,10 @@
             this.linkToCodeplex.Text = "XPathVisualizer.codeplex.com";
             this.linkToCodeplex.Click += new System.EventHandler(this.labelAsHyperlink_Click);
             //
-            // contextMenuStrip2
+            // mnuXpathMru
             //
-            this.contextMenuStrip2.Name = "contextMenuStrip2";
-            this.contextMenuStrip2.Size = new System.Drawing.Size(61, 4);
-            // //
-            // // label3
-            // //
-            // this.label3.AutoSize = true;
-            // this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            // this.label3.ForeColor = System.Drawing.SystemColors.ControlDark;
-            // this.label3.Location = new System.Drawing.Point(18, 131);
-            // this.label3.Name = "label3";
-            // this.label3.Size = new System.Drawing.Size(478, 31);
-            // this.label3.TabIndex = 81;
-            // this.label3.Text = "ctrl-N to create a new, blank document";
+            this.mnuXpathMru.Name = "mnuXpathMru";
+            this.mnuXpathMru.Size = new System.Drawing.Size(61, 4);
             //
             // XPathVisualizerTool
             //
@@ -638,7 +621,7 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Resize += new System.EventHandler(this.XPathVisualizerTool_Resize);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.form_KeyDown);
+            //this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.form_KeyDown);
             this.splitContainer3.Panel1.ResumeLayout(false);
             this.splitContainer3.Panel1.PerformLayout();
             this.splitContainer3.Panel2.ResumeLayout(false);
@@ -651,7 +634,6 @@
             this.matchPanel.PerformLayout();
             this.customTabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
-            this.contextMenuStrip1.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
@@ -679,39 +661,38 @@
         internal System.Windows.Forms.ToolStripMenuItem tsmiBasicHelp;
         internal System.Windows.Forms.ToolStripMenuItem tsmiHelp;
         internal System.Windows.Forms.ToolStripMenuItem tsmiFindAndReplace;
-        private System.Windows.Forms.SplitContainer splitContainer3;
-        private Ionic.WinForms.RichTextBoxEx richTextBox1;
-        private System.Windows.Forms.RichTextBox tbXpath;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.StatusStrip statusStrip1;
-        private System.Windows.Forms.ToolStripStatusLabel lblStatus;
-        private System.Windows.Forms.Button btnAddNsPrefix;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.TextBox tbXmlns;
-        private System.Windows.Forms.TextBox tbPrefix;
-        private System.Windows.Forms.ToolStripProgressBar progressBar1;
-        private System.Windows.Forms.ToolStripStatusLabel linkToCodeplex;
-        private System.Windows.Forms.ToolTip toolTip1;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem tsmiReindent;
-        private System.Windows.Forms.ToolStripMenuItem tsmiCopyAll;
-        private System.Windows.Forms.ToolStripMenuItem tsmiCopy;
-        private System.Windows.Forms.ToolStripMenuItem tsmiPaste;
-        private System.Windows.Forms.FlowLayoutPanel matchPanel;
-        private System.Windows.Forms.Label lblMatch;
-        private System.Windows.Forms.ToolStripMenuItem tsmiLineNumbers;
-        private System.Windows.Forms.ToolStripMenuItem tsmiStripNamespaces;
-        private System.Windows.Forms.ToolStripMenuItem tsmiExtractHighlighted;
-        private System.Windows.Forms.ToolStripMenuItem tsmiRemoveSelected;
-        private System.Windows.Forms.Button btnExpandCollapse;
-        private System.Windows.Forms.ImageList imageList1;
-        private System.Windows.Forms.Panel pnlInput;
-        private Ionic.WinForms.RepeatButton btn_PrevMatch;
-        private Ionic.WinForms.RepeatButton btn_NextMatch;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
-        private Ionic.WinForms.CustomTabControl customTabControl1;
-        private System.Windows.Forms.TabPage tabPage1;
-        //private System.Windows.Forms.Label label3;
+        internal System.Windows.Forms.SplitContainer splitContainer3;
+        internal Ionic.WinForms.RichTextBoxEx richTextBox1;
+        internal System.Windows.Forms.RichTextBox tbXpath;
+        internal System.Windows.Forms.Label label2;
+        internal System.Windows.Forms.StatusStrip statusStrip1;
+        internal System.Windows.Forms.ToolStripStatusLabel lblStatus;
+        internal System.Windows.Forms.Button btnAddNsPrefix;
+        internal System.Windows.Forms.GroupBox groupBox1;
+        internal System.Windows.Forms.TextBox tbXmlns;
+        internal System.Windows.Forms.TextBox tbPrefix;
+        internal System.Windows.Forms.ToolStripProgressBar progressBar1;
+        internal System.Windows.Forms.ToolStripStatusLabel linkToCodeplex;
+        internal System.Windows.Forms.ToolTip toolTip1;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiReindent;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiCopyAll;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiCopy;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiPaste;
+        internal System.Windows.Forms.FlowLayoutPanel matchPanel;
+        internal System.Windows.Forms.Label lblMatch;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiLineNumbers;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiStripNamespaces;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiExtractHighlighted;
+        internal System.Windows.Forms.ToolStripMenuItem tsmiRemoveSelected;
+        internal System.Windows.Forms.Button btnExpandCollapse;
+        internal System.Windows.Forms.ImageList imageList1;
+        internal System.Windows.Forms.Panel pnlInput;
+        internal Ionic.WinForms.RepeatButton btn_PrevMatch;
+        internal Ionic.WinForms.RepeatButton btn_NextMatch;
+        internal System.Windows.Forms.ContextMenuStrip mnuXpathMru;
+        internal Ionic.WinForms.CustomTabControl customTabControl1;
+        internal System.Windows.Forms.TabPage tabPage1;
+        internal System.Windows.Forms.Timer timerMenu;
     }
 }
 
