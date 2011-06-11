@@ -17,7 +17,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last saved: <2011-June-11 12:07:02>
+// Last saved: <2011-June-11 13:08:55>
 //
 //
 
@@ -554,7 +554,7 @@ namespace XPathVisualizer
                 int ss = this.tbXpath.SelectionStart;
                 int sl = this.tbXpath.SelectionLength;
                 // get the text.
-                string xpathExpr = this.tbXpath.Text.Trim();
+                string xpathExpr = this.tbXpath.Text; //Trim();
                 // put it back.
                 // why? because it's possible the user has pasted in RTF, which won't
                 // show up correctly in that one-line RichTextBox. If we paste it here,
@@ -691,7 +691,7 @@ namespace XPathVisualizer
 
                 XmlNamespaceManager xmlns = GetXmlNamespaceManager();
 
-                elaboratedXpathExpression = FixupXpathExpressionWithDefaultNamespace(xpathExpression);
+                elaboratedXpathExpression = FixupXpathExpressionWithDefaultNamespace(xpathExpression).Trim();
 
                 XPathNodeIterator selection = nav.Select(elaboratedXpathExpression, xmlns);
 
