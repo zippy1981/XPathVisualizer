@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -17,6 +17,25 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -26,6 +45,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,6 +54,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Ionic.Xml.XhtmlResolver, Version=1.1.1.1, Culture=neutral, processorArchitecture=MSIL">
@@ -56,16 +77,19 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="RtbLineCalculator.cs" />
     <Compile Include="Tuple.cs" />
-    <Compile Include="XPathVisualizer.FormState.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="XPathVisualizerTool.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="XPathVisualizer.FormState.cs">
+      <DependentUpon>XPathVisualizerTool.cs</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="XPathVisualizerTool.Colorize.cs">
+      <DependentUpon>XPathVisualizerTool.cs</DependentUpon>
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Trace.cs">
+      <DependentUpon>XPathVisualizerTool.cs</DependentUpon>
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="XPathVisualizerTool.Designer.cs">
@@ -78,7 +102,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="BasicHelp.designer.cs">
-      <DependentUpon>AboutBox.cs</DependentUpon>
+      <DependentUpon>BasicHelp.cs</DependentUpon>
     </Compile>
     <Compile Include="AboutBox.cs">
       <SubType>Form</SubType>
@@ -136,36 +160,47 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-
-   <!-- This ItemGroup includes every .cs source file in the directory,           -->
-   <!-- except for the one indicated by OriginalSourceFile.  In flymake, that     -->
-   <!-- property indicates the currently edited file. So the result is that the   -->
-   <!-- ItemGroup CSFile will include all files, including the _flymake.cs clone, -->
-   <!-- but not including the original file.  Which is what we want.              -->
-   <ItemGroup>
-     <CSFile Include="@(Compile)" Exclude="$(FlymakeExclude)" />
-   </ItemGroup>
-
-   <!-- Stuff the FlymakeExclude property into an ItemGroup.                  -->
-   <!-- We do this so we can get at the metadata, which is available only         -->
-   <!-- through an item within an ItemGroup.  We want the root filename, which    -->
-   <!-- we use to name the output netmodule.                                      -->
-   <ItemGroup>
-     <ExcludedCSFile Include="$(FlymakeExclude)" />
-   </ItemGroup>
-
-   <Target Name="CheckSyntax"
-           DependsOnTargets="ResolveAssemblyReferences"
-           >
-     <!-- Run the Visual C# compilation on the specified set of .cs files. -->
-     <CSC
-        Sources="@(CSFile)"
-        References="@(ReferencePath)"
-        TargetType="module"
-        Toolpath="$(MSBuildToolsPath)"
-        OutputAssembly="%(ExcludedCSFile.Filename)_flymake.netmodule"
-        Nologo="true"
-        />
-   </Target>
-
+  <!-- This ItemGroup includes every .cs source file in the directory,           -->
+  <!-- except for the one indicated by OriginalSourceFile.  In flymake, that     -->
+  <!-- property indicates the currently edited file. So the result is that the   -->
+  <!-- ItemGroup CSFile will include all files, including the _flymake.cs clone, -->
+  <!-- but not including the original file.  Which is what we want.              -->
+  <ItemGroup>
+    <CSFile Include="@(Compile)" Exclude="$(FlymakeExclude)">
+      <InProject>false</InProject>
+    </CSFile>
+  </ItemGroup>
+  <!-- Stuff the FlymakeExclude property into an ItemGroup.                  -->
+  <!-- We do this so we can get at the metadata, which is available only         -->
+  <!-- through an item within an ItemGroup.  We want the root filename, which    -->
+  <!-- we use to name the output netmodule.                                      -->
+  <ItemGroup>
+    <ExcludedCSFile Include="$(FlymakeExclude)" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Target Name="CheckSyntax" DependsOnTargets="ResolveAssemblyReferences">
+    <!-- Run the Visual C# compilation on the specified set of .cs files. -->
+    <CSC Sources="@(CSFile)"
+         References="@(ReferencePath)"
+         TargetType="module"
+         Toolpath="$(MSBuildToolsPath)"
+         OutputAssembly="%(ExcludedCSFile.Filename)_flymake.netmodule"
+         Nologo="true" />
+  </Target>
 </Project>
