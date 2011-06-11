@@ -17,7 +17,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last saved: <2011-May-25 11:32:43>
+// Last saved: <2011-June-11 12:07:02>
 //
 //
 
@@ -42,10 +42,10 @@ namespace XPathVisualizer
     {
         // Design notes:
         //
-        // A major portion of the UI is a CustomTabControl, each tab holds a
-        // single control, a RichTextBox.  The CustomTabControl displays
-        // good-looking Visual-Studio like tabs, except that each one has a
-        // IE8-like "close" button.
+        // A major portion of the UI is a CustomTabControl, each tab
+        // holds a single control, a RichTextBox.  The CustomTabControl
+        // displays good-looking Visual-Studio-2008-like tabs, except
+        // that each one has a IE8-like "close" button on the tab.
         //
         // The local variable, richTextBox1, holds a reference to the
         // currently-displayed RichTextBox.  At design time, it is the
@@ -96,19 +96,19 @@ namespace XPathVisualizer
         private int extractCount;
         private int _intTicks;
         private bool _lastEventWasAlt;
-        private bool aMainMenuItemIsDropped;
         private int tn;
         private bool isDisplayingXmlnsPanel;
         private Color kindaPink = Color.FromArgb(Color.Red.A, 0xFF, 0x99, 0x99);
         private Color badXpathColor = Color.FromArgb((Color.Red.A << 24) | 0xFFDEAD);
         private Color matchingEltColor = Color.FromArgb(Color.Red.A, 0x98, 0xFb, 0x98);
-
-
         private XmlReaderSettings readerSettings = new XmlReaderSettings
         {
             ProhibitDtd = false,
             XmlResolver = new Ionic.Xml.XhtmlResolver()
         };
+        #if AUTOHIDE
+        private bool aMainMenuItemIsDropped;
+        #endif
 
         public XPathVisualizerTool()
         {
@@ -117,7 +117,7 @@ namespace XPathVisualizer
             FixupTitle();
             RememberSizes();
             AdjustSplitterSize();
-            SetupAutocompletes();
+            FillFormFromRegistry();
             KickoffColorizer();
             DisableMatchButtons();
             SetupAutoHide();
@@ -135,17 +135,6 @@ namespace XPathVisualizer
         {
             originalGroupBoxMinHeight = this.groupBox1.MinimumSize.Height;
             originalPanel1MinSize = this.splitContainer3.Panel1MinSize;
-        }
-
-
-        private void SetupAutocompletes()
-        {
-            // setup the autocomplete for the xpath expressions
-            FillFormFromRegistry();
-            // CANNOT DO AutoComplete for RichTextBoxn
-            //this.tbXpath.AutoCompleteMode = AutoCompleteMode.Suggest;
-            //this.tbXpath.AutoCompleteSource = AutoCompleteSource.CustomSource;
-            //this.tbXpath.AutoCompleteCustomSource = _xpathExpressionMruList;
         }
 
         private void FixupTitle()
@@ -1626,37 +1615,26 @@ namespace XPathVisualizer
             }
         }
 
-        //private void form_KeyDown(object sender, KeyEventArgs e)
-        protected override void OnKeyDown(KeyEventArgs e)
+
+        protected override void OnKeyUp(KeyEventArgs e)
         {
-            // Because Form.KeyPreview is true, this method gets invoked before
-            // the KeyDown event is passed to the control with focus.  This way we
-            // can handle keydown events on a form-wide basis.
-            if (e.Control && e.KeyCode == Keys.N)
-            {
-                btn_NextMatch_Click(this, null);
-                e.Handled = true;
-            }
-            else if (e.Control && e.KeyCode == Keys.P)
-            {
-                btn_PrevMatch_Click(this, null);
-                e.Handled = true;
-            }
             // workitem 6720
-            else if (e.Alt && e.KeyCode == Keys.F4)
-            {
-                // do nothing - normal handling (form exit)
-            }
-            else if (e.Alt && e.KeyCode == Keys.F)
-            {
-            }
-            else if (e.Alt && e.KeyCode == Keys.E)
-            {
-            }
-            else if (e.Alt && e.KeyCode == Keys.H)
-            {
-            }
-            else if (e.Alt)
+            // if (e.Alt && e.KeyCode == Keys.F4)
+            // {
+            //     // do nothing - normal handling (form exit)
+            // }
+            // else if (e.Alt && e.KeyCode == Keys.F)
+            // {
+            // }
+            // else if (e.Alt && e.KeyCode == Keys.E)
+            // {
+            // }
+            // else if (e.Alt && e.KeyCode == Keys.H)
+            // {
+            // }
+            // else if (e.Alt)
+
+            if (e.KeyData == Keys.Menu)
             {
                 // if the menu has just changed state, do not change back.
                 // force a bit of a delay.
@@ -1679,6 +1657,28 @@ namespace XPathVisualizer
                 return;
             }
             _lastEventWasAlt = false;
+        }
+
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            // Because Form.KeyPreview is true, this method gets invoked before
+            // the KeyDown event is passed to the control with focus.  This way we
+            // can handle keydown events on a form-wide basis.
+            if (e.Control && e.KeyCode == Keys.N)
+            {
+                btn_NextMatch_Click(this, null);
+                e.Handled = true;
+            }
+            else if (e.Control && e.KeyCode == Keys.P)
+            {
+                btn_PrevMatch_Click(this, null);
+                e.Handled = true;
+            }
+            else if (e.KeyCode == Keys.Menu)
+            {
+                e.Handled = true;
+            }
         }
 
 
@@ -2242,7 +2242,9 @@ namespace XPathVisualizer
         {
             this.menuStrip1.Visible = false;
             this.timerMenu.Enabled = true; // receive ticks
+            #if AUTOHIDE
             this.aMainMenuItemIsDropped = false;
+            #endif
             this._lastEventWasAlt = false;
             this._intTicks = 0;
         }
@@ -2255,11 +2257,15 @@ namespace XPathVisualizer
 
         private void AnyDropDownOpened(object sender, EventArgs e)
         {
+            #if AUTOHIDE
             this.aMainMenuItemIsDropped = true;
+            #endif
         }
         private void AnyDropDownClosed(object sender, EventArgs e)
         {
+            #if AUTOHIDE
             this.aMainMenuItemIsDropped = false;
+            #endif
         }
 
         private void menuStrip1_MenuDeactivate(object sender, EventArgs e)
@@ -2269,9 +2275,17 @@ namespace XPathVisualizer
 
         private void timerMenu_Tick(object sender, EventArgs e)
         {
+            #if AUTOHIDE
+
+            // Autohide of the menustrip was a little
+            // annoying. Sometimes it would pop up with the mouse when
+            // not desired. Then it would go away magically.  In order
+            // to uphold the principle of least surprise, this feature
+            // was removed.
+
             if (menuStrip1.Visible)
             {
-                // if any of the popdown menus are visible, don'suppress autohide
+                // if any of the popdown menus are visible, suppress autohide
                 if (aMainMenuItemIsDropped)
                     return;
 
@@ -2309,6 +2323,9 @@ namespace XPathVisualizer
                     }
                 }
             }
+            #else
+            this._intTicks++;
+            #endif
         }
         #endregion
 
