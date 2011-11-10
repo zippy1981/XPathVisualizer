@@ -15,6 +15,7 @@ goto START
 setlocal
 
 set zipit=c:\users\dino\bin\zipit.exe
+set msbuild=c:\.net4.0\msbuild.exe
 set stamp=%DATE% %TIME%
 set stamp=%stamp:/=-%
 set stamp=%stamp: =-%
@@ -59,7 +60,7 @@ goto ALL_DONE
   echo Building the project, config = %config%...
   echo.
 
-c:\.net3.5\msbuild.exe XPathVisualizer.sln /p:Configuration=%config%
+%MSBUILD% XPathVisualizer.sln /p:Configuration=%config%
 
 goto :EOF
 -------------------------------------------------------
@@ -94,7 +95,7 @@ set binzip=%rdir%\XpathVisualizer-v%longversion%-bin.zip
 
 cd ..
 set srczip=%rdir%\XpathVisualizer-v%longversion%-src.zip
-%zipit%  %srczip%  -s Readme.txt "This is the source distribution for Ionic's XPathVisualizer v%version%. Packed %stamp%."  -r+  -D XPathVisualizer  "(name != *.vssscc) and (name != *.*~) and (name != *.cache) and (name != *\Debug\*.*) and (name != *\Release\*.*) and (name != *\obj\*.*) and (name != *\bin\*.*) and (name != #*.*#) and (name != *.vspscc) and (name != *.suo) and (name != Makezips.cmd) and (name != *.vsp) and (name != *.psess) and (name != *\releases\*)"
+%zipit%  %srczip%  -s Readme.txt "This is the source distribution for Ionic's XPathVisualizer v%version%. Packed %stamp%."  -r+  -D XPathVisualizer  -E "(name != *.vssscc) and (name != *.*~) and (name != *.cache) and (name != *\Debug\*.*) and (name != *\Release\*.*) and (name != *\obj\*.*) and (name != *\bin\*.*) and (name != #*.*#) and (name != *.vspscc) and (name != *.suo) and (name != Makezips.cmd) and (name != *.vsp) and (name != *.psess) and (name != *\_UpgradeReport_Files\*.*) and (name != UpgradeLog.XML) and (name != UpgradeLog?.XML) and (name != *\releases\*)"
 
 cd XPathVisualizer
 
