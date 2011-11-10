@@ -17,7 +17,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last saved: <2011-June-11 13:08:55>
+// Last saved: <2011-November-10 11:14:56>
 //
 //
 
@@ -953,7 +953,7 @@ namespace XPathVisualizer
                     }
 
                     // do we need to remember this one?
-                    if (ix2 > ix)
+                    if (ix2 >= ix) // workitem 7427
                     {
                         // Record the location of the match within the doc.
                         Trace("match({0},{1})", ix, ix2);
