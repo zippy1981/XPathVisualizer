@@ -17,7 +17,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last saved: <2011-November-10 11:14:56>
+// Last saved: <2011-November-10 11:49:58>
 //
 //
 
@@ -90,6 +90,7 @@ namespace XPathVisualizer
         private DateTime _originDateTime = new System.DateTime(0);
         private System.DateTime _lastRtbKeyPress;
         private System.DateTime _lastXpathChange;
+        private bool _keepCursorPosition;
         private int _handlingXpathChangeEvents = 0;
         private XPathParser<XElement> xpathParser = new XPathParser<XElement>();
         private bool isLoading;
@@ -267,6 +268,9 @@ namespace XPathVisualizer
             DisableMatchButtons();
             RemoveHighlighting();
             wantFormat.Set();
+
+            // xxx also set a timer to insure we re-apply the XPath expression
+            // when done fiddling with the buffer. ? maybe
         }
 
 
@@ -606,7 +610,7 @@ namespace XPathVisualizer
         {
             if (_handlingXpathChangeEvents > 0) return; // already looking
             _lastXpathChange = System.DateTime.Now;
-
+            _keepCursorPosition = (sender == null);
             System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(MaybeAutoEvaluate));
         }
 
@@ -773,7 +777,15 @@ namespace XPathVisualizer
             tabState.xpath = this.tbXpath.Text;
             tabState.currentMatch = 0;
             EnableMatchButtons();
-            scrollToCurrentMatch(-1);
+            if (_keepCursorPosition) // workitem 7432
+            {
+                RestoreCaretPosition();
+                UpdateMatchCount();
+            }
+            else
+            {
+                scrollToCurrentMatch(-1);
+            }
         }
 
 

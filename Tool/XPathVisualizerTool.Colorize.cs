@@ -54,6 +54,8 @@ namespace XPathVisualizer
                 // only reset the status string if it has not changed in the interim
                 if (this.lblStatus.Text == "Formatting...")
                     this.lblStatus.Text = String.Format("Done formatting. {0} lines", this.richTextBox1.Lines.Length);
+                // workitem 7432
+                tbXpath_TextChanged(null,null);
             }
         }
 
@@ -161,11 +163,39 @@ namespace XPathVisualizer
             }
         }
 
+        private void SaveCaretPosition()
+        {
+            savedPosition = this.richTextBox1.SelectionStart;
+        }
+        private void RestoreCaretPosition()
+        {
+            this.richTextBox1.SelectionStart = savedPosition;
+            this.richTextBox1.SelectionLength = 0;
+        }
 
+
+        void InvokeActionProperly(Action x)
+        {
+            if (this.richTextBox1.InvokeRequired)
+            {
+                this.richTextBox1.Invoke(x);
+                return;
+            }
+            x();
+        }
+
+        void suspend()
+        {
+            this.richTextBox1.SuspendLineNumberPainting();
+        }
+        void resume()
+        {
+            this.richTextBox1.ResumeLineNumberPainting();
+        }
+
+        private int savedPosition;
         private const int DELAY_IN_MILLISECONDS = 650;
         private int progressCount = 0;
-
-
 
         private void DoBackgroundColorizing(object sender, DoWorkEventArgs e)
         {
@@ -236,27 +266,9 @@ namespace XPathVisualizer
             //                     //XmlKnownDtds.Xhtml10)
             //                 };
 
-            Action<Action> InvokeActionProperly = (x) =>
-                {
-                    if (this.richTextBox1.InvokeRequired)
-                    {
-                        this.richTextBox1.Invoke(x);
-                        return;
-                    }
-                    x();
-                };
-
-            Action suspend = () =>
-                {
-                    this.richTextBox1.SuspendLineNumberPainting();
-                };
-            Action resume = () =>
-                {
-                    this.richTextBox1.ResumeLineNumberPainting();
-                };
-
             do
             {
+                SaveCaretPosition();
                 try
                 {
                     InvokeActionProperly(resume);
@@ -362,7 +374,7 @@ namespace XPathVisualizer
                                     {
                                         //string s = reader.Value;
                                         ix = lc.GetCharIndexFromLine(rinfo.LineNumber - 1) +
-                                            +rinfo.LinePosition - 1;
+                                            + rinfo.LinePosition - 1;
                                         list.Add(new FormatChange(ix, reader.Name.Length, Color.Red));
 
                                         ix += reader.Name.Length;
