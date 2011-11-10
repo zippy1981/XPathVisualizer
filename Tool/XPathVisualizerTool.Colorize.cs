@@ -268,7 +268,7 @@ namespace XPathVisualizer
 
             do
             {
-                SaveCaretPosition();
+                InvokeActionProperly(SaveCaretPosition);
                 try
                 {
                     InvokeActionProperly(resume);

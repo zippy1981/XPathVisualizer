@@ -17,7 +17,7 @@
 //
 // ------------------------------------------------------------------
 //
-// Last saved: <2011-November-10 11:49:58>
+// Last saved: <2011-November-10 12:44:13>
 //
 //
 
@@ -178,6 +178,8 @@ namespace XPathVisualizer
             rtb.ShowLineNumbers = true;
 
             rtb.Leave += new System.EventHandler(this.richTextBox1_Leave);
+            rtb.MouseUp += new System.Windows.Forms.MouseEventHandler(this.richTextBox1_MouseUp);
+
             rtb.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.richTextBox1_KeyPress);
 
             this.richTextBox1 = rtb;
@@ -2033,6 +2035,71 @@ namespace XPathVisualizer
                                 "Exception while saving",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Exclamation);
+            }
+        }
+
+
+        // see http://www.bobpowell.net/eventsubscribers.htm
+        Delegate[] GetEventSubscribers(object target, string eventName)
+        {
+            string WinFormsEventName = "Event" + eventName;
+            Type t = target.GetType();
+            do
+            {
+                FieldInfo[] fia = t.GetFields(BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic);
+                foreach (FieldInfo fi in fia)
+                {
+                    if (fi.Name == eventName)
+                    {
+                        //we've found the compiler generated event
+                        Delegate d = fi.GetValue(target) as Delegate;
+                        if (d != null)
+                            return d.GetInvocationList();
+                    }
+
+                    if (fi.Name == WinFormsEventName)
+                    {
+                        //we've found an EventHandlerList key
+                        //get the list
+                        var ehl = (System.ComponentModel.EventHandlerList)target.GetType().GetProperty("Events", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy).GetValue(target,null);
+
+                        //and dereference the delegate.
+                        Delegate d = ehl[fi.GetValue(target)];
+                        if (d != null)
+                            return d.GetInvocationList();
+                    }
+                }
+                t = t.BaseType;
+            } while (t != null);
+
+            return new Delegate[] { };
+        }
+
+
+        /// <summary>
+        ///   Pop a context menu the richtextbox containing XML.
+        ///   Workitem 7429.
+        /// </summary>
+        private void richTextBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                if (contextMenuStrip1.Items.Count == 0)
+                {
+                    // fill in the menu once with items duped from the Edit menu
+                    foreach (ToolStripItem item in this.tsmiEdit.DropDownItems)
+                    {
+                        var mi = new System.Windows.Forms.ToolStripMenuItem();
+                        mi.Text = item.Text;
+                        foreach (Delegate d in GetEventSubscribers(item, "Click"))
+                        {
+                            mi.Click += (System.EventHandler) d;
+                        }
+                        contextMenuStrip1.Items.Add(mi);
+                    }
+                }
+
+                contextMenuStrip1.Show(this.richTextBox1, new Point(e.X, e.Y));
             }
         }
 
