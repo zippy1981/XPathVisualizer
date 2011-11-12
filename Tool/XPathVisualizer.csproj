@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -196,11 +196,6 @@
   </ItemGroup>
   <Target Name="CheckSyntax" DependsOnTargets="ResolveAssemblyReferences">
     <!-- Run the Visual C# compilation on the specified set of .cs files. -->
-    <CSC Sources="@(CSFile)"
-         References="@(ReferencePath)"
-         TargetType="module"
-         Toolpath="$(MSBuildToolsPath)"
-         OutputAssembly="%(ExcludedCSFile.Filename)_flymake.netmodule"
-         Nologo="true" />
+    <CSC Sources="@(CSFile)" References="@(ReferencePath)" TargetType="module" Toolpath="$(MSBuildToolsPath)" OutputAssembly="%(ExcludedCSFile.Filename)_flymake.netmodule" Nologo="true" />
   </Target>
 </Project>
