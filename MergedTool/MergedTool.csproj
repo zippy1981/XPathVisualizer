@@ -57,6 +57,10 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup Condition="Exists('..\..\Ionic.snk')">
+    <!-- Only try to sign it if the key exists. -->
+    <SigningParam>/keyfile:..\..\Ionic.snk</SigningParam>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -67,6 +71,16 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="Compile">
+
+    <!-- Set ILMerge Path -->
+    <PropertyGroup Condition="Exists('C:\NuGet\bin\ILMerge.bat')">
+      <ILMergePath>C:\NuGet\bin\ILMerge.bat</ILMergePath>
+    </PropertyGroup>
+    <PropertyGroup Condition="Exists('$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe')">
+      <ILMergePath>C:\NuGet\bin\ILMerge.bat</ILMergePath>
+    </PropertyGroup>
+    <Error Text="ILMerge cannot be found. You need to download and install ILMerge in order to build XPathVisualizer." Condition="$(ILMergePath) == '' " />
+
     <!-- Outputs="$(IntermediateOutputPath)$(TargetFileName)" -->
     <!-- Outputs="$(TargetPath)" -->
     <Message Text="Performing the Ilmerge." />
@@ -100,8 +114,7 @@
     <Message Text="TargetFileName= $(TargetFileName)" />
     <!-- produce the merged assembly - putting the output in the "IntermediateOutputPath" eg obj\Debug. -->
     <!-- it will be copied later by the CopyFilestoOutputDirectory task defined in Microsoft.Common.Targets -->
-    <Error Text="ILMerge cannot be found. You need to download and install ILMerge in order to build XPathVisualizer." Condition="!Exists('$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe')" />
-    <Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot; /keyfile:..\..\Ionic.snk  /t:winexe  /out:&quot;$(IntermediateOutputPath)$(TargetFileName)&quot;  @(PrimaryAssembly) @(ProjectDllsToMerge -> '&quot;%(Fullpath)&quot;', ' ')  @(OtherDllsToMerge -> '&quot;%(Fullpath)&quot;', ' ') " />
+    <Exec Command="&quot;$(ILMergePath)&quot; $(SigningParam)  /t:winexe  /out:&quot;$(IntermediateOutputPath)$(TargetFileName)&quot;  @(PrimaryAssembly -> '&quot;%(Fullpath)&quot;', ' ') @(ProjectDllsToMerge -> '&quot;%(Fullpath)&quot;', ' ')  @(OtherDllsToMerge -> '&quot;%(Fullpath)&quot;', ' ') " />
   </Target>
   <Target Name="EchoTargetPath">
     <Message Text="TargetPath= $(TargetPath)" />
